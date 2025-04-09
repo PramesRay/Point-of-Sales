@@ -9,7 +9,7 @@
         </v-btn>
         <div>
           <h4 class="text-h4 font-weight-medium">$203k</h4>
-          <span class="text-subtitle-2 text-medium-emphasis text-white">Total Income</span>
+          <span class="text-subtitle-2 text-medium-emphasis text-white">Total Income Restaurant 1</span>
         </div>
       </div>
     </v-card-text>
@@ -23,9 +23,11 @@
         </v-btn>
         <div>
           <h4 class="text-h4 font-weight-medium">$203k</h4>
-          <span class="text-subtitle-2 text-disabled font-weight-medium">Total Income</span>
+          <span class="text-subtitle-2 text-disabled font-weight-medium">Total Income Restaurant 2</span>
         </div>
       </div>
     </v-card-text>
   </v-card>
 </template>
+
+<!-- Harus diubah agar sesuai dengan banyak restoran yang terdaftar -->

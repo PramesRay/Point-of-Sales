@@ -3,8 +3,8 @@
 import TotalEarning from './components/TotalEarning.vue';
 import TotalOrder from './components/TotalOrder.vue';
 import TotalIncome from './components/TotalIncome.vue';
-import TotalGrowth from './components/TotalGrowth.vue';
-import PopularStocks from './components/PopularStocks.vue';
+import TotalExpense from './components/TotalExpense.vue';
+import CurrentTransaction from './components/CurrentTransaction.vue';
 </script>
 
 <template>
@@ -32,14 +32,14 @@ import PopularStocks from './components/PopularStocks.vue';
     <!-- Total Growth -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="8">
-      <TotalGrowth />
+      <TotalExpense />
     </v-col>
 
     <!-- -------------------------------------------------------------------- -->
     <!-- Popular Stocks -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="4">
-      <PopularStocks />
+      <CurrentTransaction />
     </v-col>
   </v-row>
 </template>
