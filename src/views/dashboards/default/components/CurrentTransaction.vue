@@ -70,7 +70,7 @@ const latestTransaction = computed(() => transactions.value[0])
 
         <v-card class="bg-lightsecondary mt-5">
           <div class="pa-5">
-            <div class="d-flex align-start justify-space-between">
+            <div class="d-inline-flex align-center justify-space-between w-100">
               <div>
                 <span class="text-subtitle-2 text-medium-emphasis">{{ latestTransaction.date }}</span>
                 <h6 class="text-secondary text-h4 font-weight-bold">{{ latestTransaction.name }}</h6>
@@ -99,7 +99,7 @@ const latestTransaction = computed(() => transactions.value[0])
           </perfect-scrollbar>
 
           <div class="text-center mt-3">
-            <v-btn color="primary" variant="text"
+            <v-btn color="primary" variant="text" href="/transactions"
               >View All
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />

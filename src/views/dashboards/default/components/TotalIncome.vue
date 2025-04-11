@@ -1,4 +1,7 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { formatRupiah } from '@/utils/helpers/currency';
+
+</script>
 
 <template>
   <v-card elevation="0" class="bg-primary overflow-hidden bubble-shape-sm bubble-primary mb-6">
@@ -8,8 +11,8 @@
           <TableIcon stroke-width="1.5" width="25" />
         </v-btn>
         <div>
-          <h4 class="text-h4 font-weight-medium">$203k</h4>
-          <span class="text-subtitle-2 text-medium-emphasis text-white">Total Income Restaurant 1</span>
+          <h4 class="text-h4 font-weight-medium">{{ formatRupiah(2000000)}}</h4>
+          <span class="text-subtitle-2 text-medium-emphasis text-white">Total Pendapatan Restoran 1</span>
         </div>
       </div>
     </v-card-text>
@@ -22,8 +25,8 @@
           <BuildingStoreIcon stroke-width="1.5" width="25" class="text-warning" />
         </v-btn>
         <div>
-          <h4 class="text-h4 font-weight-medium">$203k</h4>
-          <span class="text-subtitle-2 text-disabled font-weight-medium">Total Income Restaurant 2</span>
+          <h4 class="text-h4 font-weight-medium"> {{ formatRupiah(3000000)}}</h4>
+          <span class="text-subtitle-2 text-disabled font-weight-medium">Total Pendapatan Restoran 2</span>
         </div>
       </div>
     </v-card-text>

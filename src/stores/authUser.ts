@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
-
+import api from '@/services/api';
 import { fetchWrapper } from '@/utils/helpers/fetch-wrapper';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
 export const useUsersStore = defineStore({
   id: 'Authuser',
@@ -12,10 +10,12 @@ export const useUsersStore = defineStore({
   actions: {
     async getAll() {
       this.users = { loading: true };
-      fetchWrapper
-        .get(baseUrl)
-        .then((users) => (this.users = users))
-        .catch((error) => (this.users = { error }));
+      try {
+        const response = await api.get('/users');
+        this.users = response.data;
+      } catch (error: any) {
+        this.users = { error: error.message || 'Gagal mengambil data pengguna' };
+      }
     }
   }
 });

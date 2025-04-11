@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatRupiah, shortenNumber } from '@/utils/helpers/currency';
 import { ref, computed } from 'vue';
 import { ArrowDownLeftCircleIcon, ShoppingCartIcon, CircleArrowDownLeftIcon } from 'vue-tabler-icons';
 
@@ -118,6 +119,7 @@ const lineChart2 = {
     }
   ]
 };
+
 </script>
 
 <template>
@@ -129,8 +131,8 @@ const lineChart2 = {
         </v-btn>
         <div class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end">
-            <v-tab value="1" hide-slider color="transparent">Month</v-tab>
-            <v-tab value="2" hide-slider color="transparent">Year</v-tab>
+            <v-tab value="1" hide-slider color="transparent">Minggu</v-tab>
+            <v-tab value="2" hide-slider color="transparent">Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
@@ -138,13 +140,16 @@ const lineChart2 = {
         <v-tabs-window-item value="1">
           <v-row>
             <v-col cols="6">
-              <h2 class="text-h1 font-weight-medium">
-                $108
+              <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
+                <div class="d-flex align-baseline">
+                  <span class="mx-1"> 350 </span>
+                  <span class="text-body-2"> Pesanan</span>
+                </div>
                 <a href="#">
-                  <CircleArrowDownLeftIcon stroke-width="1.5" width="28" class="text-white" />
+                  <CircleArrowDownLeftIcon stroke-width="1.5" width="28" class="text-white ml-2" />
                 </a>
               </h2>
-              <span class="text-subtitle-1 text-medium-emphasis text-white">Total Order</span>
+              <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan</span>
             </v-col>
             <v-col cols="6">
               <apexchart type="line" height="90" :options="chartOptions1" :series="lineChart1.series"> </apexchart>
@@ -154,10 +159,14 @@ const lineChart2 = {
         <v-tabs-window-item value="2">
           <v-row>
             <v-col cols="6">
-              <h2 class="text-h1 font-weight-medium">
-                $961
+              <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
+                <div class="d-flex align-baseline">
+                  <span class="mx-1"> {{shortenNumber(1000).value}} </span>
+                  <span class="text-body-2 mb-auto mt-2"> {{ shortenNumber(1000).suffix }} </span>
+                  <span class="text-body-2"> Pesanan </span>
+                </div>
                 <a href="#">
-                  <ArrowDownLeftCircleIcon stroke-width="1.5" width="28" class="text-white" />
+                  <CircleArrowDownLeftIcon stroke-width="1.5" width="28" class="text-white" />
                 </a>
               </h2>
               <span class="text-subtitle-1 text-medium-emphasis text-white">Total Order</span>
@@ -169,5 +178,5 @@ const lineChart2 = {
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
-  </v-card>
+  </v-card> 
 </template>

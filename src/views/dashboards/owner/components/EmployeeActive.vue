@@ -1,0 +1,166 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { ArrowDownLeftCircleIcon, ShoppingCartIcon, CircleArrowDownLeftIcon } from 'vue-tabler-icons';
+
+const tab = ref('1');
+
+const select = ref<{ state: 'Restoran 1' | 'Restoran 2' | 'Restoran 3' | 'Restoran 4'}>({ state: 'Restoran 1' });
+
+const items = [
+  { state: 'Restoran 1' },
+  { state: 'Restoran 2' },
+  { state: 'Restoran 3' },
+  { state: 'Restoran 4' }
+];
+
+const dataRestoran = ref({
+  "Restoran 1": {
+    week: [12, 8, 5, 14],
+    month: [11, 6, 9, 13, 8, 14, 4, 7]
+  },
+  "Restoran 2": {
+    week: [14, 10, 7, 12],
+    month: [9, 7, 11, 15, 6, 12, 5, 10]
+  },
+  "Restoran 3": {
+    week: [13, 9, 8, 15],
+    month: [10, 5, 13, 14, 8, 9, 7, 12]
+  },
+  "Restoran 4": {
+    week: [15, 7, 12, 9],
+    month: [8, 6, 10, 12, 7, 13, 5, 9]
+  }
+});
+
+const currentData = computed(() => {
+  if (!select.value || !select.value.state) return { series: [] };
+  
+  const restoran = select.value.state;
+  const range = tab.value === "1" ? "week" : "month";
+
+  return {
+    series: [
+      {
+        name: 'series1',
+        data: dataRestoran.value[restoran][range]
+      }
+    ]
+  };
+});
+
+
+const chartOptions = computed(() => {
+  return {
+    chart: {
+      type: 'bar',
+      height: 90,
+      fontFamily: `inherit`,
+      foreColor: '#a1aab2',
+      sparkline: {
+        enabled: true
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    colors: ['#fff'],
+    fill: {
+      type: 'solid',
+      opacity: 1
+    },
+    stroke: {
+      curve: 'smooth',
+      width: 3
+    },
+    yaxis: {
+      min: 0,
+      max: 16 // perlu diganti jadi (max number in data + 1)
+    },
+    tooltip: {
+      theme: 'light',
+      fixed: {
+        enabled: false
+      },
+      x: {
+        show: false
+      },
+      y: {
+        title: {
+          formatter: () => 'Total Order'
+        }
+      },
+      marker: {
+        show: false
+      }
+    }
+  };
+});
+
+</script>
+
+<template>
+  <v-card elevation="0" class="bg-secondary overflow-hidden bubble-shape bubble-secondary-shape">
+    <v-card-text>
+      <div class="d-flex align-start mb-3">
+        <v-btn icon rounded="sm" color="darksecondary" variant="flat">
+          <BuildingStoreIcon stroke-width="1.5" width="25" />
+        </v-btn>
+        <div class="mx-3">
+          <v-select
+              class="custom-select font-weight-medium"
+              variant="plain"
+              hide-details
+              density="compact"
+              v-model="select"
+              :items="items"
+              item-title="state"
+              item-value="state"
+              label="Restoran"
+              return-object
+              single-line
+            >
+            </v-select>
+        </div>
+        <div class="ml-auto z-1">
+          <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">
+            <v-tab value="1" hide-slider >Minggu</v-tab>
+            <v-tab value="2" hide-slider >Bulan</v-tab>
+          </v-tabs>
+        </div>
+      </div>
+      <v-row>
+        <v-col cols="6">
+          <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
+            <div class="d-flex align-baseline">
+              <span class="mx-1"> 10 </span>
+              <span class="text-body-2"> Aktif </span>
+            </div>
+          </h2>
+          <span class="text-subtitle-1 text-medium-emphasis text-white">Pegawai</span>
+        </v-col>
+        <v-tabs-window v-model="tab" class="z-1">
+          <v-tabs-window-item value="1">
+              <v-col cols="6">
+                <apexchart type="line" height="90" :options="chartOptions" :series="currentData.series"></apexchart>
+              </v-col>
+          </v-tabs-window-item>
+          <v-tabs-window-item value="2">
+            <v-row>
+              <v-col cols="6">
+                <apexchart type="line" height="90" :options="chartOptions" :series="currentData.series"> </apexchart>
+              </v-col>
+            </v-row>
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </v-row>
+    </v-card-text>
+  </v-card>
+</template>
+
+<style>
+.custom-select .v-field__input {
+  font-size: 0.8rem !important;
+  color: #fff !important;
+}
+
+</style>

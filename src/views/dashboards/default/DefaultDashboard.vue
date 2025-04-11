@@ -5,6 +5,7 @@ import TotalOrder from './components/TotalOrder.vue';
 import TotalIncome from './components/TotalIncome.vue';
 import TotalExpense from './components/TotalExpense.vue';
 import CurrentTransaction from './components/CurrentTransaction.vue';
+import CurrentFundRequest from './components/CurrentFundRequest.vue';
 </script>
 
 <template>
@@ -29,17 +30,24 @@ import CurrentTransaction from './components/CurrentTransaction.vue';
     </v-col>
 
     <!-- -------------------------------------------------------------------- -->
-    <!-- Total Growth -->
+    <!-- Total Expense -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="8">
       <TotalExpense />
     </v-col>
 
     <!-- -------------------------------------------------------------------- -->
-    <!-- Popular Stocks -->
+    <!-- Current Transaction -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="4">
       <CurrentTransaction />
+    </v-col>
+    
+    <!-- -------------------------------------------------------------------- -->
+    <!-- Current Fund Request -->
+    <!-- -------------------------------------------------------------------- -->
+    <v-col cols="12" lg="4">
+      <CurrentFundRequest />
     </v-col>
   </v-row>
 </template>
