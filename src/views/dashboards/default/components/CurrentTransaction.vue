@@ -5,37 +5,43 @@ import { ref, computed } from 'vue'
 const transactions = ref([
   {
     name: 'Pelanggan',
-    type: 'Pemesanan Menu',
+    type: 'income',
+    subject: 'Pemesanan Menu',
     price: 150000,
     date: '2022-07-25'
   },
   {
     name: 'Pelanggan',
-    type: 'Pemesanan Menu',
+    type: 'income',
+    subject: 'Pemesanan Menu',
     price: 100000,
     date: '2022-07-25'
   },
   {
     name: 'Pegawai',
-    type: 'Belanja Stok',
+    type: 'expense',
+    subject: 'Belanja Stok',
     price: 500000,
     date: '2022-07-25'
   },
   {
     name: 'Pegawai',
-    type: 'Pengadaan Barang',
+    type: 'expense',
+    subject: 'Pengadaan Barang',
     price: 200000,
     date: '2022-07-25'
   },
   {
     name: 'Pegawai',
-    type: 'Lain-lain',
+    type: 'expense',
+    subject: 'Lain-lain',
     price: 100000,
     date: '2022-07-25'
   }
 ])
 
 const latestTransaction = computed(() => transactions.value[0])
+const listTransaction = computed(() => transactions.value.slice(1))
 </script>
 
 <template>
@@ -74,25 +80,27 @@ const latestTransaction = computed(() => transactions.value[0])
               <div>
                 <span class="text-subtitle-2 text-medium-emphasis">{{ latestTransaction.date }}</span>
                 <h6 class="text-secondary text-h4 font-weight-bold">{{ latestTransaction.name }}</h6>
-                <span class="text-subtitle-2 text-medium-emphasis">{{ latestTransaction.type }}</span>
+                <span class="text-subtitle-2 text-medium-emphasis">{{ latestTransaction.subject }}</span>
               </div>
-              <h4 class="text-h4">{{ formatRupiah(latestTransaction.price) }}</h4>
+              <h4 v-if="latestTransaction.type === 'income'" class="text-h4 text-success">+ {{ formatRupiah(latestTransaction.price) }}</h4>
+              <h4 v-else class="text-h4 text-error">- {{ formatRupiah(latestTransaction.price) }}</h4>
             </div>
           </div>
         </v-card>
         <div class="mt-4">
-          <perfect-scrollbar v-bind:style="{ height: '270px' }">
+          <perfect-scrollbar v-bind:style="{ height: '180px' }">
             <v-list lines="two" class="py-0">
-              <v-list-item v-for="(transactions, i) in transactions" :key="i" :value="transactions" color="secondary" rounded="sm">
+              <v-list-item v-for="(listTransaction, i) in listTransaction" :key="i" :value="listTransaction" color="secondary" rounded="sm">
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <span class="text-subtitle-2 text-medium-emphasis">{{ latestTransaction.date }}</span>
                     <h6 class="text-h4 text-medium-emphasis font-weight-bold">
-                      {{ transactions.name }}
+                      {{ listTransaction.name }}
                     </h6>
-                    <span class="text-subtitle-2 text-medium-emphasis">{{ transactions.type }}</span>
+                    <span class="text-subtitle-2 text-medium-emphasis">{{ listTransaction.subject }}</span>
                   </div>
-                  <div class="ml-auto text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(transactions.price) }}</div>
+                  <div v-if="listTransaction.type === 'income'" class="ml-auto text-subtitle-1 text-medium-emphasis font-weight-bold text-success">+ {{ formatRupiah(listTransaction.price) }}</div>
+                  <div v-else class="ml-auto text-subtitle-1 text-medium-emphasis font-weight-bold text-error">- {{ formatRupiah(listTransaction.price) }}</div>
                 </div>
               </v-list-item>
             </v-list>

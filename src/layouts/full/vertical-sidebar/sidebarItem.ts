@@ -8,7 +8,10 @@ import {
   BugIcon,
   DashboardIcon,
   BrandChromeIcon,
-  HelpIcon
+  HelpIcon,
+  ReportMoneyIcon,
+  ZoomMoneyIcon,
+  BuildingWarehouseIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -30,12 +33,29 @@ export interface menu {
 const sidebarItem: menu[] = [
   { header: 'Dashboard' },
   {
-    title: 'Default',
-    icon: DashboardIcon,
+    title: 'Finance',
+    icon: ZoomMoneyIcon,
     to: '/dashboard/default'
+  },
+  {
+    title: 'Owner',
+    icon: DashboardIcon,
+    to: '/dashboard/owner'
   },
   { divider: true },
   { header: 'Pages' },
+  {
+    title: 'Cashier',
+    icon: ReportMoneyIcon,
+    to: '/page/cashier'
+  },
+  {
+    title: 'Inventory',
+    icon: BuildingWarehouseIcon,
+    to: '/page/inventory'
+  },
+  { divider: true },
+  { header: 'Other Pages' },
   {
     title: 'Authentication',
     icon: KeyIcon,
@@ -58,53 +78,53 @@ const sidebarItem: menu[] = [
     icon: BugIcon,
     to: '/error'
   },
-  { divider: true },
-  { header: 'Utilities' },
-  {
-    title: 'Typography',
-    icon: TypographyIcon,
-    to: '/utils/typography'
-  },
-  {
-    title: 'Shadows',
-    icon: ShadowIcon,
-    to: '/utils/shadows'
-  },
-  {
-    title: 'Colors',
-    icon: PaletteIcon,
-    to: '/utils/colors'
-  },
+  // { divider: true },
+  // { header: 'Utilities' },
+  // {
+  //   title: 'Typography',
+  //   icon: TypographyIcon,
+  //   to: '/utils/typography'
+  // },
+  // {
+  //   title: 'Shadows',
+  //   icon: ShadowIcon,
+  //   to: '/utils/shadows'
+  // },
+  // {
+  //   title: 'Colors',
+  //   icon: PaletteIcon,
+  //   to: '/utils/colors'
+  // },
 
-  {
-    title: 'Icons',
-    icon: WindmillIcon,
-    to: '/forms/radio',
-    children: [
-      {
-        title: 'Tabler Icons',
-        icon: CircleIcon,
-        to: '/icons/tabler'
-      },
-      {
-        title: 'Material Icons',
-        icon: CircleIcon,
-        to: '/icons/material'
-      }
-    ]
-  },
-  { divider: true },
-  {
-    title: 'Sample Page',
-    icon: BrandChromeIcon,
-    to: '/starter'
-  },
-  {
-    title: 'Documentation',
-    icon: HelpIcon,
-    to: 'https://codedthemes.gitbook.io/berry-vuetify/',
-    type: 'external'
-  }
+  // {
+  //   title: 'Icons',
+  //   icon: WindmillIcon,
+  //   to: '/forms/radio',
+  //   children: [
+  //     {
+  //       title: 'Tabler Icons',
+  //       icon: CircleIcon,
+  //       to: '/icons/tabler'
+  //     },
+  //     {
+  //       title: 'Material Icons',
+  //       icon: CircleIcon,
+  //       to: '/icons/material'
+  //     }
+  //   ]
+  // },
+  // { divider: true },
+  // {
+  //   title: 'Sample Page',
+  //   icon: BrandChromeIcon,
+  //   to: '/starter'
+  // },
+  // {
+  //   title: 'Documentation',
+  //   icon: HelpIcon,
+  //   to: 'https://codedthemes.gitbook.io/berry-vuetify/',
+  //   type: 'external'
+  // }
 ];
 
 export default sidebarItem;

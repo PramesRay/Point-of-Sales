@@ -139,11 +139,11 @@ const lineChartSeries = computed(() => chartData[select.value.state].series);
     <v-card variant="outlined">
       <v-card-text>
         <v-row>
-          <v-col cols="12" sm="9">
+          <v-col cols="12" sm="6">
             <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
             <h3 class="text-h3 mt-1">{{ formatRupiah(totalPengeluaran) }}</h3>
           </v-col>
-          <v-col cols="12" sm="3">
+          <v-col cols="12" sm="6">
             <v-select
               color="primary"
               variant="outlined"

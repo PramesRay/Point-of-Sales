@@ -3,8 +3,7 @@
 import EmployeeActive from './components/EmployeeActive.vue';
 import TotalOrder from '@/views/dashboards/default/components/TotalOrder.vue';
 import Timesheets from './components/Timesheets.vue';
-// import CurrentReservation from './components/CurrentReservation.vue';
-
+import CurrentReservation from './components/CurrentReservation.vue';
 </script>
 
 <template>

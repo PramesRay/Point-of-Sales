@@ -1,53 +1,31 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { ArrowDownLeftCircleIcon, ShoppingCartIcon, CircleArrowDownLeftIcon } from 'vue-tabler-icons';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useEmployeeActive } from '@/composables/useEmployeeActive'
+import type { EmployeeActive } from '@/types/employeeActive';
 
 const tab = ref('1');
+const { data, branches, selectedBranch, init, loadingBranches, loadingData } = useEmployeeActive()
 
-const select = ref<{ state: 'Restoran 1' | 'Restoran 2' | 'Restoran 3' | 'Restoran 4'}>({ state: 'Restoran 1' });
-
-const items = [
-  { state: 'Restoran 1' },
-  { state: 'Restoran 2' },
-  { state: 'Restoran 3' },
-  { state: 'Restoran 4' }
-];
-
-const dataRestoran = ref({
-  "Restoran 1": {
-    week: [12, 8, 5, 14],
-    month: [11, 6, 9, 13, 8, 14, 4, 7]
-  },
-  "Restoran 2": {
-    week: [14, 10, 7, 12],
-    month: [9, 7, 11, 15, 6, 12, 5, 10]
-  },
-  "Restoran 3": {
-    week: [13, 9, 8, 15],
-    month: [10, 5, 13, 14, 8, 9, 7, 12]
-  },
-  "Restoran 4": {
-    week: [15, 7, 12, 9],
-    month: [8, 6, 10, 12, 7, 13, 5, 9]
-  }
+onMounted(() => {
+  init();
 });
 
-const currentData = computed(() => {
-  if (!select.value || !select.value.state) return { series: [] };
+const currentData = computed(() => data.value ?? { active: 0, week: [], month: []})
+
+const currentSeries = computed(() => {
+  if (!branches) return { series: [] };
   
-  const restoran = select.value.state;
   const range = tab.value === "1" ? "week" : "month";
 
   return {
     series: [
       {
         name: 'series1',
-        data: dataRestoran.value[restoran][range]
+        data: currentData?.value?.[range]
       }
     ]
   };
 });
-
 
 const chartOptions = computed(() => {
   return {
@@ -86,7 +64,7 @@ const chartOptions = computed(() => {
       },
       y: {
         title: {
-          formatter: () => 'Total Order'
+          formatter: () => 'Pegawai Aktif'
         }
       },
       marker: {
@@ -95,7 +73,6 @@ const chartOptions = computed(() => {
     }
   };
 });
-
 </script>
 
 <template>
@@ -111,47 +88,49 @@ const chartOptions = computed(() => {
               variant="plain"
               hide-details
               density="compact"
-              v-model="select"
-              :items="items"
-              item-title="state"
-              item-value="state"
-              label="Restoran"
-              return-object
+              v-model="selectedBranch"
+              :items="branches"
+              item-title="name"
+              item-value="id"
+              label="Pilih Restoran"
+              :loading="loadingBranches"
+              :return-object="false"
               single-line
             >
             </v-select>
         </div>
-        <div class="ml-auto z-1">
+        <div v-if="!loadingData|!loadingBranches" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">
             <v-tab value="1" hide-slider >Minggu</v-tab>
             <v-tab value="2" hide-slider >Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
-      <v-row>
+      <v-row v-if="!loadingData">
         <v-col cols="6">
           <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
             <div class="d-flex align-baseline">
-              <span class="mx-1"> 10 </span>
+              <span class="mx-1"> {{ data?.active }} </span>
               <span class="text-body-2"> Aktif </span>
             </div>
           </h2>
           <span class="text-subtitle-1 text-medium-emphasis text-white">Pegawai</span>
         </v-col>
-        <v-tabs-window v-model="tab" class="z-1">
-          <v-tabs-window-item value="1">
-              <v-col cols="6">
-                <apexchart type="line" height="90" :options="chartOptions" :series="currentData.series"></apexchart>
-              </v-col>
-          </v-tabs-window-item>
-          <v-tabs-window-item value="2">
-            <v-row>
-              <v-col cols="6">
-                <apexchart type="line" height="90" :options="chartOptions" :series="currentData.series"> </apexchart>
-              </v-col>
-            </v-row>
-          </v-tabs-window-item>
-        </v-tabs-window>
+        <v-col cols="6">
+          <v-tabs-window v-model="tab" class="z-1">
+            <v-tabs-window-item value="1">
+              <apexchart type="line" height="90" :options="chartOptions" :series="currentSeries?.series"></apexchart>
+            </v-tabs-window-item>
+            <v-tabs-window-item value="2">
+              <apexchart type="line" height="90" :options="chartOptions" :series="currentSeries?.series"> </apexchart>
+            </v-tabs-window-item>
+          </v-tabs-window>
+        </v-col>
+      </v-row>
+      <v-row v-if="loadingData & !loadingBranches">
+        <v-col cols="12">
+          <v-skeleton-loader type="paragraph" color="transparant bg-secondary"></v-skeleton-loader>
+        </v-col>
       </v-row>
     </v-card-text>
   </v-card>

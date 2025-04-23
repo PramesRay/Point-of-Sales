@@ -41,6 +41,7 @@ const fundRequests = ref([
 ])
 
 const latestRequest = computed(() => fundRequests.value[0])
+const listRequest = computed(() => fundRequests.value.slice(1))
 </script>
 
 <template>
@@ -83,7 +84,9 @@ const latestRequest = computed(() => fundRequests.value[0])
               </div>
               <div>
                 <div class="d-flex justify-end">  
-                  <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest.status }}</span>
+                  <span v-if="latestRequest.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ latestRequest.status }}</span>
+                      <span v-else-if="latestRequest.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest.status }}</span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest.status }}</span>
                 </div>
                 <h4 class="text-h4">{{ formatRupiah(latestRequest.price) }}</h4>
               </div>
@@ -91,22 +94,24 @@ const latestRequest = computed(() => fundRequests.value[0])
           </div>
         </v-card>
         <div class="mt-4">
-          <perfect-scrollbar v-bind:style="{ height: '270px' }">
+          <perfect-scrollbar v-bind:style="{ height: '180px' }">
             <v-list lines="two" class="py-0">
-              <v-list-item v-for="(fundRequests, i) in fundRequests" :key="i" :value="fundRequests" color="secondary" rounded="sm">
+              <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm">
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest.date }}</span>
                     <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                      {{ fundRequests.request }}
+                      {{ listRequest.request }}
                     </h6>
-                    <span class="text-subtitle-2 text-medium-emphasis">{{ fundRequests.name }}</span>
+                    <span class="text-subtitle-2 text-medium-emphasis">{{ listRequest.name }}</span>
                   </div>
                   <div>
                     <div class="d-flex justify-end">
-                      <span class="text-subtitle-2 text-medium-emphasis">{{ fundRequests.status }}</span>
+                      <span v-if="listRequest.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ listRequest.status }}</span>
+                      <span v-else-if="listRequest.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest.status }}</span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest.status }}</span>
                     </div>
-                    <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(fundRequests.price) }}</div>
+                    <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(listRequest.price) }}</div>
                   </div>
                 </div>
               </v-list-item>
