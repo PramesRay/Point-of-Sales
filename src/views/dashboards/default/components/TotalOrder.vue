@@ -1,27 +1,43 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import { useTotalOrder } from '@/composables/useTotalOrder'
-import type { EmployeeActive } from '@/types/employeeActive';
+import type { FinanceSummary } from '@/types/finance';
 
-const tab = ref('1');
-const { data, branches, selectedBranch, init, loadingBranches, loadingData } = useTotalOrder()
+const props = defineProps<{
+  data: FinanceSummary[];
+  branch: string;
+  loading: boolean;
+}>();
 
-onMounted(() => {
-  init();
+const orderData = computed(() => {
+  if (!props.data?.length) return undefined;
+  return props.data
+    .filter(tx => tx.branchId === props.branch)
+    .map(item => ({
+      branchId: item.branchId,
+      branchName: item.branchName,
+      order: item.order
+    }))[0]
 });
 
-const currentData = computed(() => data.value ?? { active: 0, week: [], month: []})
+const tab = ref('1');
+
+const branchName = computed(() => orderData.value?.branchName || '-');
+const currentOrder = computed(() => orderData.value?.order.current || 0);
+
+// watch(() => props.data, (newData) => {
+//   console.log('props.data berubah:', newData);
+//   console.log('orderData sekarang:', orderData.value);
+// });
 
 const currentSeries = computed(() => {
-  if (!branches) return { series: [] };
-  
   const range = tab.value === "1" ? "week" : "month";
 
   return {
     series: [
       {
         name: 'series1',
-        data: currentData?.value?.[range]
+        data: orderData.value?.order[range]
       }
     ]
   };
@@ -50,10 +66,6 @@ const chartOptions = computed(() => {
       curve: 'smooth',
       width: 3
     },
-    yaxis: {
-      min: 0,
-      max: 16 // perlu diganti jadi (max number in data + 1)
-    },
     tooltip: {
       theme: 'light',
       fixed: {
@@ -64,7 +76,7 @@ const chartOptions = computed(() => {
       },
       y: {
         title: {
-          formatter: () => 'Pegawai Aktif'
+          formatter: () => 'Total Order'
         }
       },
       marker: {
@@ -82,8 +94,8 @@ const chartOptions = computed(() => {
         <v-btn icon rounded="sm" color="darkprimary" variant="flat">
           <ShoppingCartIcon stroke-width="1.5" width="20" />
         </v-btn>
-        <div class="mx-3">
-          <v-select
+        <div class="mx-3 my-auto">
+          <!-- <v-select
               class="custom-select font-weight-medium"
               variant="plain"
               hide-details
@@ -97,20 +109,21 @@ const chartOptions = computed(() => {
               :return-object="false"
               single-line
             >
-          </v-select>
+          </v-select> -->
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
         </div>
-        <div v-if="!loadingData" class="ml-auto z-1">
+        <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-primary">
             <v-tab value="1" hide-slider >Minggu</v-tab>
             <v-tab value="2" hide-slider >Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
-      <v-row v-if="!loadingData">
+      <v-row v-if="!props.loading">
         <v-col cols="6">
             <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
               <div class="d-flex align-baseline">
-                <span class="mx-1"> {{ currentData?.current }} </span>
+                <span class="mx-1"> {{ currentOrder }} </span>
                 <span class="text-body-2"> Pesanan</span>
               </div>
               <a href="#">
@@ -130,7 +143,7 @@ const chartOptions = computed(() => {
           </v-tabs-window>
         </v-col>
       </v-row>
-      <v-row v-if="loadingData & !loadingBranches">
+      <v-row v-if="props.loading">
         <v-col cols="12">
           <v-skeleton-loader type="paragraph" color="transparant bg-primary"></v-skeleton-loader>
         </v-col>

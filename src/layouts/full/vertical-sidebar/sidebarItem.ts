@@ -113,18 +113,18 @@ const sidebarItem: menu[] = [
   //     }
   //   ]
   // },
-  // { divider: true },
-  // {
-  //   title: 'Sample Page',
-  //   icon: BrandChromeIcon,
-  //   to: '/starter'
-  // },
-  // {
-  //   title: 'Documentation',
-  //   icon: HelpIcon,
-  //   to: 'https://codedthemes.gitbook.io/berry-vuetify/',
-  //   type: 'external'
-  // }
+  { divider: true },
+  {
+    title: 'Sample Page',
+    icon: BrandChromeIcon,
+    to: '/starter'
+  },
+  {
+    title: 'Documentation',
+    icon: HelpIcon,
+    to: 'https://codedthemes.gitbook.io/berry-vuetify/',
+    type: 'external'
+  }
 ];
 
 export default sidebarItem;

@@ -1,148 +1,135 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { formatRupiah } from '@/utils/helpers/currency'
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { formatRupiah } from '@/utils/helpers/currency';
+import type { FinanceSummary } from '@/types/finance';
+import { ChevronDownIcon, ChevronUpIcon } from 'vue-tabler-icons';
 
-const expensesData = {
-  'Hari ini': 2324000,
-  'Minggu ini': 12500000,
-  'Bulan ini': 54000000,
-  'Tahun ini': 650000000
-};
+const props = defineProps<{
+  data: FinanceSummary[];
+  branch: string;
+  loading: boolean;
+}>();
 
-const select = ref<{ state: 'Hari ini' | 'Minggu ini' | 'Bulan ini' | 'Tahun ini'}>({ state: 'Hari ini' });
+const select = ref<'Hari ini' | 'Minggu ini' | 'Bulan ini' | 'Tahun ini'>('Hari ini');
+const showChart = ref(false);
 
-const items = [
-  { state: 'Hari ini' },
-  { state: 'Minggu ini' },
-  { state: 'Bulan ini' },
-  { state: 'Tahun ini' }
-];
+const timeRangeMapping = {
+  'Hari ini': 'today',
+  'Minggu ini': 'week',
+  'Bulan ini': 'month',
+  'Tahun ini': 'year'
+} as const;
 
-// Data Chart berdasarkan pilihan
-const chartData = {
-  'Hari ini': {
-    categories: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
-    series: [
-      { name: 'Belanja Stok', data: [5, 15, 20, 30, 40, 50, 60, 70] },
-      { name: 'Lain-lain', data: [3, 5, 10, 15, 20, 25, 30, 35] },
-    
-    ]
-  },
-  'Minggu ini': {
-    categories: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
-    series: [
-      { name: 'Belanja Stok', data: [100, 200, 150, 250, 300, 350, 400] },
-      { name: 'Lain-lain', data: [50, 60, 70, 80, 90, 100, 110] },
-    
-    ]
-  },
-  'Bulan ini': {
-    categories: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
-    series: [
-      { 
-        name: 'Belanja Stok', 
-        data: [1000, 1500, 1200, 1800]
-      },
-      { 
-        name: 'Lain-lain', 
-        data: [300, 400, 350, 500]
-      }
-    ]
-  },
-  'Tahun ini': {
-    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-    series: [
-      { name: 'Belanja Stok', data: [500, 700, 800, 600, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600] },
-      { name: 'Lain-lain', data: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200] },
-    
-    ]
-  }
-} 
+const items = ['Hari ini', 'Minggu ini', 'Bulan ini', 'Tahun ini'];
 
-const totalPengeluaran = computed(() => {
-  return expensesData[select.value.state as keyof typeof expensesData];
+const branchExpenseData = computed(() => {
+  if (!props.data?.length) return undefined;
+  return props.data.find(exp => exp.branchId === props.branch)?.expense;
 });
 
+const isReady = computed(() => {
+  return !!branchExpenseData.value && !!branchExpenseData.value.chartData;
+});
 
-// Konfigurasi chart berdasarkan pilihan pengguna
+const totalExpense = computed(() => {
+  if (!isReady.value) return 0;
+  const key = timeRangeMapping[select.value];
+  return branchExpenseData.value?.totalExpense?.[key] ?? 0;
+});
+
+const chartData = computed(() => {
+  if (!isReady.value) return { categories: [], series: [] };
+  const key = timeRangeMapping[select.value];
+  return branchExpenseData.value?.chartData[key] || { categories: [], series: [] };
+});
+
+const hasValidChartData = computed(() => {
+  return (
+    chartData.value &&
+    Array.isArray(chartData.value.series) &&
+    chartData.value.series.length > 0
+  );
+});
+
 const chartOptions = computed(() => {
+  if (!isReady.value || !hasValidChartData.value) {
+    return {};
+  }
   return {
     chart: {
       type: 'bar',
-      height: 480,
-      fontFamily: `inherit`,
+      fontFamily: 'inherit',
       foreColor: '#a1aab2',
-      stacked: true
+      stacked: true,
     },
     colors: ['#5e35b1', '#ede7f6'],
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          legend: {
-            position: 'bottom',
-            offsetX: -10,
-            offsetY: 0
-          }
-        }
-      }
-    ],
     plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '50%'
-      }
+      bar: { horizontal: false, columnWidth: '50%' }
     },
     xaxis: {
       type: 'category',
-      categories: chartData[select.value.state].categories
+      categories: chartData.value.categories || []
     },
     legend: {
       show: true,
-      fontFamily: `'Roboto', sans-serif`,
+      fontFamily: 'Roboto, sans-serif',
       position: 'bottom',
       offsetX: 20,
-      labels: {
-        useSeriesColors: false
-      },
-      markers: {
-        width: 16,
-        height: 16,
-        radius: 5
-      },
-      itemMargin: {
-        horizontal: 15,
-        vertical: 8
-      }
+      labels: { useSeriesColors: false },
+      markers: { width: 16, height: 16, radius: 5 },
+      itemMargin: { horizontal: 15, vertical: 8 }
     },
-    fill: {
-      type: 'solid'
-    },
-    dataLabels: {
-      enabled: false
-    },
-    grid: {
-      show: true
-    },
-    tooltip: {
-      theme: 'light'
-    }
+    fill: { type: 'solid' },
+    dataLabels: { enabled: false },
+    grid: { show: true },
+    tooltip: { theme: 'light' }
   };
 });
 
-// Data chart berdasarkan pilihan user
-const lineChartSeries = computed(() => chartData[select.value.state].series);
+const lineChartSeries = computed(() => chartData.value.series ?? []);
+
+const chartHeight = ref(480);
+const updateChartHeight = () => {
+  chartHeight.value = window.innerWidth < 600 ? 300 : 480;
+};
+
+onMounted(() => {
+  updateChartHeight();
+  window.addEventListener('resize', updateChartHeight);
+  if (isReady.value && hasValidChartData.value) {
+    showChart.value = true; 
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateChartHeight);
+});
 </script>
 
 <template>
-  <v-card elevation="0">
+  <v-card elevation="0" :loading="props.loading">
     <v-card variant="outlined">
       <v-card-text>
         <v-row>
           <v-col cols="12" sm="6">
-            <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
-            <h3 class="text-h3 mt-1">{{ formatRupiah(totalPengeluaran) }}</h3>
+            <div class="d-flex align-center justify-space-between">
+              <div>
+                <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
+                <h3 class="text-h3 mt-1">
+                  {{ formatRupiah(totalExpense) }}
+                </h3>
+              </div>
+              <v-btn
+                icon
+                size="small"
+                variant="text"
+                @click="showChart = !showChart"
+              >
+                <component :is="showChart ? ChevronUpIcon : ChevronDownIcon" width="20" />
+              </v-btn>
+            </div>
           </v-col>
+
           <v-col cols="12" sm="6">
             <v-select
               color="primary"
@@ -150,18 +137,33 @@ const lineChartSeries = computed(() => chartData[select.value.state].series);
               hide-details
               v-model="select"
               :items="items"
-              item-title="state"
-              item-value="state"
-              label="Select"
-              return-object
+              label="Pilih Waktu"
               single-line
-            >
-            </v-select>
+            />
           </v-col>
         </v-row>
-        <div class="mt-4">
-          <apexchart type="bar" height="480" :options="chartOptions" :series="lineChartSeries"> </apexchart>
-        </div>
+
+        <v-expand-transition >
+          <div v-if="showChart" class="mt-4">
+            <v-skeleton-loader
+              v-if="props.loading"
+              type="card"
+              height="300"
+              class="mb-4"
+            />
+            <apexchart
+              v-else-if="isReady && hasValidChartData"
+              :key="`${props.branch}-${select}`"
+              type="bar"
+              :height="chartHeight"
+              :options="chartOptions"
+              :series="lineChartSeries"
+            />
+            <div v-else class="text-center text-medium-emphasis mt-5">
+              Tidak ada data untuk periode ini.
+            </div>
+          </div>
+        </v-expand-transition>
       </v-card-text>
     </v-card>
   </v-card>

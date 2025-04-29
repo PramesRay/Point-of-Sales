@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { computed, shallowRef } from 'vue';
 import { ArchiveIcon, CopyIcon, DownloadIcon, FileExportIcon } from 'vue-tabler-icons';
 import iconCard from '@/assets/images/icons/icon-card.svg';
 import { formatRupiah } from '@/utils/helpers/currency';
-const items = shallowRef([
-  { title: 'Import Card', icon: DownloadIcon },
-  { title: 'Copy Data', icon: CopyIcon },
-  { title: 'Export', icon: FileExportIcon },
-  { title: 'Archive File', icon: ArchiveIcon }
-]);
+import type { FinanceSummary } from '@/types/finance';
+
+const props = defineProps<{
+  data: FinanceSummary[];
+  loading: boolean;
+}>();
+
+const earningData = computed(() => {
+  if (!props.data?.length) return undefined;
+  return props.data
+    .filter(tx => tx.branchId === 'all')
+    .map(item => item.income)[0]
+})
 </script>
 
 <template>
@@ -18,7 +25,7 @@ const items = shallowRef([
         <v-btn icon rounded="sm" color="darksecondary" variant="flat">
           <img :src="iconCard" width="25" />
         </v-btn>
-        <div class="ml-auto z-1">
+        <!-- <div class="ml-auto z-1">
           <v-menu :close-on-content-click="false">
             <template v-slot:activator="{ props }">
               <v-btn icon rounded="sm" color="secondary" variant="flat" size="small" v-bind="props">
@@ -36,10 +43,10 @@ const items = shallowRef([
               </v-list>
             </v-sheet>
           </v-menu>
-        </div>
+        </div> -->
       </div>
       <h2 class="text-h1 font-weight-medium">
-        {{ formatRupiah(100000000) }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
+        {{ formatRupiah(earningData) }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
       </h2>
       <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pendapatan</span>
     </v-card-text>

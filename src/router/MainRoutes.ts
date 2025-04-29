@@ -9,12 +9,12 @@ const MainRoutes = {
     {
       name: 'LandingPage',
       path: '/',
-      component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+      component: () => import('@/views/dashboards/default/FinanceDashboard.vue') //sementara seperti ini, perlu diganti agar yang di render page sesuai role mereka.
     },
     {
       name: 'Default',
       path: '/dashboard/default',
-      component: () => import('@/views/dashboards/default/DefaultDashboard.vue')
+      component: () => import('@/views/dashboards/default/FinanceDashboard.vue')
     },
     {
       name: 'Owner',
@@ -22,15 +22,20 @@ const MainRoutes = {
       component: () => import('@/views/dashboards/owner/OwnerDashboard.vue')
     },
     {
+      name: 'Cashier',
+      path: '/page/cashier',
+      component: () => import('@/views/pages/cashier/CashierPage.vue')
+    },
+    {
       name: 'Inventory',
       path: '/page/inventory',
       component: () => import('@/views/pages/inventory/InventoryPage.vue')
     },
-    // {
-    //   name: 'Starter',
-    //   path: '/starter',
-    //   component: () => import('@/views/StarterPage.vue')
-    // },
+    {
+      name: 'Starter',
+      path: '/starter',
+      component: () => import('@/views/StarterPage.vue')
+    },
     // {
     //   name: 'Tabler Icons',
     //   path: '/icons/tabler',

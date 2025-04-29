@@ -11,11 +11,6 @@ const PublicRoutes = {
       component: () => import('@/views/authentication/LoginPage.vue')
     },
     {
-      name: 'Login',
-      path: '/login1',
-      component: () => import('@/views/authentication/auth/LoginPage.vue')
-    },
-    {
       name: 'Register',
       path: '/register',
       component: () => import('@/views/authentication/auth/RegisterPage.vue')

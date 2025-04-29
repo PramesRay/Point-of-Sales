@@ -32,7 +32,7 @@ interface AuthStore {
 
 router.beforeEach(async (to, from, next) => {
   // redirect to login page if not logged in and trying to access a restricted page
-  const publicPages = ['/login', '/login1']
+  const publicPages = ['/login']
   const auth: AuthStore = useAuthStore();
 
   const isPublicPage = publicPages.includes(to.path);
@@ -42,12 +42,12 @@ router.beforeEach(async (to, from, next) => {
   if (authRequired && !auth.user) {
     auth.returnUrl = to.fullPath; // Save the intended page
     next('/login');
-  } else if (auth.user && to.path === '/login' || to.path === '/login1' || to.path === '/register') {
+  } else if (auth.user && to.path === '/login' || to.path === '/register') {
     // User logged in and trying to access the login page
     if (auth.returnUrl && auth.returnUrl !== '/') {
       next(auth.returnUrl);
     } else {
-      next('/dashboard/default');
+      next(to.name = 'LandingPage');
     }
   } else {
     // All other scenarios, either public page or authorized access
