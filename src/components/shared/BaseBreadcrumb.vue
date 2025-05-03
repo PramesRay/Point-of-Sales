@@ -28,7 +28,7 @@ const { title, breadcrumbs, useCustomDividerIcon } = props;
         <!-- Breadcrumb -->
         <v-col md="7" cols="12">
           <div class="d-flex align-center text-h5 px-1">
-            <v-icon size="small" icon="$home" class="text-secondary mr-2" />
+            <v-icon size="small" class="text-secondary mr-2">mdi-home</v-icon>
 
             <!-- Divider setelah Home Icon -->
             <div>

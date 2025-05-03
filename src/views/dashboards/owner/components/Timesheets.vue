@@ -66,7 +66,7 @@ const listEmployee = computed(() => {
                 <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ longestEmployee?.name }}</h6>
                 <span class="text-subtitle-2 text-medium-emphasis">{{ longestEmployee?.role }}</span>
               </div>
-              <h4 class="text-h4">{{ longestEmployee?.active_hour + ' Jam'}}</h4>
+              <h4 class="text-h4">{{ longestEmployee?.last_active + ' Jam'}}</h4>
             </div>
           </div>
         </v-card>
@@ -97,7 +97,7 @@ const listEmployee = computed(() => {
                     <span class="text-subtitle-2 text-medium-emphasis">{{ list.role }}</span>
                   </div>
                   <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">
-                    {{ list.active_hour + ' Jam' }}
+                    {{ list.last_active + ' Jam' }}
                   </div>
                 </div>
               </v-list-item>

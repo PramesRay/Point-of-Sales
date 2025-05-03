@@ -1,5 +1,6 @@
 import type { EmployeeActive } from '@/types/employeeActive'
 
+// DATA REAL DIAMBIL DARI JUMLAH EMPLOYEE YANG AKTIF
 const dummyEmployeeActive: Record<string, EmployeeActive> = {
   "branch-1": {
     active: 12,
