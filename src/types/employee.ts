@@ -1,6 +1,9 @@
 export type Employee = {
+  id: string
   name: string
-  role: string
-  active_hour: number
-  status: 'aktif' | 'offline'
+  email?: string
+  role?: string
+  access?: string[]
+  last_active?: Date
+  status?: 'aktif' | 'offline'
 }
