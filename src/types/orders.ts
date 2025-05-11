@@ -1,7 +1,7 @@
 import type { Branch } from "./branch";
 import type { Customer } from "./customer";
 import type { Employee } from "./employee";
-import type { Meta } from "./Meta";
+import type { Meta } from "./meta";
 
 export interface Orders {
   branch: Branch

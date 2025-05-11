@@ -110,28 +110,6 @@ const listRequestTimeAgo = computed(() => {
             <div v-if="props.branch !== 'all'" class="ml-auto">
               <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</span>
             </div>
-            <!-- <div class="ml-auto">
-              <v-menu transition="slide-y-transition">
-                <template v-slot:activator="{ props }">
-                  <v-btn color="primary" size="small" icon rounded="sm" variant="text" v-bind="props">
-                    <DotsIcon stroke-width="1.5" width="25" />
-                  </v-btn>
-                </template>
-                <v-sheet rounded="md" width="150" class="elevation-10">
-                  <v-list>
-                    <v-list-item value="1">
-                      <v-list-item-title>Today</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item value="2">
-                      <v-list-item-title>This Month</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item value="3">
-                      <v-list-item-title>This Year</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-sheet>
-              </v-menu>
-            </div> -->
           </div>
 
           <div v-if="!props.loading">
@@ -259,17 +237,17 @@ const listRequestTimeAgo = computed(() => {
           <div>
             <div class="d-flex justify-end">  
               <span 
-              class="text-subtitle-2 text-medium-emphasis"
+                class="text-subtitle-2 text-medium-emphasis"
                 :class="{
-                  'text-warning': selectedRequest.status === 'Pending',
-                  'text-success': selectedRequest.status === 'Disetujui',
-                  'text-error': selectedRequest.status === 'Ditolak'
+                  'text-warning': selectedRequest?.status === 'Pending',
+                  'text-success': selectedRequest?.status === 'Disetujui',
+                  'text-error': selectedRequest?.status === 'Ditolak'
                 }"
               >{{ selectedRequest?.status }}</span>
             </div>
             <h4 class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
-            <i v-if="selectedRequest.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
-              Diubah {{ getTimeAgo(selectedRequest.time.updatedAt) }}
+            <i v-if="selectedRequest?.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
+              Diubah {{ getTimeAgo(selectedRequest?.time.updatedAt) }}
             </i>
           </div>
         </div>
@@ -332,32 +310,32 @@ const listRequestTimeAgo = computed(() => {
               </div>
             </v-col>
           </v-row>
-        <v-divider v-if="index !== approvalItems?.length - 1" />
-      </template>
-      
-      <v-divider class="mb-5"></v-divider>
-
-      <!-- Input catatan tambahan -->
-      <div class="text-caption text-medium-emphasis">
-        Catatan: 
+          <v-divider v-if="index !== approvalItems?.length - 1" />
+        </template>
+        
       </div>
-      <v-textarea
-        v-model="approvalNote"
-        :rules="notesRules"
-        label="Opsional"
-        rows="2"
-        auto-grow
-        clear-icon="mdi-close-circle"
-        clearable
-        counter
-      />
+      <!-- Input catatan tambahan -->
+      <div v-if="selectedRequest?.status === 'Pending'">
+        <v-divider class="mb-5"></v-divider>
+        <div class="text-caption text-medium-emphasis">
+          Catatan: 
+        </div>
+        <v-textarea
+          v-model="approvalNote"
+          :rules="notesRules"
+          label="Opsional"
+          rows="2"
+          auto-grow
+          clear-icon="mdi-close-circle"
+          clearable
+          counter
+        />
 
         <!-- Tombol proses -->
         <div class="d-flex justify-end mt-1">
           <v-btn 
             color="primary" 
             @click="prosesApproval"
-            
           >
             Proses Permintaan
           </v-btn>

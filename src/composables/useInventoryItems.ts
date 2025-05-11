@@ -4,8 +4,6 @@ import { fetchCategoryInventoryItems, fetchInventoryItem } from '@/services/inve
 import type { InventoryCategory, InventoryItem } from '@/types/inventoryItem';
 
 export function useInventoryItems() {
-  const route     = useRoute();
-  const branchId  = ref<string>(String(route.query.branch || 'all'));
   const data      = ref<InventoryItem[]>([]);
   const categories= ref<InventoryCategory[]>([]);
   const loading   = ref<boolean>(false);

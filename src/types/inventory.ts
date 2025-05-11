@@ -1,7 +1,7 @@
 import type { Branch } from "./branch";
 import type { Employee } from "./employee";
 import type { InventoryItem } from "./inventoryItem";
-import type { Meta } from "./Meta";
+import type { Meta } from "./meta";
 
 export interface StockRequestSummary {
   branch: Branch;
