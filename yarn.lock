@@ -564,10 +564,10 @@
   resolved "https://registry.npmjs.org/@vue/tsconfig/-/tsconfig-0.7.0.tgz"
   integrity sha512-ku2uNz5MaZ9IerPPUyOHzyjhXoX2kVJaVf7hL315DC17vS6IiZRmmCPfggNbU16QTvM80+uYYy3eYJB59WCtvg==
 
-"@vuetify/loader-shared@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.npmjs.org/@vuetify/loader-shared/-/loader-shared-2.0.3.tgz"
-  integrity sha512-Ss3GC7eJYkp2SF6xVzsT7FAruEmdihmn4OCk2+UocREerlXKWgOKKzTN5PN3ZVN5q05jHHrsNhTuWbhN61Bpdg==
+"@vuetify/loader-shared@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/@vuetify/loader-shared/-/loader-shared-2.1.0.tgz"
+  integrity sha512-dNE6Ceym9ijFsmJKB7YGW0cxs7xbYV8+1LjU6jd4P14xOt/ji4Igtgzt0rJFbxu+ZhAzqz853lhB0z8V9Dy9cQ==
   dependencies:
     upath "^2.0.1"
 
@@ -2213,12 +2213,12 @@ vee-validate@4.15.0:
     "@vue/devtools-api" "^7.5.2"
     type-fest "^4.8.3"
 
-vite-plugin-vuetify@>=1.0.0, vite-plugin-vuetify@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.npmjs.org/vite-plugin-vuetify/-/vite-plugin-vuetify-2.0.4.tgz"
-  integrity sha512-A4cliYUoP/u4AWSRVRvAPKgpgR987Pss7LpFa7s1GvOe8WjgDq92Rt3eVXrvgxGCWvZsPKziVqfHHdCMqeDhfw==
+vite-plugin-vuetify@^2.1.1, vite-plugin-vuetify@>=2.1.0:
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/vite-plugin-vuetify/-/vite-plugin-vuetify-2.1.1.tgz"
+  integrity sha512-Pb7bKhQH8qPMzURmEGq2aIqCJkruFNsyf1NcrrtnjsOIkqJPMcBbiP0oJoO8/uAmyB5W/1JTbbUEsyXdMM0QHQ==
   dependencies:
-    "@vuetify/loader-shared" "^2.0.3"
+    "@vuetify/loader-shared" "^2.1.0"
     debug "^4.3.3"
     upath "^2.0.1"
 
@@ -2285,7 +2285,7 @@ vue-tsc@2.2.0:
     "@volar/typescript" "~2.4.11"
     "@vue/language-core" "2.2.0"
 
-"vue@^2.7.0 || ^3.5.11", vue@^3.0.0, "vue@^3.0.0-0 || ^2.6.0", vue@^3.0.5, vue@^3.2.0, vue@^3.2.25, vue@^3.2.6, vue@^3.3.0, vue@^3.4.0, vue@^3.4.26, vue@>=3.0.0, vue@3.5.13:
+"vue@^2.7.0 || ^3.5.11", vue@^3.0.0, "vue@^3.0.0-0 || ^2.6.0", vue@^3.0.5, vue@^3.2.0, vue@^3.2.25, vue@^3.2.6, vue@^3.4.0, vue@^3.4.26, vue@^3.5.0, vue@>=3.0.0, vue@3.5.13:
   version "3.5.13"
   resolved "https://registry.npmjs.org/vue/-/vue-3.5.13.tgz"
   integrity sha512-wmeiSMxkZCSc+PM2w2VRsOYAZC8GdipNFRTsLSfodVqI9mbejKeXEGr8SckuLnrQPGe3oJN5c3K0vpoU9q/wCQ==
@@ -2315,10 +2315,10 @@ vue3-print-nb@0.1.4:
   dependencies:
     vue "^3.0.5"
 
-vuetify@^3.0.0, vuetify@3.7.6:
-  version "3.7.6"
-  resolved "https://registry.npmjs.org/vuetify/-/vuetify-3.7.6.tgz"
-  integrity sha512-lol0Va5HtMIqZfjccSD5DLv5v31R/asJXzc6s7ULy51PHr1DjXxWylZejhq0kVpMGW64MiV1FmA/p8eYQfOWfQ==
+vuetify@^3.0.0, vuetify@^3.8.0:
+  version "3.8.0"
+  resolved "https://registry.npmjs.org/vuetify/-/vuetify-3.8.0.tgz"
+  integrity sha512-ROC0Xq2G/25ZyUpQMhaynMyXZBJY1WbOGlqOB810yubp8hfY8RlrOw+mzXJonOq6jylCY32muQ9xiJF1JPTLVA==
 
 watchpack@^2.4.0:
   version "2.4.0"
@@ -2328,12 +2328,12 @@ watchpack@^2.4.0:
     glob-to-regexp "^0.4.1"
     graceful-fs "^4.1.2"
 
-webpack-plugin-vuetify@>=2.0.0, webpack-plugin-vuetify@3.0.3:
-  version "3.0.3"
-  resolved "https://registry.npmjs.org/webpack-plugin-vuetify/-/webpack-plugin-vuetify-3.0.3.tgz"
-  integrity sha512-pYTLcrufc00PzqHZhG/zLylGE07uC0hB6SisvSYuN6hyjKCf9rtdm2UaIG7kExfhZa3U1WKU7mYXFi1jDEc+vQ==
+webpack-plugin-vuetify@^3.1.1, webpack-plugin-vuetify@>=3.1.0:
+  version "3.1.1"
+  resolved "https://registry.npmjs.org/webpack-plugin-vuetify/-/webpack-plugin-vuetify-3.1.1.tgz"
+  integrity sha512-z3e/MtOfqrsKFUGlXe1MepgBkXvmnWDr7L1nFLpl2AHLHMKf1/sL6kjj1mMnEWQ57dKIJb7ejnQsLKK4jnKWow==
   dependencies:
-    "@vuetify/loader-shared" "^2.0.3"
+    "@vuetify/loader-shared" "^2.1.0"
     decache "^4.6.0"
     file-loader "^6.2.0"
     find-cache-dir "^5.0.0"
@@ -2400,9 +2400,9 @@ yocto-queue@^0.1.0:
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
 yocto-queue@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/yocto-queue/-/yocto-queue-1.0.0.tgz"
-  integrity sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==
+  version "1.2.1"
+  resolved "https://registry.npmjs.org/yocto-queue/-/yocto-queue-1.2.1.tgz"
+  integrity sha512-AyeEbWOu/TAXdxlV9wmGcR0+yh2j3vYPGOECcIj2S7MkrLyC7ne+oye2BKTItt0ii2PHk4cDy+95+LshzbXnGg==
 
 yup@1.6.1:
   version "1.6.1"
