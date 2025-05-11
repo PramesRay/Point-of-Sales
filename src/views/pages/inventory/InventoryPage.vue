@@ -8,6 +8,7 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import CurrentStockRequestSummary from './components/CurrentStockRequestSummary.vue';
 import CurrentStockRequestList from './components/CurrentStockRequestList.vue';
 import InventoryItems from './components/InventoryItems.vue'
+import StockMovement from './components/StockMovement.vue';
 
 // imported composables
 import { useBranchList } from '@/composables/useBranchList';
@@ -17,12 +18,17 @@ import { useInventoryItems } from "@/composables/useInventoryItems";
 // Data Loading
 const { branches, loading: lb } = useBranchList();
 const { summary, list: stockRequestlist, loading: lsr } = useStockRequests();
-const { init, data: dataInventory, categories, loading: li } = useInventoryItems();
+const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
+const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 
-onMounted(init)
+onMounted(() => {
+  initItems();
+  initStockMovement();
+});
 
 // Branch Selection
 import { computed, onMounted } from 'vue';
+import { useStockMovements } from '@/composables/useStockMovement';
 const route = useRoute();
 const router = useRouter();
 const branchOptions = computed(() => [
@@ -101,7 +107,12 @@ const selectedBranch = computed({
     <!-- Stock Movement -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="8">
-      <StockMovement />
+      <StockMovement
+        :data="dataStockMovement"
+        :categories="categories"
+        :branches="branches"
+        :loading="lsm"
+      />
     </v-col>
 
     <!-- -------------------------------------------------------------------- -->
