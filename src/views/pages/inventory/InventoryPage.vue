@@ -7,17 +7,22 @@ import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 // import CurrentFundRequest from '@/views/dashboards/default/components/CurrentFundRequest.vue';
 import CurrentStockRequestSummary from './components/CurrentStockRequestSummary.vue';
 import CurrentStockRequestList from './components/CurrentStockRequestList.vue';
+import InventoryItems from './components/InventoryItems.vue'
 
 // imported composables
 import { useBranchList } from '@/composables/useBranchList';
 import { useStockRequests } from "@/composables/useStockRequest";
+import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
 const { branches, loading: lb } = useBranchList();
 const { summary, list: stockRequestlist, loading: lsr } = useStockRequests();
+const { init, data: dataInventory, categories, loading: li } = useInventoryItems();
+
+onMounted(init)
 
 // Branch Selection
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 const route = useRoute();
 const router = useRouter();
 const branchOptions = computed(() => [
@@ -85,7 +90,11 @@ const selectedBranch = computed({
     <!-- Inventory Stock -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" md="4">
-      <InventoryStock />
+      <InventoryItems 
+        :data="dataInventory"
+        :categories="categories"
+        :loading="li"
+      />
     </v-col>
 
     <!-- -------------------------------------------------------------------- -->
@@ -103,3 +112,7 @@ const selectedBranch = computed({
     </v-col>
   </v-row>
 </template>
+
+function useInventoryItems() {
+  throw new Error('Function not implemented.');
+}

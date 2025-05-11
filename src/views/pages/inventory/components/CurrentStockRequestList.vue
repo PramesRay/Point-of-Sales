@@ -7,7 +7,6 @@ import { getTimeAgo } from "@/utils/helpers/time-ago";
   
 const selectedRequest = ref<StockRequestList | null>(null)
 const showOverlay = ref(false)
-const showOverlayMap = ref<Record<string, boolean>>({})
 
 function openDetail(request: StockRequestList) {
   selectedRequest.value = request
@@ -222,151 +221,148 @@ const listRequestTimeAgo = computed(() => {
   </v-card>
 
   <!-- Overlay Detail -->
-<v-overlay
-  v-model="showOverlay"
-  fullscreen
-  scroll-strategy="none"
-  class="d-flex justify-center align-start"
->
-  <v-card
-    :class="selectedRequest === latestRequest ? 'bg-lightsecondary' : 'bg-white'"
-    class="rounded-lg pa-5 mt-8"
-    style="width: 90vw; max-width: 90vw;"
+  <v-overlay
+    v-model="showOverlay"
+    fullscreen
+    scroll-strategy="none"
+    class="d-flex justify-center align-start"
   >
-    <!-- Close button -->
-    <div
-      style="position: absolute; top: 8px; right: 12px; font-size: 20px; cursor: pointer;"
-      @click="showOverlay = false"
+    <v-card
+      :class="selectedRequest === latestRequest ? 'bg-lightsecondary' : 'bg-white'"
+      class="rounded-lg pa-6 mt-8"
+      style="width: 90vw; max-width: 90vw;"
     >
-      ×
-    </div>
-    <div class="d-flex align-center">
-      <h4 class="text-h4 mt-1">Detil Permintaan Stok</h4>
-      <div v-if="props.branch !== 'all'" class="ml-auto">
-        <span class="text-subtitle-2 text-medium-emphasis">{{ selectedRequest?.branch.name }}</span>
+      <!-- Close button -->
+      <div
+        style="position: absolute; top: 8px; right: 12px; font-size: 20px; cursor: pointer;"
+        @click="showOverlay = false"
+      >
+        ×
       </div>
-    </div>
+      <div class="d-flex align-center">
+        <h4 class="text-h4 mt-1">Detil Permintaan Stok</h4>
+      </div>
 
-    <div class="py-5">
-      <span class="text-subtitle-2 text-medium-emphasis">
-        <span v-if="props.branch === 'all'">{{ selectedRequest?.branch.name }}</span>
-      </span>
-      <div class="d-inline-flex align-center justify-space-between w-100">
-        <div>
-          <h6 class="text-secondary text-h4 font-weight-bold">
-            {{ selectedRequest?.employee.name }}
-          </h6>
-          <span class="text-subtitle-2 text-medium-emphasis">
-            {{ selectedRequest?.items.length }} item
-          </span>
-        </div>
-        <div>
-          <div class="d-flex justify-end">  
-            <span 
-            class="text-subtitle-2 text-medium-emphasis"
-              :class="{
-                'text-warning': selectedRequest.status === 'Pending',
-                'text-success': selectedRequest.status === 'Disetujui',
-                'text-error': selectedRequest.status === 'Ditolak'
-              }"
-            >{{ selectedRequest?.status }}</span>
+      <div class="py-5">
+        <span class="text-subtitle-2 text-medium-emphasis">
+          <span v-if="props.branch === 'all'">{{ selectedRequest?.branch.name }}</span>
+        </span>
+        <div class="d-inline-flex align-center justify-space-between w-100">
+          <div>
+            <h6 class="text-secondary text-h4 font-weight-bold">
+              {{ selectedRequest?.employee.name }}
+            </h6>
+            <span class="text-subtitle-2 text-medium-emphasis">
+              {{ selectedRequest?.items.length }} item
+            </span>
           </div>
-          <h4 class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
-          <i v-if="selectedRequest.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
-            Diubah {{ getTimeAgo(selectedRequest.time.updatedAt) }}
-          </i>
+          <div>
+            <div class="d-flex justify-end">  
+              <span 
+              class="text-subtitle-2 text-medium-emphasis"
+                :class="{
+                  'text-warning': selectedRequest.status === 'Pending',
+                  'text-success': selectedRequest.status === 'Disetujui',
+                  'text-error': selectedRequest.status === 'Ditolak'
+                }"
+              >{{ selectedRequest?.status }}</span>
+            </div>
+            <h4 class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
+            <i v-if="selectedRequest.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
+              Diubah {{ getTimeAgo(selectedRequest.time.updatedAt) }}
+            </i>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-if="selectedRequest?.note" class="text-caption text-medium-emphasis mb-4">
-      Catatan: 
+      <div v-if="selectedRequest?.note" class="text-caption text-medium-emphasis mb-4">
+        Catatan: 
+        <div>
+          <i>{{ selectedRequest.note }}</i>
+        </div>
+      </div>
+
+      <v-divider class="mb-5"></v-divider>
+      
+      <!-- Daftar Item -->
+      <h4 class="text-subtitle-1 mb-2">Daftar Item:</h4>
+      
       <div>
-        <i>{{ selectedRequest.note }}</i>
-      </div>
-    </div>
-
-    <v-divider class="mb-5"></v-divider>
-    
-    <!-- Daftar Item -->
-    <h4 class="text-subtitle-1 mb-2">Daftar Item:</h4>
-    
-    <div>
-      <template v-for="(item, index) in approvalItems" :key="index">
-        <v-row align="center" class="py-2">
-          <v-col cols="8">
-            <div class="font-weight-medium">{{ item.name }}</div>
-            <div class="text-caption">Jumlah: {{ item.quantity }}</div>
-          </v-col>
-          <v-col cols="4" class="text-right">
-            <div v-if="(selectedRequest?.status === 'Pending' || selectedRequest?.status === 'Beberapa Disetujui') && item.approved === null">
-              <v-btn
-                icon  
-                variant="text"
-                class="align-center justify-center text-success"
-                @click="item.approved = true"
-              >
-              <v-icon>mdi-check</v-icon>
-              </v-btn>
-              <v-btn
-                icon  
-                variant="text"
-                class="align-center justify-center text-error"
-                @click="item.approved = false"
-                >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </div>
-            <div v-if="item.approved !== null">
-              <span 
-                class="text-subtitle-2 text-medium-emphasis"
-                  :class="{
-                    'text-success': item.approved === true,
-                    'text-error': item.approved === false
-                  }"
-                >{{ item.approved ? "Disetujui" : "Ditolak" }}</span>
+        <template v-for="(item, index) in approvalItems" :key="index">
+          <v-row align="center" class="py-2">
+            <v-col cols="8">
+              <div class="font-weight-medium">{{ item.name }}</div>
+              <div class="text-caption">Jumlah: {{ item.quantity }}</div>
+            </v-col>
+            <v-col cols="4" class="text-right">
+              <div v-if="(selectedRequest?.status === 'Pending' || selectedRequest?.status === 'Beberapa Disetujui') && item.approved === null">
                 <v-btn
-                  icon
+                  icon  
                   variant="text"
-                  class="text-inputBorder text-subtitle-2"
-                  @click="item.approved = null"
-                  >
-                  <v-icon>mdi-pencil</v-icon>
+                  class="align-center justify-center text-success"
+                  @click="item.approved = true"
+                >
+                <v-icon>mdi-check</v-icon>
                 </v-btn>
-            </div>
-          </v-col>
-        </v-row>
-      <v-divider v-if="index !== approvalItems?.length - 1" />
-    </template>
-    
-    <v-divider class="mb-5"></v-divider>
+                <v-btn
+                  icon  
+                  variant="text"
+                  class="align-center justify-center text-error"
+                  @click="item.approved = false"
+                  >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </div>
+              <div v-if="item.approved !== null">
+                <span 
+                  class="text-subtitle-2 text-medium-emphasis"
+                    :class="{
+                      'text-success': item.approved === true,
+                      'text-error': item.approved === false
+                    }"
+                  >{{ item.approved ? "Disetujui" : "Ditolak" }}</span>
+                  <v-btn
+                    icon
+                    variant="text"
+                    class="text-inputBorder text-subtitle-2"
+                    @click="item.approved = null"
+                    >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+              </div>
+            </v-col>
+          </v-row>
+        <v-divider v-if="index !== approvalItems?.length - 1" />
+      </template>
+      
+      <v-divider class="mb-5"></v-divider>
 
-    <!-- Input catatan tambahan -->
-    <div v-if="selectedRequest?.note" class="text-caption text-medium-emphasis">
-      Catatan: 
-    </div>
-    <v-textarea
-      v-model="approvalNote"
-      :rules="notesRules"
-      label="Opsional"
-      rows="2"
-      auto-grow
-      clear-icon="mdi-close-circle"
-      clearable
-      counter
-    />
-
-      <!-- Tombol proses -->
-      <div class="d-flex justify-end mt-1">
-        <v-btn 
-          color="primary" 
-          @click="prosesApproval"
-          
-        >
-          Proses Permintaan
-        </v-btn>
+      <!-- Input catatan tambahan -->
+      <div class="text-caption text-medium-emphasis">
+        Catatan: 
       </div>
-    </div>
-  </v-card>
-</v-overlay>
+      <v-textarea
+        v-model="approvalNote"
+        :rules="notesRules"
+        label="Opsional"
+        rows="2"
+        auto-grow
+        clear-icon="mdi-close-circle"
+        clearable
+        counter
+      />
+
+        <!-- Tombol proses -->
+        <div class="d-flex justify-end mt-1">
+          <v-btn 
+            color="primary" 
+            @click="prosesApproval"
+            
+          >
+            Proses Permintaan
+          </v-btn>
+        </div>
+      </div>
+    </v-card>
+  </v-overlay>
 </template>
