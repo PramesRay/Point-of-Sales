@@ -1,4 +1,5 @@
 export type Customer = {
-  name: string,
-  phone: string
+  id: string
+  name: string
+  phone?: string
 }

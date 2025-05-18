@@ -32,3 +32,8 @@ export interface StockMovement {
   time?: Date
   meta?: Meta
 }
+
+export interface Item {
+  id: string
+  name: string
+}

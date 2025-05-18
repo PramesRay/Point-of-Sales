@@ -4,7 +4,7 @@ import { useDisplay } from 'vuetify';
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
-// import CurrentFundRequest from '@/views/dashboards/default/components/CurrentFundRequest.vue';
+import CurrentFundRequest from './components/CurrentFundRequest.vue';
 import CurrentStockRequestSummary from './components/CurrentStockRequestSummary.vue';
 import CurrentStockRequestList from './components/CurrentStockRequestList.vue';
 import InventoryItems from './components/InventoryItems.vue'
@@ -20,6 +20,7 @@ const { branches, loading: lb } = useBranchList();
 const { summary, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
+const { requests, loading: lfr } = useFundRequests();
 
 onMounted(() => {
   initItems();
@@ -29,6 +30,7 @@ onMounted(() => {
 // Branch Selection
 import { computed, onMounted } from 'vue';
 import { useStockMovements } from '@/composables/useStockMovement';
+import { useFundRequests } from '@/composables/useFundRequest';
 const route = useRoute();
 const router = useRouter();
 const branchOptions = computed(() => [
@@ -119,7 +121,12 @@ const selectedBranch = computed({
     <!-- Current Fund Request -->
     <!-- -------------------------------------------------------------------- -->
     <v-col cols="12" lg="8">
-      <CurrentFundRequest />
+      <CurrentFundRequest
+        :data="requests"
+        :branch="selectedBranch"
+        :loading="lfr"
+        class="flex-grow-1"
+      />
     </v-col>
   </v-row>
 </template>

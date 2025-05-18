@@ -13,6 +13,10 @@ export const dummyStockMovements: StockMovement[] = [
     id: "cat-001",
     name: "Bahan Pokok"
   },
+  branch: {
+    id: "branch-1",
+    name: "Restoran 1"
+  },
   employee: {
     id: "emp-1",
     name: "Budi"
@@ -33,6 +37,10 @@ export const dummyStockMovements: StockMovement[] = [
   category: {
     id: "cat-003",
     name: "Pelengkap"
+  },
+  branch: {
+    id: "branch-2",
+    name: "Restoran 2"
   },
   employee: {
     id: "emp-1",
@@ -55,6 +63,10 @@ export const dummyStockMovements: StockMovement[] = [
     id: "cat-002",
     name: "Lauk"
   },
+  branch: {
+    id: "branch-3",
+    name: "Restoran 3"
+  },
   employee: {
     id: "emp-2",
     name: "Siti"
@@ -75,6 +87,10 @@ export const dummyStockMovements: StockMovement[] = [
   category: {
     id: "cat-003",
     name: "Pelengkap"
+  },
+  branch: {
+    id: "branch-4",
+    name: "Restoran 4"
   },
   employee: {
     id: "emp-2",
@@ -97,6 +113,10 @@ export const dummyStockMovements: StockMovement[] = [
     id: "cat-001",
     name: "Bahan Pokok"
   },
+  branch: {
+    id: "branch-1",
+    name: "Restoran 1"
+  },
   employee: {
     id: "emp-3",
     name: "Rudi"
@@ -117,6 +137,10 @@ export const dummyStockMovements: StockMovement[] = [
   category: {
     id: "cat-003",
     name: "Pelengkap"
+  },
+  branch: {
+    id: "branch-2",
+    name: "Restoran 2"
   },
   employee: {
     id: "emp-3",
@@ -139,6 +163,10 @@ export const dummyStockMovements: StockMovement[] = [
     id: "cat-003",
     name: "Pelengkap"
   },
+  branch: {
+    id: "branch-3",
+    name: "Restoran 3"
+  },
   employee: {
     id: "emp-3",
     name: "Rudi"
@@ -160,6 +188,10 @@ export const dummyStockMovements: StockMovement[] = [
     id: "cat-001",
     name: "Bahan Pokok"
   },
+  branch: {
+    id: "branch-4",
+    name: "Restoran 4"
+  },
   employee: {
     id: "emp-4",
     name: "Dewi"
@@ -180,6 +212,10 @@ export const dummyStockMovements: StockMovement[] = [
   category: {
     id: "cat-003",
     name: "Pelengkap"
+  },
+  branch: {
+    id: "branch-1",
+    name: "Restoran 1"
   },
   employee: {
     id: "emp-4",

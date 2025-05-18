@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { InventoryCategory, InventoryItem } from '@/types/inventoryItem';
 import { formatDate } from '@/utils/helpers/format-date';
 
@@ -11,61 +11,84 @@ const props = defineProps<{
 
 const selectedItem = ref<InventoryItem | null>(null)
 const showOverlay = ref(false)
-const adjustItem = ref({
-  name: '',
-  description: '',
+const formRef = ref()
+const isFormValid = ref(false)
+const isNewItem = ref(false)
+const adjustItem = ref<{
+  name: string | null;
+  description: string | null;
+  quantity: number | null;
+  categoryId: string | null;
+  expireDate: Date | null
+}>({
+  name: null,
+  description: null,
   quantity: 0,
-  categoryId: ''
+  categoryId: null,
+  expireDate: null
 })
+const datePickerMenu = ref(false)
 const adjustmentNotes = ref('')
-const dataEdited = ref<Boolean>(false)
+const selectedCtg = ref<string | null>('all')
+const showConfirmDialog = ref(false)
+const pendingOverlayClose = ref(false)
+
+const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
+const descRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
+const qtyRules = [
+  (v: string) => !!v || 'Jumlah tidak boleh kosong',
+  (v: string) => {
+    const numeric = Number(v.replace(/\D/g, ''))
+    return numeric >= 0 || 'Jumlah tidak boleh kurang dari 0'
+  }
+]
 
 function openDetail(request: InventoryItem) {
   selectedItem.value = request
+  isNewItem.value = false
   showOverlay.value = true
 }
 
-const isChanged = computed(() => {
-  if (!adjustItem.value || !selectedItem.value) return false
+function openAddNew() {
+  selectedItem.value = null
+  isNewItem.value = true
+  showOverlay.value = true
+  adjustItem.value = {
+    name: null,
+    description: null,
+    quantity: 0,
+    categoryId: null,
+    expireDate: null
+  }
+  adjustmentNotes.value = ''
+}
 
-  return (
-    adjustItem.value.name !== selectedItem.value.name ||
-    adjustItem.value.description !== selectedItem.value.description ||
-    adjustItem.value.quantity !== selectedItem.value.quantity ||
-    adjustItem.value.categoryId !== selectedItem.value.category?.id ||
-    adjustmentNotes.value.trim() !== ''
-  )
+const isChanged = computed(() => {
+  if (!adjustItem.value) return false
+  if (isNewItem.value) {
+    return (
+      adjustItem.value.name !== null ||
+      adjustItem.value.description !== null ||
+      adjustItem.value.quantity !== 0 ||
+      adjustItem.value.categoryId !== null ||
+      adjustItem.value.expireDate !== null ||
+      adjustmentNotes.value.trim() !== ''
+    )
+  } else {
+    if (!selectedItem.value) return false
+    return (
+      adjustItem.value.name !== selectedItem.value.name ||
+      adjustItem.value.description !== selectedItem.value.description ||
+      adjustItem.value.quantity !== selectedItem.value.quantity ||
+      adjustItem.value.categoryId !== selectedItem.value.category?.id ||
+      new Date(adjustItem.value.expireDate!).getTime() !== new Date(selectedItem.value.expireDate!).getTime() ||
+      adjustmentNotes.value.trim() !== ''
+    )
+  }
 })
 
-
-const nameRules = [(v: string) => !!v || 'Nama tidak boleh kosong']
-const descRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
-
-// Tambahkan computed category list (tanpa "all" untuk select)
 const editableCategories = computed(() => props.categories)
-
-const categories = computed(() => [
-  {id: 'all', name: 'Semua'},
-  ...props.categories
-])
-
-const selectedCtg = ref<string | null>('all')
-
-function processAdjustment() {
-  if (!adjustItem.value) return
-
-  const payload = {
-    id: selectedItem.value?.id,
-    adjustmentNotes: adjustmentNotes.value,
-    name: adjustItem.value.name,
-    description: adjustItem.value.description,
-    quantity: adjustItem.value.quantity,
-    categoryId: adjustItem.value.categoryId
-  }
-
-  console.log('Mengirim ke backend:', payload)
-  showOverlay.value = false
-}
+const categories = computed(() => [{ id: 'all', name: 'Semua' }, ...props.categories])
 
 const currentData = computed(() => {
   if (!props.data?.length || !selectedCtg.value) return []
@@ -73,7 +96,63 @@ const currentData = computed(() => {
   return props.data.filter(item => item.category?.id === selectedCtg.value)
 })
 
-// Watcher: Set default selected category setelah data categories tersedia
+function processAdjustment() {
+  if (!adjustItem.value) return
+
+  const payload = {
+    id: selectedItem.value?.id,
+    name: adjustItem.value.name,
+    description: adjustItem.value.description,
+    quantity: adjustItem.value.quantity,
+    categoryId: adjustItem.value.categoryId,
+    expiredDate: adjustItem.value.expireDate,
+    adjustmentNotes: adjustmentNotes.value
+  }
+
+  if (isNewItem.value) {
+    console.log('Membuat item baru:', payload)
+  } else {
+    console.log('Mengubah item:', payload)
+  }
+  
+  confirmCancel()
+}
+
+function submitForm() {
+  formRef.value?.validate().then((res: boolean) => {
+    if (!res) return
+    processAdjustment()
+  })
+}
+
+function confirmCancel() {
+  pendingOverlayClose.value = true
+  showConfirmDialog.value = false
+  showOverlay.value = false
+
+  if (selectedItem.value) {
+    adjustItem.value = {
+      ...selectedItem.value,
+      name: selectedItem.value.name ?? null,
+      description: selectedItem.value.description ?? null,
+      quantity: selectedItem.value.quantity ?? null,
+      categoryId: selectedItem.value.category?.id ?? null,
+      expireDate: selectedItem.value.expireDate ?? null
+    }
+  }
+  
+  if (isNewItem.value) {
+    adjustItem.value = {
+      name: null,
+      description: null,
+      quantity: 0,
+      categoryId: null,
+      expireDate: null
+    }
+  }
+  adjustmentNotes.value = ''
+}
+
 watch(
   () => props.categories,
   (newCategories) => {
@@ -81,62 +160,40 @@ watch(
       selectedCtg.value = newCategories[0].id
     }
   },
-  { immediate: true } // agar langsung jalan saat mounted juga
+  { immediate: true }
 )
 
-// saat overlay terbuka, clone item untuk keperluan adjustment
 watch(selectedItem, (val) => {
   if (val) {
     adjustItem.value = {
       ...val,
       categoryId: val.category?.id ?? null,
       name: val.name,
-      description: val.description,
-      quantity: val.quantity
+      description: val.description ?? null,
+      quantity: val.quantity ?? null,
+      expireDate: val.expireDate ?? null
     }
     adjustmentNotes.value = ''
   }
 })
-
-const showConfirmDialog = ref(false)
-const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
-
-function confirmCancel() {
-  showConfirmDialog.value = false
-  showOverlay.value = false
-  pendingOverlayClose.value = false
-
-  if (selectedItem.value) {
-    adjustItem.value = {
-      ...selectedItem.value,
-      categoryId: selectedItem.value.category?.id ?? null,
-    }
-    adjustmentNotes.value = ''
-  }
-}
 
 watch(showOverlay, (isOpen, wasOpen) => {
-  // Jika overlay akan ditutup dan ada perubahan, tampilkan dialog konfirmasi
-  if (!isOpen && wasOpen && isChanged.value) {
-    pendingOverlayClose.value = true
-    showConfirmDialog.value = true
-    showOverlay.value = true // cegah overlay langsung menutup
-    return
-  }
-
-  // Jika overlay benar-benar ditutup tanpa perubahan
-  if (!isOpen && selectedItem.value) {
-    adjustItem.value = {
-      ...selectedItem.value,
-      categoryId: selectedItem.value.category?.id ?? null,
-      name: selectedItem.value.name,
-      description: selectedItem.value.description,
-      quantity: selectedItem.value.quantity
+  // Ketika overlay akan ditutup (false) dari keadaan terbuka (true)
+  if (!isOpen && wasOpen) {
+    if (pendingOverlayClose.value) {
+      // Jika user sudah setuju menutup lewat konfirmasi
+      pendingOverlayClose.value = false
+      return
     }
-    adjustmentNotes.value = ''
+
+    // Jika ada perubahan tapi belum dikonfirmasi, batalkan penutupan overlay dan tampilkan dialog
+    if (isChanged.value) {
+      showOverlay.value = true
+      pendingOverlayClose.value = true
+      showConfirmDialog.value = true
+    }
   }
 })
-
 </script>
 
 <template>
@@ -144,10 +201,21 @@ watch(showOverlay, (isOpen, wasOpen) => {
     <v-card variant="outlined">
       <v-card-text>
         <v-row>
-          <v-col cols="12" sm="6">
+          <v-col cols="8" sm="6">
             <h4 class="text-h4 mt-1">Stok Gudang</h4>
           </v-col>
-          <v-col cols="12" sm="6">
+          <v-col cols="4" sm="3" class="mt-auto">
+            <v-btn
+              v-if="!loading"
+              color="primary"
+              @click="openAddNew"
+            >
+              Tambah
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12">
             <v-select
               color="primary"
               variant="outlined"
@@ -253,99 +321,119 @@ watch(showOverlay, (isOpen, wasOpen) => {
     scroll-strategy="none"
     class="d-flex justify-center align-start"
   >
-    <v-card
-      class="rounded-lg pa-6 mt-8 bg-white"
-      style="width: 90vw; max-width: 90vw;"
-    >
-      <!-- Close button -->
+    <v-card class="rounded-lg pa-6 mt-8 bg-white" style="width: 90vw; max-width: 90vw;">
       <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="showOverlay = false">
         <v-icon>mdi-close</v-icon>
       </v-btn>
       <div class="d-flex align-center">
-        <h4 class="text-h4 mt-1">Perubahan Jumlah Stok</h4>
+        <h4 class="text-h4 mt-1">{{ isNewItem ? 'Tambah Barang Baru' : 'Ubah Informasi Barang' }}</h4>
       </div>
 
-      <div class="py-3">
-        <span>
-          <v-select
-            v-model="adjustItem.categoryId"
-            :items="editableCategories"
-            item-title="name"
-            item-value="id"
-            label="Kategori"
-            variant="plain"
-            class="custom-select text-subtitle-2 text-medium-emphasis font-weight-medium w-50"
-            density="compact"
-            hide-details
-            single-line
-          />
-        </span>
-        <v-row class="d-inline-flex align-center justify-space-between w-100">
+      <v-divider class="my-3" />
+
+      <v-form ref="formRef" v-model="isFormValid">
+        <v-row>
+          <v-col cols="6">
+            <v-select
+              v-model="adjustItem.categoryId"
+              :items="editableCategories"
+              item-title="name"
+              item-value="id"
+              label="Kategori"
+              variant="underlined"
+              :rules="requieredRules"
+              prepend-icon="mdi-shape"
+              single-line
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-menu
+              v-model="datePickerMenu"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              min-width="auto"
+            >
+              <template #activator="{ props }">
+                <v-text-field
+                  :model-value="adjustItem.expireDate ? formatDate(new Date(adjustItem.expireDate)) : ''"
+                  v-bind="props"
+                  label="Tanggal Expired"
+                  variant="underlined"
+                  prepend-icon="mdi-calendar"
+                  :readonly="true"
+                  :rules="requieredRules"
+                  single-line
+                />
+              </template>
+              <v-date-picker
+                v-model="adjustItem.expireDate"
+                @update:model-value="datePickerMenu = false"
+              />
+            </v-menu>
+          </v-col>
+        </v-row>
+
+        <v-row>
           <v-col cols="6">
             <v-text-field
               v-model="adjustItem.name"
               label="Nama Barang"
-              :rules="nameRules"
-              class="text-secondary font-weight-bold"
-              variant="plain"
-              hide-details
+              :rules="requieredRules"
+              variant="underlined"
+              prepend-icon="mdi-form-textbox"
               single-line
             />
           </v-col>
-          <v-col cols="6" class="text-right">
-            <v-number-input 
+          <v-col cols="6">
+            <v-number-input
               control-variant="split"
               v-model.number="adjustItem.quantity"
               variant="plain"
-              hide-details
               :min="0"
               style="max-width: 140px"
-            ></v-number-input>
+            />
           </v-col>
         </v-row>
-        <div class="text-caption text-medium-emphasis">
-            Deskripsi: 
-            <div>
-              <v-text-field
-                v-model="adjustItem.description"
-                label="Deskripsi Barang"
-                :rules="descRules"
-                variant="plain"
-                class="font-italic"
-                hide-details
-                single-line
-            />
-            </div>
-          </div>
-      </div>
-      
-      <div>
-        <!-- Input catatan tambahan -->
-        <div class="text-caption text-medium-emphasis">
-          Catatan: 
-        </div>
-        <v-textarea
-          v-model="adjustmentNotes"
-          :rules="notesRules"
-          label="Opsional"
-          rows="2"
-          auto-grow
-          clear-icon="mdi-close"
-          clearable
-          counter
-        />
 
-        <!-- Tombol proses -->
-        <div class="d-flex justify-end mt-1">
-          <v-btn 
-            color="primary" 
-            @click="processAdjustment"
-            :disabled="!isChanged"
-          >
-            Simpan
-          </v-btn>
+        <v-row class="text-caption text-medium-emphasis">
+          <v-col>
+            <v-text-field
+              v-model="adjustItem.description"
+              label="Deskripsi Barang: "
+              :rules="descRules"
+              variant="underlined"
+              prepend-icon="mdi-text-box"
+            />
+          </v-col>
+        </v-row>
+
+        <div>
+          <div class="text-caption text-medium-emphasis">Catatan:</div>
+          <v-textarea
+            v-model="adjustmentNotes"
+            :rules="descRules"
+            label="Opsional"
+            rows="2"
+            auto-grow
+            clear-icon="mdi-close"
+            clearable
+            counter
+          />
+
+          <v-divider class="my-3" />
+
+          <div class="d-flex justify-end mt-1">
+            <v-btn
+              color="primary"
+              :disabled="!isFormValid || !isChanged"
+              @click="submitForm"
+            >
+              Simpan
+            </v-btn>
+          </div>
         </div>
-      </div>
+      </v-form>
     </v-card>
   </v-overlay>
   
@@ -357,7 +445,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="showConfirmDialog = false">Kembali</v-btn>
+        <v-btn variant="text" @click="showConfirmDialog = false, pendingOverlayClose = false">Kembali</v-btn>
         <v-btn variant="elevated" color="error" @click="confirmCancel">Ya, Tutup</v-btn>
       </v-card-actions>
     </v-card>

@@ -11,78 +11,167 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
+const branches = computed(() => props.branches)
+const editableCategories = computed(() => props.categories)
+const selectedCtg = ref<string | null>('all')
+const categories = computed(() => [
+  {id: 'all', name: 'Semua'},
+  ...props.categories
+])
+const selectedItem = ref<StockMovement | null>(null)
 const formRef = ref()
 const isFormValid = ref(false)
-
-
 const datePickerMenu = ref(false)
-const isManuallySaving = ref(false)
-
+const selectedBranch = ref<string>()
+const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
+const showConfirmDialog = ref(false)
 const showOverlay = ref(false)
-const createMovement = ref({
+const isManuallySaving = ref(false)
+const isNewItem = ref(false)
+const statusMovement = ref(['Keluar', 'Masuk'])
+
+// Payload
+const dataMovement = ref<{
+  name: string | null,
+  description: string | null,
+  quantity: number | 0,
+  unit: string | null,
+  categoryId: string | null,
+  time: Date | null,
+  branchId: string | null,
+  status: string | null
+}>({
   name: null,
   description: null,
   quantity: 0,
   unit: null,
   categoryId: null,
-  status: null,
   time: null,
-  branchId: null
+  branchId: null,
+  status: null
 })
 
-const branches = computed(() => props.branches)
-const selectedBranch = ref<string>()
-
+// Form Rules
 const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
 const qtyRules = [(v: number) => !!v || 'Jumlah tidak boleh kosong', (v: number) => v >= 0 || 'Jumlah tidak boleh kurang dari 0']
 const descRules = [((v: string) => v.length <= 100 || 'Maks 100 karakter'), ((v: string) => !!v || 'Deskripsi tidak boleh kosong')]
-
-const statusMovement = ['Masuk', 'Keluar']
-
-// Tambahkan computed category list (tanpa "all" untuk select)
-const editableCategories = computed(() => props.categories)
-
-const categories = computed(() => [
-  {id: 'all', name: 'Semua'},
-  ...props.categories
-])
-
-const selectedCtg = ref<string | null>('all')
-
-function processCreateMovement() {
-  if (!createMovement.value) return
-
-  const payload = {
-    name: createMovement.value.name,
-    description: createMovement.value.description,
-    quantity: createMovement.value.quantity,
-    unit: createMovement.value.unit,
-    categoryId: createMovement.value.categoryId,
-    status: createMovement.value.status,
-    time: createMovement.value.time ? new Date(createMovement.value.time).toISOString() : null,
-    branchId: createMovement.value.branchId
-  }
-
-  console.log('Mengirim ke backend:', payload)
-  isManuallySaving.value = true
-  showOverlay.value = false
-
-  confirmCancel()
-}
-
-function submitForm() {
-  formRef.value?.validate().then((res: boolean) => {
-    if (!res) return
-    processCreateMovement()
-  })
-}
-
 
 const currentData = computed(() => {
   if (!props.data?.length || !selectedCtg.value) return []
   if (selectedCtg.value === 'all') return props.data
   return props.data.filter(item => item.category?.id === selectedCtg.value)
 })
+
+const isChanged = computed(() => {
+  if (!dataMovement.value) return false
+
+  if (isNewItem.value) {
+    return (
+      dataMovement.value.name !== null ||
+      dataMovement.value.description !== null ||
+      dataMovement.value.branchId !== null ||
+      dataMovement.value.unit !== null ||
+      dataMovement.value.quantity !== 0 ||
+      dataMovement.value.categoryId !== null ||
+      dataMovement.value.status !== null ||
+      dataMovement.value.time !== null
+    )
+  } else {
+    if (!selectedItem.value) return false
+    return (
+      dataMovement.value.name !== selectedItem.value.name ||
+      dataMovement.value.description !== selectedItem.value.description ||
+      dataMovement.value.unit !== selectedItem.value.unit ||
+      dataMovement.value.branchId !== selectedItem.value.branch?.id ||
+      dataMovement.value.quantity !== selectedItem.value.quantity ||
+      dataMovement.value.categoryId !== selectedItem.value.category?.id ||
+      dataMovement.value.status !== selectedItem.value.status ||
+      new Date(dataMovement.value.time!).getTime() !== new Date(selectedItem.value.time!).getTime()
+    )
+  }
+})
+
+function openDetail(request: StockMovement) {
+  selectedItem.value = request
+  isNewItem.value = false
+  showOverlay.value = true
+}
+
+function openAddNew() {
+  dataMovement.value = {
+    name: null,
+    description: null,
+    quantity: 0,
+    unit: null,
+    categoryId: null,
+    time: null,
+    branchId: null,
+    status: null
+  }
+  selectedItem.value = null
+  isNewItem.value = true
+  showOverlay.value = true
+}
+
+function processdataMovement() {
+  if (!dataMovement.value) return
+
+  const payload = {
+    id: selectedItem.value?.id,
+    name: dataMovement.value.name,
+    description: dataMovement.value.description,
+    quantity: dataMovement.value.quantity,
+    unit: dataMovement.value.unit,
+    categoryId: dataMovement.value.categoryId,
+    time: dataMovement.value.time ? new Date(dataMovement.value.time).toISOString() : null,
+    branchId: dataMovement.value.branchId
+  }
+
+  if (isNewItem.value) {
+    console.log('Membuat item baru:', payload)
+  } else {
+    console.log('Mengubah item:', payload)
+  }
+  isManuallySaving.value = true
+  confirmCancel()
+}
+
+function submitForm() {
+  formRef.value?.validate().then((res: boolean) => {
+    if (!res) return
+    processdataMovement()
+  })
+}
+
+function confirmCancel() {
+  pendingOverlayClose.value = true
+  showConfirmDialog.value = false
+  showOverlay.value = false
+
+  if (selectedItem.value) {
+    dataMovement.value = {
+      name: selectedItem.value.name ?? null,
+      description: selectedItem.value.description ?? null,
+      quantity: selectedItem.value.quantity ?? 0,
+      unit: selectedItem.value.unit ?? null,
+      categoryId: selectedItem.value.category?.id ?? null,
+      time: selectedItem.value.time ?? null,
+      branchId: selectedItem.value.branch?.id ?? null,
+      status: selectedItem.value.status ?? null
+    }
+  } else {
+    dataMovement.value = {
+      name: null,
+      description: null,
+      quantity: 0,
+      unit: null,
+      categoryId: null,
+      time: null,
+      branchId: null,
+      status: null
+    }
+  }
+}
 
 // Watcher: Set default selected category setelah data categories tersedia
 watch(
@@ -95,56 +184,44 @@ watch(
   { immediate: true } // agar langsung jalan saat mounted juga
 )
 
-const showConfirmDialog = ref(false)
-const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
-
-function confirmCancel() {
-  showConfirmDialog.value = false
-  showOverlay.value = false
-  pendingOverlayClose.value = false
-
-  if (createMovement.value) {
-    createMovement.value = {
-      name: null,
-      description: null,
-      quantity: 0,
-      unit: null,
-      categoryId: null,
-      status: null,
-      time: null,
-      branchId: null
-    }
-  }
-}
-
-const isChanged = computed(() => {
-  if (!createMovement.value) return false
-
-  return (
-    createMovement.value.name !== null ||
-    createMovement.value.description !== null ||
-    createMovement.value.quantity !== 0 ||
-    createMovement.value.categoryId !== null ||
-    createMovement.value.status !== null ||
-    createMovement.value.time !== null
-  )
-})
-
 watch(showOverlay, (isOpen, wasOpen) => {
+  // Ketika overlay akan ditutup (false) dari keadaan terbuka (true)
   if (!isOpen && wasOpen) {
     if (isManuallySaving.value) {
+      // 👇 Reset dan biarkan overlay benar-benar tertutup
       isManuallySaving.value = false
-      return // tidak tampilkan confirm dialog
+      return
     }
+
+    if (pendingOverlayClose.value) {
+      // Jika user sudah setuju menutup lewat konfirmasi
+      pendingOverlayClose.value = false
+      return
+    }
+
+    // Jika ada perubahan tapi belum dikonfirmasi, batalkan penutupan overlay dan tampilkan dialog
     if (isChanged.value) {
+      showOverlay.value = true
       pendingOverlayClose.value = true
       showConfirmDialog.value = true
-      showOverlay.value = true
     }
   }
 })
 
-
+watch(selectedItem, (val) => {
+  if (val) {
+    dataMovement.value = {
+      name: val.name ?? null,
+      description: val.description ?? null,
+      quantity: val.quantity ?? 0,
+      unit: val.unit ?? null,
+      categoryId: val.category?.id ?? null,
+      time: val.time ?? null,
+      branchId: val.branch?.id ?? null,
+      status: val.status ?? null
+    }
+  }
+})
 </script>
 
 <template>
@@ -155,10 +232,11 @@ watch(showOverlay, (isOpen, wasOpen) => {
           <v-col cols="6" sm="3">
             <h4 class="text-h4 mt-1">Perpindahan Stok</h4>
           </v-col>
-          <v-col cols="4" sm="3">
+          <v-col cols="4" sm="3" >
             <v-btn
+              v-if="!loading"
               color="primary"
-              @click="showOverlay = true"
+              @click="openAddNew"
             >
               Tambah
             </v-btn>
@@ -195,6 +273,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 :value="item"
                 color="secondary"
                 rounded="sm"
+                @click="openDetail(item)"
               >
                 <span class="text-subtitle-2 text-medium-emphasis">
                   <i> {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }} </i>
@@ -270,7 +349,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
           <v-icon>mdi-close</v-icon>
         </v-btn>
         <div class="d-flex align-center">
-          <h4 class="text-h4 mt-1">Buat Perpindahan Stok</h4>
+          <h4 class="text-h4 mt-1">{{ isNewItem ? 'Buat Perpindahan Stok' : 'Ubah Perpindahan Stok'}}</h4>
         </div>
         <v-divider class="my-3" />
 
@@ -279,7 +358,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             <v-col cols="6">
               <v-select
                 variant="underlined"
-                v-model="createMovement.categoryId"
+                v-model="dataMovement.categoryId"
                 :items="editableCategories"
                 :rules="requieredRules"
                 item-title="name"
@@ -298,7 +377,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
               >
                 <template #activator="{ props }">
                   <v-text-field
-                    :model-value="createMovement.time ? formatDate(new Date(createMovement.time)) : ''"
+                    :model-value="dataMovement.time ? formatDate(new Date(dataMovement.time)) : ''"
                     v-bind="props"
                     label="Tanggal Perpindahan"
                     variant="underlined"
@@ -308,7 +387,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                   />
                 </template>
                 <v-date-picker
-                  v-model="createMovement.time"
+                  v-model="dataMovement.time"
                   @update:model-value="datePickerMenu = false"
                 />
               </v-menu>
@@ -318,23 +397,23 @@ watch(showOverlay, (isOpen, wasOpen) => {
             <v-col cols="6">
               <v-select
                 variant="underlined"
-                v-model="createMovement.status"
+                v-model="dataMovement.status"
                 :items="statusMovement"
                 :rules="requieredRules"
                 label="Kategori"
-                prepend-icon="mdi-home"
+                prepend-icon="mdi-format-vertical-align-center"
               />
             </v-col>
             <v-col cols="6">
               <v-select
                 variant="underlined"
-                v-model="selectedBranch"
+                v-model="dataMovement.branchId"
                 label="Cabang"
                 :items="branches"
                 :rules="requieredRules"
                 item-title="name"
                 item-value="id"
-                prepend-icon="mdi-format-vertical-align-center"
+                prepend-icon="mdi-home"
               />
             </v-col>
           </v-row>
@@ -343,7 +422,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             <v-col cols="12">
               <v-text-field
                 variant="underlined"
-                v-model="createMovement.name"
+                v-model="dataMovement.name"
                 label="Nama Barang"
                 :rules="requieredRules"
                 prepend-icon="mdi-form-textbox"
@@ -354,7 +433,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             <v-col cols="6">
               <v-text-field
                 variant="underlined"
-                v-model="createMovement.unit"
+                v-model="dataMovement.unit"
                 label="Satuan"
                 :rules="requieredRules"
                 prepend-icon="mdi-scale-balance"
@@ -363,7 +442,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             <v-col cols="6" class="text-right">
               <v-number-input 
                 control-variant="split"
-                v-model.number="createMovement.quantity"
+                v-model.number="dataMovement.quantity"
                 variant="plain"
                 :min="0"
                 :rules="qtyRules"
@@ -375,7 +454,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
           <div >
             <v-textarea
               variant="underlined"
-              v-model="createMovement.description"
+              v-model="dataMovement.description"
               :rules="descRules"
               label="Deskripsi"
               rows="2"
@@ -412,7 +491,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="showConfirmDialog = false">Kembali</v-btn>
+        <v-btn variant="text" @click="showConfirmDialog = false, pendingOverlayClose = false">Kembali</v-btn>
         <v-btn variant="elevated" color="error" @click="confirmCancel">Ya, Tutup</v-btn>
       </v-card-actions>
     </v-card>
