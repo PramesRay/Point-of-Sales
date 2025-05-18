@@ -1,6 +1,6 @@
 import api from '../api';
 import dummyTotalOrder from './dummyTotalOrder';
-import type { TotalOrder } from '@/types/totalOrder'
+import type { TotalOrder } from '@/types/order'
 
 /**
  * Fetch timesheet data from backend.

@@ -1,4 +1,4 @@
-import type { TotalOrder } from '@/types/totalOrder'
+import type { TotalOrder } from '@/types/order'
 
 const dummyTotalOrder: Record<string, TotalOrder> = {
   "branch-1": {
