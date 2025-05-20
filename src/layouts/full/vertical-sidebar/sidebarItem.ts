@@ -11,7 +11,8 @@ import {
   HelpIcon,
   ReportMoneyIcon,
   ZoomMoneyIcon,
-  BuildingWarehouseIcon
+  BuildingWarehouseIcon,
+  ToolsKitchenIcon
 } from 'vue-tabler-icons';
 
 export interface menu {
@@ -53,6 +54,11 @@ const sidebarItem: menu[] = [
     title: 'Inventory',
     icon: BuildingWarehouseIcon,
     to: '/page/inventory'
+  },
+  {
+    title: 'Kitchen',
+    icon: ToolsKitchenIcon,
+    to: '/page/kitchen'
   },
   { divider: true },
   { header: 'Other Pages' },

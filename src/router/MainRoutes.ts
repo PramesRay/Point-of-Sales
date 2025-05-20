@@ -32,6 +32,11 @@ const MainRoutes = {
       component: () => import('@/views/pages/inventory/InventoryPage.vue')
     },
     {
+      name: 'Kitchen',
+      path: '/page/kitchen',
+      component: () => import('@/views/pages/kitchen/KitchenPage.vue')
+    },
+    {
       name: 'Starter',
       path: '/starter',
       component: () => import('@/views/StarterPage.vue')
