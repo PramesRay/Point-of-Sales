@@ -1,7 +1,6 @@
 import type { Branch } from "./branch"
 import type { Customer } from "./customer"
 import type { Employee } from "./employee"
-import type { Item } from "./inventoryItem"
 import type { Meta } from "./meta"
 
 export type TotalOrder = {
@@ -18,17 +17,16 @@ export interface Order {
   customer: Customer 
   is_take_away: boolean
   items: OrderItem[]
-  status: 'Pending' | 'Diproses' | 'Siap Saji' | 'Selesai' | 'Batal' 
+  status: 'Pending' | 'Diproses' | 'Selesai' | 'Batal' 
   amount: number
-  payment_status: 'Pending' | 'Selesai' | 'Batal'
+  payment_status: 'Pending' | 'Selesai' | 'Gagal'
   meta: Meta
 } 
 
 export interface OrderItem {
   id: string
-  menu: Item 
   name: string
   quantity: number
+  price: number
   note?: string
-  meta?: Meta 
 }

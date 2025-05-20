@@ -35,7 +35,7 @@ const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup ov
 const showConfirmDialog = ref(false)
 const currencyValue = ref('');
 const user = JSON.parse(localStorage.getItem('user') || '{}')
-const branches = ref<Branch[]>(user?.branches ?? [])
+const branches = ref<Branch[]>(user?.branches ?? [{ id: 'branch-1', name: 'Restoran 1' }])
 
 
 // Form Rules

@@ -12,6 +12,7 @@ export interface InventoryItem {
   id: string
   name: string
   description?: string
+  unit?: string
   category?: InventoryCategory
   quantity?: number
   threshold?: number
@@ -31,9 +32,4 @@ export interface StockMovement {
   status?: 'Masuk' | 'Keluar' 
   time?: Date
   meta?: Meta
-}
-
-export interface Item {
-  id: string
-  name: string
 }

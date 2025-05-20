@@ -1,0 +1,54 @@
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue';
+import type { Order } from '@/types/order';
+
+const props = defineProps<{
+  data: Order[];
+  branch: string;
+  loading: boolean;
+}>();
+
+// Computed untuk filter transaksi berdasarkan branch
+const filteredData = computed(() => {
+  if (props.branch === 'all') {
+    return props.data;
+  }
+  return props.data.filter(
+    (tx) => tx.branch.id === props.branch
+  );
+});
+
+const branchName = computed(() => props.branch === 'all' ? 'Semua Cabang' : filteredData.value[0]?.branch.name || '-');
+const currentOrder = computed(() => filteredData.value.length || 0);
+</script>
+
+<template>
+  <v-card elevation="0" class="bg-primary overflow-hidden bubble-shape bubble-primary-shape">
+    <v-card-text>
+      <div class="d-flex align-start mb-3">
+        <v-btn icon rounded="sm" color="darkprimary" variant="flat">
+          <ShoppingCartIcon stroke-width="1.5" width="20" />
+        </v-btn>
+        <div class="mx-3 my-auto">
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
+        </div>
+      </div>
+      <v-row v-if="!props.loading">
+        <v-col cols="12">
+          <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
+            <div class="d-flex align-baseline">
+              <span class="mx-1"> {{ currentOrder }} </span>
+              <span class="text-body-2"> Aktif </span>
+            </div>
+          </h2>
+          <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan</span>
+        </v-col>
+      </v-row>
+      <v-row v-if="props.loading">
+        <v-col cols="12">
+          <v-skeleton-loader type="paragraph" color="transparant bg-primary"></v-skeleton-loader>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card> 
+</template>

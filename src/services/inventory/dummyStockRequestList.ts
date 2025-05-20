@@ -15,6 +15,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Nasi Uduk",
         quantity: 20,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -39,6 +40,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Ayam Goreng",
         quantity: 30,
+        unit: "pcs"
       },
       status: "Pending"
     },
@@ -47,6 +49,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Bebek Goreng",
         quantity: 30,
+        unit: "pcs"
       },
       status: "Pending"
     }
@@ -72,6 +75,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Kertas Struk",
         quantity: 5,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -96,6 +100,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Minyak Goreng",
         quantity: 10,
+        unit: "pcs"
       },
       status: "Ditolak"
     }],
@@ -120,6 +125,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Lele Segar",
         quantity: 15,
+        unit: "pcs"
       },
       status: "Pending"
     }],
@@ -145,6 +151,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Nasi Putih",
         quantity: 25,
+        unit: "pcs"
       },
       status: "Pending"
     }],
@@ -169,6 +176,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Ayam Bakar",
         quantity: 20,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -193,6 +201,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Plastik Takeaway",
         quantity: 100,
+        unit: "pcs"
       },
       status: "Ditolak"
     }],
@@ -217,6 +226,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Tahu Goreng",
         quantity: 40,
+        unit: "pcs"
       },
       status: "Pending"
     }],
@@ -241,6 +251,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Alat Panggang",
         quantity: 1,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -266,6 +277,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Nasi Uduk",
         quantity: 30,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -290,6 +302,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Lele Goreng",
         quantity: 20,
+        unit: "pcs"
       },
       status: "Pending"
     }],
@@ -314,6 +327,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Kertas Struk",
         quantity: 10,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -338,6 +352,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Minyak Goreng",
         quantity: 15,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -362,6 +377,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Ayam Suwir",
         quantity: 25,
+        unit: "pcs"
       },
       status: "Ditolak"
     }],
@@ -387,6 +403,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Tempe Goreng",
         quantity: 50,
+        unit: "pcs"
       },
       status: "Pending"
     }],
@@ -411,6 +428,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Nasi Putih",
         quantity: 35,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -435,6 +453,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Sambal",
         quantity: 10,
+        unit: "pcs"
       },
       status: "Ditolak"
     }],
@@ -459,6 +478,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Gas Elpiji",
         quantity: 3,
+        unit: "pcs"
       },
       status: "Disetujui"
     }],
@@ -483,6 +503,7 @@ const dummyStockRequestList: StockRequestList[] = [
         id: "",
         name: "Sendok Plastik",
         quantity: 200,
+        unit: "pcs"
       },
       status: "Pending"
     }],

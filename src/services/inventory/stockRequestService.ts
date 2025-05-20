@@ -30,3 +30,13 @@ export async function fetchStockRequestList(branchId: string): Promise<StockRequ
     return dummyStockRequestList.filter(tx => tx.branch.id === branchId);
   }  
 }
+
+export async function createStockRequest(payload: any): Promise<StockRequestList> {
+  try {
+    const res = await api.post<StockRequestList>(`/inventory/stock-requests`, payload);
+    return res.data;
+  } catch (error) {
+    console.warn(`Create stock request failed, using dummy.`, error);
+    throw error
+  }  
+}

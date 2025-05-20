@@ -130,7 +130,3 @@ const selectedBranch = computed({
     </v-col>
   </v-row>
 </template>
-
-function useInventoryItems() {
-  throw new Error('Function not implemented.');
-}

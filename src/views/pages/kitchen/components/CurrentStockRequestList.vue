@@ -2,8 +2,16 @@
 import type { StockRequestList } from '@/types/inventory';
 import { formatRupiah } from '@/utils/helpers/currency'
 import { formatDate } from "@/utils/helpers/format-date";
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { getTimeAgo } from "@/utils/helpers/time-ago";
+import type { Branch } from '@/types/branch';
+import { useInventoryItems } from "@/composables/useInventoryItems";
+const { init: initItems, data: inventoryItem, categories, loading: li } = useInventoryItems();
+
+
+const emit = defineEmits<{
+  (e: 'create-request', payload: any): void
+}>();
 
 const props = defineProps<{
   data: StockRequestList[];
@@ -21,6 +29,14 @@ const filteredData = computed(() => {
   );
 });
 
+const filteredInventoryItem = computed(() => {
+  if (!inventoryItem.value) {
+    return []
+  } else {
+    return inventoryItem.value.filter((item) => item.quantity! > item.threshold!)
+  }
+})
+
 // Ambil permintaan terbaru
 const latestRequest = computed(() => filteredData.value[0]);
 
@@ -36,20 +52,60 @@ const pendingOverlayClose = ref(false)
 const isManuallySaving = ref(false)
 const approvalItems = ref<any[]>([])
 const approvalNote = ref('')
+const showAddOverlay = ref(false)
+const user = JSON.parse(localStorage.getItem('user') || '{}')
+const branches = ref<Branch[]>(user?.branches ?? [{ id: 'branch-1', name: 'Restoran 1' }])
 const notesRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
 
-const isChanged = computed(() => {
-  if (!selectedRequest.value) return false
-
-  return (
-    approvalItems.value.some(item => item.approved !== null) ||
-    approvalNote.value.trim() !== '' 
-  )
+const newRequest = ref<{
+  branchId: string | null,
+  employee: string | null,
+  items: any[],
+  note: string | null,
+}>({
+  branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1', // ambil dari storage
+  employee: user.employee ?? 'Dummy Employee', // ambil dari storage
+  items: [],
+  note: '',
 })
 
-const isDisabled = computed(() => {
-  if (!selectedRequest.value) return true
-  return !approvalItems.value.every(item => item.approved !== null)
+function openAddRequest() {
+  showAddOverlay.value = true
+  initItems();
+  // Inisialisasi data form kosong/standar
+  newRequest.value = {
+    branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1', // ambil dari storage
+    employee: user.employee ?? 'Dummy Employee', // ambil dari storage
+    items: [],
+    note: '',
+  }
+}
+
+function addItem() {
+  if (!newRequest.value.items) newRequest.value.items = []
+  newRequest.value.items.push({
+    item: {
+      name: '',
+      quantity: 1,
+      unit: ''
+    },
+    status: 'Pending'
+  })
+}
+
+function removeItem(index: number) {
+  if (newRequest.value.items && newRequest.value.items.length > index) {
+    newRequest.value.items.splice(index, 1)
+  }
+}
+
+const isChanged = computed(() => {
+  if (!newRequest.value) return false
+
+  return (
+    newRequest.value.branchId !== branches.value[0].id ||
+    newRequest.value.items.length > 0
+  )
 })
 
 function openDetail(request: StockRequestList) {
@@ -61,6 +117,7 @@ function confirmCancel() {
   pendingOverlayClose.value = true
   showConfirmDialog.value = false
   showOverlay.value = false
+  showAddOverlay.value = false
 
   if (selectedRequest.value) {
     selectedRequest.value = null
@@ -70,18 +127,16 @@ function confirmCancel() {
 }
 
 // fungsi simulasi kirim data ke backend
-function prosesApproval() {
+function createRequest() {
   const payload = {
-    requestId: selectedRequest.value?.id,
-    approvalNote: approvalNote.value,
-    items: approvalItems.value.map(item => ({
-      id: item.id,
-      status: item.approved ? 'Diterima' : 'Ditolak'
-    }))
+    branchId: newRequest.value.branchId,
+    employee: newRequest.value.employee,
+    items: newRequest.value.items,
+    note: newRequest.value.note
   }
 
-  console.log('Mengirim ke backend:', payload)
-  // TODO: kirim via API seperti axios.post('/api/approve-request', payload)
+  emit('create-request', payload)
+  
   isManuallySaving.value = true
   confirmCancel()
 }
@@ -89,7 +144,7 @@ function prosesApproval() {
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    prosesApproval()
+    createRequest()
   })
 }
 
@@ -104,11 +159,11 @@ watch(selectedRequest, (val) => {
   } 
 })
 
-watch(showOverlay, (isOpen, wasOpen) => {
+watch(showAddOverlay, (isOpen, wasOpen) => {
   // Ketika overlay akan ditutup (false) dari keadaan terbuka (true)
   if (!isOpen && wasOpen) {
     if (isManuallySaving.value) {
-      // 👇 Reset dan biarkan overlay benar-benar tertutup
+      // Reset dan biarkan overlay benar-benar tertutup
       isManuallySaving.value = false
       return
     }
@@ -121,7 +176,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
 
     // Jika ada perubahan tapi belum dikonfirmasi, batalkan penutupan overlay dan tampilkan dialog
     if (isChanged.value) {
-      showOverlay.value = true
+      showAddOverlay.value = true
       pendingOverlayClose.value = true
       showConfirmDialog.value = true
     } 
@@ -133,13 +188,25 @@ watch(showOverlay, (isOpen, wasOpen) => {
   <v-card elevation="0">
     <v-card variant="outlined">
       <v-card-text>
-        <div>
-          <div class="d-flex align-center">
-            <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
-            <div v-if="props.branch !== 'all'" class="ml-auto">
-              <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</span>
+          <v-row >
+          <v-col cols="8">
+            <div class="d-flex align-center">
+              <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
             </div>
-          </div>
+            <div v-if="props.branch !== 'all'">
+              <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
+            </div> 
+          </v-col>
+          <v-col cols="4" sm="3" class="mt-auto">
+            <v-btn
+              v-if="!loading"
+              color="primary"
+              @click="openAddRequest"
+            >
+              Tambah
+            </v-btn>
+          </v-col>
+        </v-row>
 
           <div v-if="!props.loading">
             <v-card class="bg-lightsecondary mt-5"
@@ -165,7 +232,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
                     <h4 class="text-h4 text-right">{{ getTimeAgo(latestRequest.time.createdAt) }}</h4>
-                    <i v-if="latestRequest.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
+                    <i v-if="latestRequest.time.updatedAt !== null" class="text-subtitle-2 text-disabled">
                       Diubah {{ getTimeAgo(latestRequest.time.updatedAt) }}
                     </i>
                   </div>
@@ -195,7 +262,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listRequest.time.createdAt) }}</div>
-                        <i v-if="listRequest.time.updatedAt" class="text-subtitle-2 text-medium-emphasis">
+                        <i v-if="listRequest.time.updatedAt" class="text-subtitle-2 text-disabled">
                           Diubah {{ getTimeAgo(listRequest.time.updatedAt) }}
                         </i>
                       </div>
@@ -222,7 +289,6 @@ watch(showOverlay, (isOpen, wasOpen) => {
               :loading="props.loading"
             ></v-skeleton-loader>
           </div>
-        </div>
       </v-card-text>
     </v-card>
   </v-card>
@@ -240,17 +306,18 @@ watch(showOverlay, (isOpen, wasOpen) => {
       style="width: 90vw; max-width: 90vw;"
     >
       <!-- Close button -->
-      <div
-        style="position: absolute; top: 8px; right: 12px; font-size: 20px; cursor: pointer;"
+      <v-btn
+        icon
+        variant="text"
+        style="position:absolute; top:8px; right:12px;" 
         @click="showOverlay = false"
       >
-        ×
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+      <div >
+        <h4 class="text-h4">Detil Permintaan Stok</h4>
+        <i class="text-subtitle-2 text-disabled">Request Id: {{ selectedRequest?.id }}</i>
       </div>
-      <div class="d-flex align-center">
-        <h4 class="text-h4 mt-1">Detil Permintaan Stok</h4>
-      </div>
-
-      <v-form ref="formRef" v-model="isFormValid">
         <div class="py-5">
           <span class="text-subtitle-2 text-medium-emphasis">
             <span v-if="props.branch === 'all'">{{ selectedRequest?.branch.name }}</span>
@@ -276,7 +343,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 >{{ selectedRequest?.status }}</span>
               </div>
               <h4 v-if="selectedRequest?.time.createdAt" class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
-              <i v-if="selectedRequest?.time.updatedAt" class="text-subtitle-2 text-medium-emphasis">
+              <i v-if="selectedRequest?.time.updatedAt" class="text-subtitle-2 text-disabled">
                 Diubah {{ getTimeAgo(selectedRequest?.time.updatedAt) }}
               </i>
             </div>
@@ -297,84 +364,163 @@ watch(showOverlay, (isOpen, wasOpen) => {
         
         <div>
           <template v-for="(item, index) in approvalItems" :key="index">
+            <v-divider v-if="index > 0" class="my-2"></v-divider>
             <v-row align="center" class="py-2">
               <v-col cols="7">
                 <div class="font-weight-medium">{{ item.name }}</div>
                 <div class="text-caption">Jumlah: {{ item.quantity }} {{ item.unit }}</div>
               </v-col>
               <v-col cols="5" class="text-right">
-                <div v-if="(selectedRequest?.status === 'Pending' || selectedRequest?.status === 'Beberapa Disetujui') && item.approved === null">
-                  <v-btn
-                    icon  
-                    variant="text"
-                    class="align-center justify-center text-success"
-                    @click="item.approved = true"
-                  >
-                    <v-icon>mdi-check</v-icon>
-                  </v-btn>
-                  <v-btn
-                    icon  
-                    variant="text"
-                    class="align-center justify-center text-error"
-                    @click="item.approved = false"
-                    >
-                      <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </div>
-                <div v-if="item.approved !== null">
-                  <span 
-                    class="text-subtitle-2 text-medium-emphasis"
-                    :class="{
-                      'text-success': item.approved === true,
-                      'text-error': item.approved === false
-                    }"
-                  >{{ item.approved ? "Disetujui" : "Ditolak" }}</span>
-                    <v-btn
-                      icon
-                      variant="text"
-                      class="text-inputBorder text-subtitle-2"
-                      @click="item.approved = null"
-                      >
-                      <v-icon>mdi-pencil</v-icon>
-                    </v-btn>
-                </div>
+                <span class="text-subtitle-2 text-medium-emphasis">
+                  {{ item.status }}
+                </span>
               </v-col>
             </v-row>
-            <v-divider v-if="index !== approvalItems?.length - 1" />
           </template>
-          
         </div>
-        <!-- Input catatan tambahan -->
-        <div v-if="selectedRequest?.status === 'Pending'">
-          <v-divider class="mb-5"></v-divider>
-          <div class="text-caption text-medium-emphasis">
-            Catatan: 
-          </div>
-          <v-textarea
-            v-model="approvalNote"
-            :rules="notesRules"
-            label="Opsional"
-            rows="2"
-            auto-grow
-            clear-icon="mdi-close-circle"
-            clearable
-            counter
-          />
+    </v-card>
+  </v-overlay>
 
-          <!-- Tombol proses -->
-          <div class="d-flex justify-end mt-1">
-            <v-btn 
-              color="primary" 
-              @click="submitForm"
-              :disabled="isDisabled"
-            >
-              Proses Permintaan
-            </v-btn>
-          </div>
+  <!-- Overlay Input -->
+  <v-overlay 
+    v-model="showAddOverlay"
+    fullscreen
+    scroll-strategy="none"
+    class="d-flex justify-center align-start"
+  >
+    <v-card 
+      class="rounded-lg pa-6 mt-8 bg-white" 
+      style="width: 90vw; max-width: 90vw; max-height: 90vh;"
+    >
+      <v-btn
+        icon
+        variant="text"
+        style="position:absolute; top:8px; right:12px;" 
+        @click="showAddOverlay = false"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+      
+      <h4 class="text-h4">Tambah Permintaan Stok</h4>
+      <v-divider class="my-4"></v-divider>
+      <v-form ref="formRef" v-model="isFormValid">
+        <v-row>
+          <v-col cols="6">
+            <v-text-field
+              variant="underlined"
+              v-model="newRequest.employee"
+              label="Pegawai"
+              :rules="[v => !!v || 'Pegawai tidak terdeteksi']"
+              prepend-icon="mdi-human-male"
+              disabled
+              hide-details
+            />
+          </v-col>
+          <v-col cols="6">
+            <v-select
+              variant="underlined"
+              v-model="newRequest.branchId"
+              label="Cabang"
+              :items="branches"
+              :rules="[v => !!v || 'Cabang tidak terdeteksi']"
+              item-title="name"
+              item-value="id"
+              prepend-icon="mdi-home"
+              :disabled="branches.length === 1"
+              hide-details
+            />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <div class="text-caption text-medium-emphasis">
+              Catatan: 
+            </div>
+            <v-textarea
+              v-model="newRequest.note"
+              :rules="notesRules"
+              label="Opsional"
+              rows="2"
+              auto-grow
+              clear-icon="mdi-close-circle"
+              clearable
+              counter
+            />
+          </v-col>
+        </v-row>
+
+        <h4 class="text-h5 my-2">Daftar Item:</h4>
+        <perfect-scrollbar class="scrollable" style="max-height: 40vh; overflow-y: scroll; overflow-x: hidden;">
+          <v-row
+            v-for="(item, index) in newRequest.items"
+            :key="index"
+            class="align-center"
+            no-gutters
+          >
+            <v-divider v-if="index > 0" class="my-2"></v-divider>
+            <v-col cols="10">
+              <v-autocomplete
+                v-model="item.item.name"
+                :items="filteredInventoryItem.map(item => ({ title: item.name, value: item.id }))"
+                :loading="li"
+                variant="underlined"
+                label="Nama Item"
+                :rules="[v => !!v || 'Nama item wajib diisi']"
+              />
+            </v-col>
+            <v-col cols="2" class="text-center">
+              <v-btn icon variant="text" color="error" @click="removeItem(index)" title="Hapus Item">
+                <v-icon >mdi-delete</v-icon>
+              </v-btn>
+            </v-col>
+            <v-col cols="6" class="pe-2">
+              <v-number-input
+                v-model.number="item.item.quantity"
+                control-variant="split"
+                variant="underlined"
+                label="Jumlah"
+                :rules="[v => v > 0 || 'Jumlah harus lebih dari 0']"
+                :min="1"
+              />
+            </v-col>
+            <v-col cols="6" class="ps-3">
+              <v-autocomplete
+                v-model="item.item.unit"
+                variant="underlined"
+                :items="['pcs', 'kg', 'ltr', 'box']"
+                label="Satuan"
+                :rules="[v => !!v || 'Satuan wajib diisi']"
+              />
+            </v-col>
+          </v-row>
+        </perfect-scrollbar>
+
+        <v-btn
+          class="mt-2"
+          variant="outlined"
+          color="primary"
+          @click="addItem"
+        >
+          Tambah Item
+        </v-btn>
+
+        <v-divider class="my-4"></v-divider>
+
+        <!-- Tombol proses -->
+        <div class="d-flex justify-end mt-1">
+          <v-btn 
+            color="primary" 
+            @click="submitForm"
+            :disabled="!isFormValid || !isChanged"
+            :loading="props.loading"
+          >
+            Proses Permintaan
+          </v-btn>
         </div>
       </v-form>
     </v-card>
   </v-overlay>
+   
 
   <v-dialog v-model="showConfirmDialog" persistent max-width="400">
     <v-card class="pa-3">
