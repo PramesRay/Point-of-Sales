@@ -24,7 +24,7 @@
     "axios-mock-adapter": "2.1.0",
     "chance": "1.1.12",
     "date-fns": "4.1.0",
-    "lodash": "4.17.21",
+    "lodash": "^4.17.21",
     "pinia": "2.3.0",
     "remixicon": "4.6.0",
     "vee-validate": "4.15.0",
@@ -42,6 +42,7 @@
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/chance": "1.1.6",
+    "@types/lodash": "^4.17.16",
     "@types/node": "22.10.4",
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/eslint-config-prettier": "10.1.0",
