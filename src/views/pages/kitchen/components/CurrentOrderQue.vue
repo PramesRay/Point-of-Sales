@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { formatRupiah } from '@/utils/helpers/currency'
-import { formatDate } from "@/utils/helpers/format-date";
 import { ref, computed, watch } from 'vue'
-import { getTimeAgo } from "@/utils/helpers/time-ago";
-import type { Order, OrderItem } from '@/types/order';
 import { cloneDeep } from 'lodash';
 
+import { getSuggestedTotalCash } from '@/utils/helpers/payment'
+import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
+import { getTimeAgo } from "@/utils/helpers/time-ago";
+import { hasRole } from '@/utils/helpers/user';
+
+import type { Order, OrderItem } from '@/types/order';
+import type { Employee } from '@/types/employee';
+
 const emit = defineEmits<{
-  (e: 'proses-order', payload: { id: string; status: string }): void
+  (e: 'proses-order', payload: { id: string; status: string }): Order
+  (e: 'process-payment', payload: { id: string; payment_method: string }): Order
 }>();
 
 const props = defineProps<{
+  user: Employee;
   data: Order[];
   branch: string;
   loading?: boolean;
@@ -22,15 +28,15 @@ const filteredData = computed(() => {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch
+    (tx) => tx?.branch?.id === props.branch
   );
 });
 
 // Ambil permintaan terbaru
-const latestOrderQue = computed(() => filteredData.value[0]);
+const latestOrderQue = computed(() => filteredData?.value[0] || null);
 
 // Sisanya untuk list biasa
-const listOrderQue = computed(() => filteredData.value.slice(1));
+const listOrderQue = computed(() => filteredData?.value?.slice(1) || []);
 
 const selectedOrder = ref<Order | null>(null)
 const showOverlay = ref(false)
@@ -38,19 +44,42 @@ const showConfirmDialog = ref(false)
 const pendingOverlayClose = ref(false)
 const isManuallySaving = ref(false)
 const orderStatus = ref('')
+const paymentMethod = ref('')
+const inPayment = ref(false)
+const cashInput = ref('')
+const cashNumber = ref(0)
+
+const amtRules = [
+  (v: string) => !!v || 'Jumlah tidak boleh kosong',
+  (v: string) => {
+    const numeric = Number(v.replace(/\D/g, ''))
+    return numeric >= 0 || 'Jumlah tidak boleh kurang dari 0'
+  }
+]
+
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text);
+}
 
 function openDetail(request: Order) {
   selectedOrder.value = cloneDeep(request)
   showOverlay.value = true
-  orderStatus.value = request.status
+  orderStatus.value = request.status ?? ''
 }
 
 function confirmCancel() {
   pendingOverlayClose.value = true
   showConfirmDialog.value = false
   showOverlay.value = false
+  inPayment.value = false
 
   if (selectedOrder.value) selectedOrder.value = null
+
+  orderStatus.value = ''
+  paymentMethod.value = ''
+  inPayment.value = false
+  cashInput.value = ''
+  cashNumber.value = 0
 }
 
 // fungsi simulasi kirim data ke backend
@@ -64,15 +93,25 @@ function processOrder(status: "Pending" | "Diproses" | "Selesai" | "Batal") {
     status: status,
   })
   
-  if (orderStatus.value === 'Selesai') {
+  if (orderStatus.value === 'Selesai' || orderStatus.value === 'Batal') {
     isManuallySaving.value = true
     confirmCancel()
   }
 }
 
-const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+function processPayment(paymentMethod: string) {
+  if (selectedOrder.value) {
+    selectedOrder.value.payment_status = 'Selesai'
   }
+  
+  emit('process-payment', {
+    id: selectedOrder.value?.id ?? '',
+    payment_method: paymentMethod
+  })
+  
+  isManuallySaving.value = true
+  confirmCancel()
+}
 
 watch(showOverlay, (isOpen, wasOpen) => {
   // Ketika overlay akan ditutup (false) dari keadaan terbuka (true)
@@ -90,6 +129,11 @@ watch(showOverlay, (isOpen, wasOpen) => {
     }
   }
 })
+
+watch(() => cashInput.value, (val) => {
+  const numeric = val.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
+  cashNumber.value = numeric ? Number(numeric) : 0
+})
 </script>
 
 <template>
@@ -100,7 +144,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
           <div class="d-flex align-center">
             <h4 class="text-h4 mt-1">Antrian Pesanan</h4>
             <div v-if="props.branch !== 'all'" class="ml-auto">
-              <span class="text-subtitle-2 text-medium-emphasis">{{ latestOrderQue?.branch.name }}</span>
+              <span class="text-subtitle-2 text-medium-emphasis">{{ latestOrderQue?.branch?.name }}</span>
             </div>
           </div>
 
@@ -118,10 +162,10 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <h6 class="text-secondary text-h4 font-weight-bold">
-                      {{ latestOrderQue?.customer.name }}
+                      {{ latestOrderQue?.customer?.name }}
                     </h6>
                     <div class="text-secondary text-subtitle-2 text-medium-emphasis">
-                      {{ latestOrderQue?.items.length }} item
+                      {{ latestOrderQue?.items?.length }} item
                     </div>
                     <span class="text-subtitle-2 text-disabled">
                       Lihat Detail
@@ -140,7 +184,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                       >{{ latestOrderQue?.status }}</span>
                     </div>
                     <h4 class="text-h4 text-right">{{ getTimeAgo(latestOrderQue.meta.createdAt) }}</h4>
-                    <i v-if="latestOrderQue.meta.updatedAt !== null" class="text-subtitle-2 text-disabled">
+                    <i v-if="latestOrderQue?.meta?.updatedAt !== null" class="text-subtitle-2 text-disabled">
                       Diubah {{ getTimeAgo(latestOrderQue.meta.updatedAt) }}
                     </i>
                   </div>
@@ -149,7 +193,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             </v-card>
             <div class="mt-4">
               <perfect-scrollbar v-bind:style="{ height: '180px' }">
-                <v-list v-if="listOrderQue.length > 0" class="py-0">
+                <v-list v-if="listOrderQue?.length > 0" class="py-0">
                   <v-list-item v-for="(listOrderQue, i) in listOrderQue" :key="i" :value="listOrderQue" color="secondary" rounded="sm" @click="openDetail(listOrderQue)">
                     <span>
                       {{ listOrderQue?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 
@@ -160,10 +204,10 @@ watch(showOverlay, (isOpen, wasOpen) => {
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
                         <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                          {{ listOrderQue?.employee.name }}
+                          {{ listOrderQue?.employee?.name }}
                         </h6>
                         <div class="text-subtitle-2 text-medium-emphasis">
-                          {{ listOrderQue?.items.length }} item
+                          {{ listOrderQue?.items?.length }} item
                         </div>
                         <span class="text-subtitle-2 text-disabled">
                           Lihat Detail
@@ -182,7 +226,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                           >{{ listOrderQue?.status }}</span>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listOrderQue.meta.createdAt) }}</div>
-                        <i v-if="listOrderQue.meta.updatedAt" class="text-subtitle-2 text-disabled">
+                        <i v-if="listOrderQue?.meta?.updatedAt" class="text-subtitle-2 text-disabled">
                           Diubah {{ getTimeAgo(listOrderQue.meta.updatedAt) }}
                         </i>
                       </div>
@@ -279,6 +323,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                   icon
                   variant="text"
                   size="x-small"
+                  @click="copyToClipboard(selectedOrder?.customer.phone ?? '')"
                 >
                   <v-icon>mdi-content-copy</v-icon>
                 </v-btn>
@@ -362,27 +407,182 @@ watch(showOverlay, (isOpen, wasOpen) => {
       <v-divider class="my-3"></v-divider>
 
       <!-- Tombol proses -->
-      <v-row>
+      <v-row v-if="props.user.role ?? hasRole(props.user.role, ['admin', 'kitchen'])">
         <v-col cols="12" v-if="orderStatus === 'Pending'">
           <v-btn 
-            color="primary" 
+            color="warning" 
             block
             @click="orderStatus = 'Diproses', processOrder('Diproses')"
             :disabled="props.loading"
+            :variant="props.loading? 'outlined' : 'elevated'"
             :loading="props.loading"
           >
-            Proses
+            Proses Pesanan
           </v-btn>
         </v-col>
         <v-col cols="12" v-if="orderStatus === 'Diproses'">
           <v-btn 
-            color="success"
+            color="primary"
             block
             @click="orderStatus = 'Selesai', processOrder('Selesai')"
             :disabled="props.loading"
+            :variant="props.loading? 'outlined' : 'elevated'"
             :loading="props.loading"
           >
-            Selesai
+            Siap Saji
+          </v-btn>
+        </v-col>
+      </v-row>
+      
+      <!-- Tombol untuk Role Kasir -->
+      <v-row v-if="(props.user.role ?? hasRole(props.user.role, ['admin', 'cashier'])) && selectedOrder?.payment_status === 'Pending'">
+        <v-col cols="6">
+          <v-btn 
+            color="error"
+            block
+            @click="orderStatus = 'Batal', processOrder('Batal')"
+            :disabled="props.loading"
+            variant="outlined"
+            :loading="props.loading"
+          >
+            Batalkan Pesanan
+          </v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn 
+            color="success"
+            block
+            @click="inPayment = true"
+            :disabled="props.loading"
+            :variant="props.loading? 'outlined' : 'elevated'"
+            :loading="props.loading"
+          >
+            Pembayaran
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
+  </v-overlay>
+  
+  <v-overlay
+    v-model="inPayment"
+    fullscreen
+    scroll-strategy="none"
+    class="d-flex justify-center align-start"
+  >
+    <v-card
+      :class="selectedOrder === latestOrderQue ? 'bg-lightsecondary' : 'bg-white'"
+      class="rounded-lg pa-6 mt-8"
+      style="width: 90vw; max-width: 90vw; max-height: 90vh;"
+    >
+      <!-- Close button -->
+      <v-btn
+        icon
+        variant="text"
+        style="position:absolute; top:8px; right:12px;" 
+        @click="inPayment = false"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+
+      <h4 class="text-h4">Pembayaran</h4>
+      <i class="text-subtitle-2 text-disabled">Order Id: {{ selectedOrder?.id }}</i>
+      <v-divider class="my-2"></v-divider>
+
+      <div class="text-center mb-4">
+        <div class="text-subtitle-2 text-medium-emphasis"> Total Pembayaran</div>
+        <h1 class="text-h1">{{ formatRupiah(selectedOrder?.amount ?? 0) }}</h1>
+      </div>
+      
+      <div class="text-subtitle-2 text-medium-emphasis mb-2">Pilih Metode Pembayaran: </div>
+      <v-row>
+        <v-col cols="6">
+          <v-btn
+            block
+            prepend-icon="mdi-cash"
+            @click="paymentMethod = 'cash'"
+            :variant="paymentMethod === 'cash' ? 'tonal' : 'elevated'"
+          >
+            Cash  
+          </v-btn>
+        </v-col>
+        <v-col cols="6">
+          <v-btn
+            block
+            prepend-icon="mdi-qrcode-scan"
+            @click="paymentMethod = 'qris'"
+            :variant="paymentMethod === 'qris' ? 'tonal' : 'elevated'"
+          >
+            QRIS
+          </v-btn>
+        </v-col>
+      </v-row>
+
+      <div v-if="paymentMethod === 'cash'">
+        <v-row class="mt-2">
+          <v-col cols="12" sm="6">
+            <v-text-field 
+              v-model="cashInput" 
+              control-variant="hidden"
+              variant="underlined"
+              :min="0"
+              :rules="amtRules"
+              prepend-icon="mdi-cash-multiple"
+              label="Jumlah Uang Tunai"
+              prefix="Rp"
+              @input="cashInput = formatRupiahInput(cashInput)"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-row  class="justify-center">
+          <v-col
+            v-for="amount in getSuggestedTotalCash(selectedOrder?.amount || 0)"
+            :key="amount"
+            cols="4"
+            sm="3"
+            md="2"
+            lg="2"
+          >
+            <v-btn
+              block
+              color="primary"
+              @click="cashInput = formatRupiahInput(amount.toString())"
+              :variant="amount === cashNumber ? 'tonal' : 'outlined'"
+            >
+              {{ formatRupiah(amount) }}
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
+
+      <div 
+        v-if="paymentMethod === 'cash' && selectedOrder?.amount && cashNumber !== 0 && cashNumber >= selectedOrder?.amount"
+        class="text-subtitle-2 text-medium-emphasis mt-6 text-center"
+      >
+        Total Kembalian: 
+        <div class="text-h4">{{ formatRupiah(cashNumber - selectedOrder?.amount) }}</div>
+      </div>
+      <div 
+        v-if="paymentMethod === 'qris'"
+        class="text-subtitle-1 text-disabled mt-6 text-center"
+      >
+        Pastikan pembayaran QRIS sudah berhasil, yaa!
+      </div>
+
+      <v-divider class="my-4"></v-divider>
+
+      <v-row>
+        <v-col cols="12">
+          <v-btn 
+            color="success"
+            block
+            @click="processPayment(paymentMethod)"
+            :disabled="props.loading || paymentMethod === '' || (paymentMethod === 'qris' ? false : cashNumber === 0)"
+            :variant="props.loading || paymentMethod === '' || (paymentMethod === 'qris' ? false : cashNumber === 0) ? 'outlined' : 'elevated'"
+            :loading="props.loading"
+          >
+            Bayar
           </v-btn>
         </v-col>
       </v-row>
