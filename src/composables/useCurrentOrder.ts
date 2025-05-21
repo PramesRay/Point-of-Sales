@@ -1,5 +1,5 @@
 import { ref, watchEffect } from 'vue'
-import { fetchCurrentOrder, updateOrderStatus } from '@/services/totalOrder/currentOrderService'
+import { fetchCurrentOrder, updateOrderData } from '@/services/totalOrder/currentOrderService'
 import type { Order } from '@/types/order'
 import { useRoute } from 'vue-router'
 
@@ -22,17 +22,17 @@ export function useCurrentOrders() {
     }
   }
 
-  async function updateStatus(payload: { id: string, status: string }) {
+  async function updateOrder(payload: {[key: string]: any }) {
     try {
       loading.value = true;
-      await updateOrderStatus(payload.id, payload.status);
+      await updateOrderData(payload);
       await load(branchId.value);
     } catch (e) {
       console.error("Gagal proses order:", e);
     } finally {
       loading.value = false;
     }
-  }
+    }
 
 
   watchEffect(() => {
@@ -41,5 +41,5 @@ export function useCurrentOrders() {
     load(id);
   });
 
-  return { load, updateStatus, data, loading, error };
+  return { load, updateOrder, data, loading, error };
 }

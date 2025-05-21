@@ -1,7 +1,7 @@
 import api from '@/services/api';
 import dummyTransactionSummary from '@/services/finance/dummyTransaction';
 import type { Transaction } from '@/types/finance';
-import branchList from '@/services/common/dummyBranchList';
+import branchList from '@/services/common/branch/dummyBranchList';
 
 // function flattenAllDummy(): Transaction[] {
 //   return Object.entries(dummyTransactionSummary).flatMap(([branchId, transactions]) =>

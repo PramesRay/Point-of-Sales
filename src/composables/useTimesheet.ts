@@ -1,6 +1,6 @@
 // src/composables/useTimesheet.ts
 import { ref, watchEffect } from 'vue'
-import { fetchBranchList } from '@/services/common/branchService'
+import { fetchBranchList } from '@/services/common/branch/branchService'
 import { fetchTimesheetData } from '@/services/timesheets/timesheetService'
 import type { TimesheetData } from '@/types/timesheet'
 import type { Branch } from '@/types/branch'

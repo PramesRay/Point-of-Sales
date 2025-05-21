@@ -1,6 +1,6 @@
-import type { InventoryCategory } from "@/types/inventoryItem";
+import type { Category } from "@/types/inventoryItem";
 
-export const dummyInventoryItemsCategories: InventoryCategory[] = [
+export const dummyInventoryItemsCategories: Category[] = [
   {
     id: 'cat-001',
     name: 'Bahan Pokok',

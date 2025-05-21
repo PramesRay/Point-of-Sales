@@ -2,7 +2,7 @@ import type { Branch } from "./branch"
 import type { Employee } from "./employee"
 import type { Meta } from "./meta"
 
-export interface InventoryCategory {
+export interface Category {
   id: string
   name: string
   description?: string
@@ -13,7 +13,7 @@ export interface InventoryItem {
   name: string
   description?: string
   unit?: string
-  category?: InventoryCategory
+  category?: Category
   quantity?: number
   threshold?: number
   expireDate?: Date
@@ -24,7 +24,7 @@ export interface StockMovement {
   id: string
   name: string
   description?: string
-  category?: InventoryCategory
+  category?: Category
   branch?: Branch
   employee?: Employee
   quantity?: number

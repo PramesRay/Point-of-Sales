@@ -1,10 +1,10 @@
 import { ref } from 'vue';
 import { fetchCategoryInventoryItems, fetchStockMovements } from '@/services/inventory/inventoryItemService';
-import type { InventoryCategory, StockMovement } from '@/types/inventoryItem';
+import type { Category, StockMovement } from '@/types/inventoryItem';
 
 export function useStockMovements() {
   const data      = ref<StockMovement[]>([]);
-  const categories= ref<InventoryCategory[]>([]);
+  const categories= ref<Category[]>([]);
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
 

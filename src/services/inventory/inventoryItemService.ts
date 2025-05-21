@@ -1,6 +1,6 @@
 import api from "../api";
 import { dummyInventoryItems } from "./dummyInventoryItems";
-import type { InventoryCategory, InventoryItem, StockMovement } from "@/types/inventoryItem";
+import type { Category, InventoryItem, StockMovement } from "@/types/inventoryItem";
 import { dummyInventoryItemsCategories } from "./dummyInventoryItemsCategory";
 import { dummyStockMovements } from "./dummyStockMovements";
 
@@ -14,9 +14,9 @@ export async function fetchInventoryItem(): Promise<InventoryItem[]> {
   }  
 }
 
-export async function fetchCategoryInventoryItems(): Promise<InventoryCategory[]> {
+export async function fetchCategoryInventoryItems(): Promise<Category[]> {
   try {
-    const res = await api.get<InventoryCategory[]>(`/inventory/category`);
+    const res = await api.get<Category[]>(`/inventory/category`);
     return res.data;
   } catch (error) {
     console.warn(`Fetch Inventory Item's Category failed, using dummy.`, error);

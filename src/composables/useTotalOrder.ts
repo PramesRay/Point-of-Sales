@@ -1,5 +1,5 @@
 import { ref, watchEffect } from 'vue'
-import { fetchBranchList } from '@/services/common/branchService'
+import { fetchBranchList } from '@/services/common/branch/branchService'
 import { fetchTotalOrder } from '@/services/totalOrder/totalOrderService'
 import type { Branch } from '@/types/branch'
 import type { TotalOrder } from '@/types/order'

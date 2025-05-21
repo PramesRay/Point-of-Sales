@@ -1,5 +1,5 @@
 import type { Branch } from '@/types/branch'
-import api from '../api'
+import api from '../../api'
 import dummyBranchList from './dummyBranchList'
 
 export async function fetchBranchList(): Promise<Branch[]> {

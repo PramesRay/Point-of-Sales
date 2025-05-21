@@ -1,7 +1,7 @@
 import api from '@/services/api';
 import dummyFundRequestData from '@/services/finance/dummyFundRequest';
 import type { FundRequest } from '@/types/finance';
-import branchList from '@/services/common/dummyBranchList'; 
+import branchList from '@/services/common/branch/dummyBranchList'; 
 
 /**
  * Fetch fund requests for a branch or all if branchId === 'all'.

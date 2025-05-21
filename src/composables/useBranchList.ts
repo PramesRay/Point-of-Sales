@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue';
-import { fetchBranchList } from '@/services/common/branchService';
+import { fetchBranchList } from '@/services/common/branch/branchService';
 import type { Branch } from '@/types/branch';
 
 // Composable untuk mengambil list cabang (berdasarkan hak akses user)
