@@ -76,7 +76,8 @@ const { title, breadcrumbs, useCustomDividerIcon } = props;
 .page-breadcrumb {
   position: sticky;
   z-index: 1;
-  background-color: white;
+  background: rgba(255, 255, 255, 0.5); /* transparant white */
+  backdrop-filter: blur(2px); /* blur effect */
   top: 80px;
 
   .v-icon {
