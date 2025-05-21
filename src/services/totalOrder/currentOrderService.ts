@@ -1,6 +1,8 @@
 import api from '../api';
 import dummyOrderQue from './dummyOrderQueList';
 import type { Order } from '@/types/order'
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore();
 
 /**
  * Fetch Current Order data from backend.
@@ -22,12 +24,14 @@ export async function fetchCurrentOrder(restaurant: string): Promise<Order[]> {
   }
 }
 
-export async function updateOrderStatus(id: string, status: string): Promise<void> {
+export async function updateOrderData(payload: {[key: string]: any }): Promise<Order> {
   try {
-    const res = await api.put(`/order/${id}`, { status });
+    const res = await api.put(`/order/${payload.id}`, { payload });
+    alertStore.showAlert('Data Order telah berubah!', 'success');
     return res.data;
   } catch (error) {
     console.error('Error updating order status:', error);
+    console.log('Payload:', payload);
     throw error;
   }
 }
