@@ -11,12 +11,22 @@ const alertStore = useAlertStore();
       :type="alert.type"
       border
       closable
-      class="mb-2"
-      @click:close="alertStore.alerts = alertStore.alerts.filter(a => a.id !== alert.id)"
     >
       {{ alert.message }}
       <template v-if="alert.count > 1">
         &nbsp;(<strong>x{{ alert.count }}</strong>)
+      </template>
+      <template 
+        #close
+        >
+        <v-btn
+          icon
+          variant="text"
+          size="x-small"
+          @click="alertStore.alerts = alertStore.alerts.filter(a => a.id !== alert.id)"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </template>
     </v-alert>
   </div>
