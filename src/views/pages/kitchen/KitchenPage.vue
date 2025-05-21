@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
 import { computed, onMounted } from 'vue';
+import { hasRole } from '@/utils/helpers/user';
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -12,12 +13,17 @@ import CurrentOrderQue from './components/CurrentOrderQue.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useStockRequests } from "@/composables/useStockRequest";
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
+import { useUser } from '@/composables/useUser';
 
 // Data Loading
+const { data: me, loading: lu, fetchMe } = useUser();
 const { branches, loading: lb } = useBranchList();
-const { data: currentOrder, loading: lco, error, updateStatus } = useCurrentOrders();
+const { data: currentOrder, loading: lco, error, updateOrder } = useCurrentOrders();
 const { summary, list: stockRequestlist, loading: lsr, createRequest } = useStockRequests();
 
+onMounted(() => {
+  fetchMe();
+})
 // Branch Selection
 const route = useRoute();
 const router = useRouter();
@@ -73,12 +79,14 @@ const selectedBranch = computed({
     <!-- -------------------------------------------------------------------- -->
     <!-- Current Order Que -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
-      <CurrentOrderQue 
+    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+      <CurrentOrderQue
+        :user="me"
         :data="currentOrder" 
         :branch="selectedBranch"
         :loading="lco" 
-        @proses-order="updateStatus"
+        @proses-order="updateOrder"
+        @process-payment="updateOrder"
         class="flex-grow-1" 
       />
     </v-col>
