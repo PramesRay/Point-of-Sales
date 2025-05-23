@@ -1,4 +1,5 @@
 import type { Branch } from "./branch"
+import type { IdName } from "./common"
 import type { Employee } from "./employee"
 import type { Meta } from "./meta"
 
@@ -26,7 +27,7 @@ export interface StockMovement {
   description?: string
   category?: Category
   branch?: Branch
-  employee?: Employee
+  employee?: IdName
   quantity?: number
   unit?: string 
   status?: 'Masuk' | 'Keluar' 

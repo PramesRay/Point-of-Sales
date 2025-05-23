@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import type { InventoryCategory, InventoryItem } from '@/types/inventoryItem';
+import type { Category, InventoryItem } from '@/types/inventoryItem';
 import { formatDate } from '@/utils/helpers/format-date';
 
 const props = defineProps<{
   data: InventoryItem[];
-  categories: InventoryCategory[];
+  categories: Category[];
   loading: boolean;
 }>();
 

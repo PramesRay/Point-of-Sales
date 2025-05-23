@@ -23,11 +23,11 @@ const currentOrder = computed(() => filteredData.value.length || 0);
 </script>
 
 <template>
-  <v-card elevation="0" class="bg-primary overflow-hidden bubble-shape bubble-primary-shape">
+  <v-card elevation="0" class="bg-secondary overflow-hidden bubble-shape bubble-secondary-shape">
     <v-card-text>
       <div class="d-flex align-start mb-3">
-        <v-btn icon rounded="sm" color="darkprimary" variant="flat">
-          <ShoppingCartIcon stroke-width="1.5" width="20" />
+        <v-btn icon rounded="sm" color="darksecondary" variant="flat">
+          <BuildingStoreIcon stroke-width="1.5" width="25"/>
         </v-btn>
         <div class="mx-3 my-auto">
           <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>

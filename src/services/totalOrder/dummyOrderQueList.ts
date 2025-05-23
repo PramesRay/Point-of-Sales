@@ -52,8 +52,8 @@ const dummyOrdersQue: Order[] = [
   amount: 90000,
   payment_status: "Pending",
   meta: {
-    createdAt: new Date ("2025-04-28T12:00:00"),
-    updatedAt: new Date ("2025-04-28T12:30:00")
+    created_at: new Date ("2025-04-28T12:00:00"),
+    updated_at: new Date ("2025-04-28T12:30:00")
   }
 },
 {
@@ -93,8 +93,8 @@ const dummyOrdersQue: Order[] = [
   amount: 50000,
   payment_status: "Pending",
   meta: {
-    createdAt: new Date ("2025-04-28T12:00:00"),
-    updatedAt: new Date ("2025-04-28T12:30:00")
+    created_at: new Date ("2025-04-28T12:00:00"),
+    updated_at: new Date ("2025-04-28T12:30:00")
   }
 },
 {
@@ -141,8 +141,8 @@ const dummyOrdersQue: Order[] = [
   amount: 30000,
   payment_status: "Pending",
   meta: {
-    createdAt: new Date ("2025-04-28T12:00:00"),
-    updatedAt: new Date ("2025-04-28T12:30:00")
+    created_at: new Date ("2025-04-28T12:00:00"),
+    updated_at: new Date ("2025-04-28T12:30:00")
   }
 },
 {
@@ -189,8 +189,8 @@ const dummyOrdersQue: Order[] = [
   amount: 60000,
   payment_status: "Pending",
   meta: {
-    createdAt: new Date ("2025-04-28T12:00:00"),
-    updatedAt: new Date ("2025-04-28T12:30:00")
+    created_at: new Date ("2025-04-28T12:00:00"),
+    updated_at: new Date ("2025-04-28T12:30:00")
   }
 },
 {
@@ -237,8 +237,8 @@ const dummyOrdersQue: Order[] = [
   amount: 90000,
   payment_status: "Selesai",
   meta: {
-    createdAt: new Date ("2025-04-28T12:00:00"),
-    updatedAt: new Date ("2025-04-28T12:30:00")
+    created_at: new Date ("2025-04-28T12:00:00"),
+    updated_at: new Date ("2025-04-28T12:30:00")
   }
 }
 ];

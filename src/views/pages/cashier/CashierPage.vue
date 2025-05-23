@@ -6,6 +6,7 @@ import { hasRole } from '@/utils/helpers/user';
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import CurrentOrder from '../kitchen/components/CurrentOrder.vue';
+import CreateOrder from './components/CreateOrder.vue';
 import CurrentOrderQue from '../kitchen/components/CurrentOrderQue.vue';
 import CurrentTransaction from '@/views/dashboards/default/components/CurrentTransaction.vue';
 
@@ -14,12 +15,14 @@ import { useBranchList } from '@/composables/useBranchList';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useTransactions } from '@/composables/useTransactionList';
 import { useUser } from '@/composables/useUser';
+import { useMenuItems } from '@/composables/useMenuItems';
 
 // Data Loading
 const { data: me, loading: lu, fetchMe } = useUser();
 const { branches, loading: lb } = useBranchList();
 const { data: currentOrder, loading: lco, error, updateOrder } = useCurrentOrders();
 const { transactions, loading: ltx } = useTransactions();
+const { init, data: menuItems, categories, loadingData, loadingBranches } = useMenuItems();
 
 onMounted(() => {
   fetchMe();
@@ -71,6 +74,20 @@ const selectedBranch = computed({
     <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
       <CurrentOrder 
         :data="currentOrder" 
+        :branch="selectedBranch"
+        :loading="lco" 
+        class="flex-grow-1" 
+      />
+    </v-col>
+    
+    <!-- -------------------------------------------------------------------- -->
+    <!-- Create Order Card -->
+    <!-- -------------------------------------------------------------------- -->
+    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+      <CreateOrder 
+        :user="me"
+        :data="menuItems"
+        :categories="categories"
         :branch="selectedBranch"
         :loading="lco" 
         class="flex-grow-1" 

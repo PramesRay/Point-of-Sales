@@ -5,10 +5,10 @@ import type { Meta } from "./meta"
 export interface Menu {
   id: string
   name: string
-  description?: string
-  price?: number
-  quantity?: number
-  category?: Category
-  branch?: Branch
-  meta?: Meta
+  description: string
+  price: number
+  quantity: number
+  category: Category
+  branch: Branch
+  meta: Meta
 }

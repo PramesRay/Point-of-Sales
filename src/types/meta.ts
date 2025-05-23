@@ -1,4 +1,4 @@
 export interface Meta {
-  createdAt: Date
-  updatedAt: Date | null
+  created_at: Date
+  updated_at: Date | null
 }

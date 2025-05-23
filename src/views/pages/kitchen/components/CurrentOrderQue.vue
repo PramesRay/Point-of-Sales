@@ -183,9 +183,9 @@ watch(() => cashInput.value, (val) => {
                         }"
                       >{{ latestOrderQue?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestOrderQue.meta.createdAt) }}</h4>
-                    <i v-if="latestOrderQue?.meta?.updatedAt !== null" class="text-subtitle-2 text-disabled">
-                      Diubah {{ getTimeAgo(latestOrderQue.meta.updatedAt) }}
+                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestOrderQue.meta.created_at) }}</h4>
+                    <i v-if="latestOrderQue?.meta?.updated_at !== null" class="text-subtitle-2 text-disabled">
+                      Diubah {{ getTimeAgo(latestOrderQue.meta.updated_at) }}
                     </i>
                   </div>
                 </div>
@@ -225,9 +225,9 @@ watch(() => cashInput.value, (val) => {
                             }"
                           >{{ listOrderQue?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listOrderQue.meta.createdAt) }}</div>
-                        <i v-if="listOrderQue?.meta?.updatedAt" class="text-subtitle-2 text-disabled">
-                          Diubah {{ getTimeAgo(listOrderQue.meta.updatedAt) }}
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listOrderQue.meta.created_at) }}</div>
+                        <i v-if="listOrderQue?.meta?.updated_at" class="text-subtitle-2 text-disabled">
+                          Diubah {{ getTimeAgo(listOrderQue.meta.updated_at) }}
                         </i>
                       </div>
                     </div>
@@ -350,9 +350,9 @@ watch(() => cashInput.value, (val) => {
                   'text-primary': selectedOrder?.status === 'Diproses'
                 }"
               >{{ selectedOrder?.status }}</div>
-              <h4 v-if="selectedOrder?.meta.createdAt" class="text-h4">{{ getTimeAgo(selectedOrder?.meta.createdAt) }}</h4>
-              <i v-if="selectedOrder?.meta.updatedAt" class="text-subtitle-2 text-disabled">
-                Diubah {{ getTimeAgo(selectedOrder?.meta.updatedAt) }}
+              <h4 v-if="selectedOrder?.meta.created_at" class="text-h4">{{ getTimeAgo(selectedOrder?.meta.created_at) }}</h4>
+              <i v-if="selectedOrder?.meta.updated_at" class="text-subtitle-2 text-disabled">
+                Diubah {{ getTimeAgo(selectedOrder?.meta.updated_at) }}
               </i>
             </div>
             </v-col>

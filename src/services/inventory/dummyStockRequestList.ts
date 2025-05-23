@@ -22,8 +22,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Persiapan malam minggu",
     time: {
-      createdAt: new Date("2025-04-28T10:00:00"),
-      updatedAt: new Date("2025-04-28T11:00:00")
+      created_at: new Date("2025-04-28T10:00:00"),
+      updated_at: new Date("2025-04-28T11:00:00")
     }
   },
   {
@@ -57,8 +57,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Stok mulai menipis",
     time: {
-      createdAt: new Date("2025-04-28T12:30:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-28T12:30:00"),
+      updated_at: null
     }
   },
   {
@@ -82,8 +82,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Untuk mesin kasir 2",
     time: {
-      createdAt: new Date("2025-04-27T09:00:00"),
-      updatedAt: new Date("2025-04-27T09:15:00")
+      created_at: new Date("2025-04-27T09:00:00"),
+      updated_at: new Date("2025-04-27T09:15:00")
     }
   },
   {
@@ -107,8 +107,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Ditolak",
     note: "Sudah tersedia dari gudang",
     time: {
-      createdAt: new Date("2025-04-26T11:00:00"),
-      updatedAt: new Date("2025-04-26T11:45:00")
+      created_at: new Date("2025-04-26T11:00:00"),
+      updated_at: new Date("2025-04-26T11:45:00")
     }
   },
   {
@@ -132,8 +132,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Stok untuk malam ini",
     time: {
-      createdAt: new Date("2025-04-28T15:00:00"),
-      updatedAt: new Date("2025-04-28T15:10:00")
+      created_at: new Date("2025-04-28T15:00:00"),
+      updated_at: new Date("2025-04-28T15:10:00")
     }
   },
 
@@ -158,8 +158,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Stok menipis menjelang akhir pekan",
     time: {
-      createdAt: new Date("2025-04-28T11:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-28T11:00:00"),
+      updated_at: null
     }
   },
   {
@@ -183,8 +183,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Menu spesial hari Jumat",
     time: {
-      createdAt: new Date("2025-04-27T14:00:00"),
-      updatedAt: new Date("2025-04-27T15:00:00")
+      created_at: new Date("2025-04-27T14:00:00"),
+      updated_at: new Date("2025-04-27T15:00:00")
     }
   },
   {
@@ -208,8 +208,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Ditolak",
     note: "Stok masih aman hingga minggu depan",
     time: {
-      createdAt: new Date("2025-04-26T10:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-26T10:00:00"),
+      updated_at: null
     }
   },
   {
@@ -233,8 +233,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Permintaan dari dapur",
     time: {
-      createdAt: new Date("2025-04-28T16:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-28T16:00:00"),
+      updated_at: null
     }
   },
   {
@@ -258,8 +258,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Alat lama rusak",
     time: {
-      createdAt: new Date("2025-04-25T09:30:00"),
-      updatedAt: new Date("2025-04-25T09:40:00")
+      created_at: new Date("2025-04-25T09:30:00"),
+      updated_at: new Date("2025-04-25T09:40:00")
     }
   },
 
@@ -284,8 +284,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Stok rutin harian",
     time: {
-      createdAt: new Date("2025-04-28T08:00:00"),
-      updatedAt: new Date("2025-04-28T08:10:00")
+      created_at: new Date("2025-04-28T08:00:00"),
+      updated_at: new Date("2025-04-28T08:10:00")
     }
   },
   {
@@ -309,8 +309,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Persiapan promo malam",
     time: {
-      createdAt: new Date("2025-04-28T13:00:00"),
-      updatedAt: new Date("2025-04-28T13:20:00")
+      created_at: new Date("2025-04-28T13:00:00"),
+      updated_at: new Date("2025-04-28T13:20:00")
     }
   },
   {
@@ -334,8 +334,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Stok habis sejak kemarin",
     time: {
-      createdAt: new Date("2025-04-27T17:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-27T17:00:00"),
+      updated_at: null
     }
   },
   {
@@ -359,8 +359,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Persediaan rendah",
     time: {
-      createdAt: new Date("2025-04-26T12:00:00"),
-      updatedAt: new Date("2025-04-26T13:00:00")
+      created_at: new Date("2025-04-26T12:00:00"),
+      updated_at: new Date("2025-04-26T13:00:00")
     }
   },
   {
@@ -384,8 +384,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Ditolak",
     note: "Menu ditiadakan minggu ini",
     time: {
-      createdAt: new Date("2025-04-25T10:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-25T10:00:00"),
+      updated_at: null
     }
   },
 
@@ -410,8 +410,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Stok cadangan habis",
     time: {
-      createdAt: new Date("2025-04-28T09:00:00"),
-      updatedAt: new Date("2025-04-28T09:50:00")
+      created_at: new Date("2025-04-28T09:00:00"),
+      updated_at: new Date("2025-04-28T09:50:00")
     }
   },
   {
@@ -435,8 +435,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Untuk shift malam",
     time: {
-      createdAt: new Date("2025-04-28T14:00:00"),
-      updatedAt: new Date("2025-04-28T14:50:00")
+      created_at: new Date("2025-04-28T14:00:00"),
+      updated_at: new Date("2025-04-28T14:50:00")
     }
   },
   {
@@ -460,8 +460,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Ditolak",
     note: "Masih cukup hingga akhir minggu",
     time: {
-      createdAt: new Date("2025-04-27T08:00:00"),
-      updatedAt: new Date("2025-04-27T08:50:00")
+      created_at: new Date("2025-04-27T08:00:00"),
+      updated_at: new Date("2025-04-27T08:50:00")
     }
   },
   {
@@ -485,8 +485,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Disetujui",
     note: "Cadangan habis",
     time: {
-      createdAt: new Date("2025-04-26T15:00:00"),
-      updatedAt: null
+      created_at: new Date("2025-04-26T15:00:00"),
+      updated_at: null
     }
   },
   {
@@ -510,8 +510,8 @@ const dummyStockRequestList: StockRequestList[] = [
     status: "Pending",
     note: "Persiapan take away akhir pekan",
     time: {
-      createdAt: new Date("2025-04-25T16:30:00"),
-      updatedAt: new Date("2025-04-25T16:35:00")
+      created_at: new Date("2025-04-25T16:30:00"),
+      updated_at: new Date("2025-04-25T16:35:00")
     }
   }
 ];

@@ -4,9 +4,19 @@ import type { Menu } from '@/types/menu'
 import { dummyMenuCategories } from "./dummyMenuCategories";
 import { dummyMenus } from "./dummyMenuItems";
 
-export async function fetchMenuItems(): Promise<Menu[]> {
+export async function fetchMenuItems(branchId?: string): Promise<Menu[]> {
+  if (branchId && branchId !== 'all') {
+    try {
+      const res = await api.get<Menu[]>(`/kitchen/menus/${branchId}`);
+      return res.data;
+    } catch (error) {
+      console.warn(`Fetch Menu Item failed, using dummy.`, error);
+      return dummyMenus
+    }  
+  }
+
   try {
-    const res = await api.get<Menu[]>(`/kitchen/menus`);
+    const res = await api.get<Menu[]>(`/kitchen/menus/all`);
     return res.data;
   } catch (error) {
     console.warn(`Fetch Menu Item failed, using dummy.`, error);

@@ -1,115 +1,206 @@
 import type { Menu } from '@/types/menu';
 import { dummyMenuCategories } from './dummyMenuCategories';
 
+const dummyBranches = [
+  { id: 'branch-1', name: 'Restoran 1' },
+  { id: 'branch-2', name: 'Restoran 2' },
+  { id: 'branch-3', name: 'Restoran 3' },
+];
+
 export const dummyMenus: Menu[] = [
-  // Minuman
   {
     id: 'menu-1',
     name: 'Es Teh Manis',
+    description: 'Teh manis dingin dengan es batu segar',
     price: 5000,
     quantity: 100,
     category: dummyMenuCategories[0],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T10:00:00'),
+    },
   },
   {
     id: 'menu-2',
     name: 'Kopi Hitam',
+    description: 'Kopi robusta murni tanpa gula',
     price: 8000,
     quantity: 100,
     category: dummyMenuCategories[0],
+    branch: dummyBranches[0],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T10:05:00'),
+    },
   },
   {
     id: 'menu-3',
     name: 'Jus Alpukat',
+    description: 'Jus alpukat kental dengan susu cokelat',
     price: 15000,
     quantity: 50,
     category: dummyMenuCategories[0],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T10:10:00'),
+    },
   },
   {
     id: 'menu-4',
     name: 'Matcha Latte',
+    description: 'Teh hijau Jepang dengan susu creamy',
     price: 18000,
     quantity: 40,
     category: dummyMenuCategories[0],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T10:15:00'),
+    },
   },
   {
     id: 'menu-5',
     name: 'Susu Jahe',
+    description: 'Susu hangat dengan jahe segar',
     price: 10000,
     quantity: 70,
     category: dummyMenuCategories[0],
+    branch: dummyBranches[1],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T10:20:00'),
+    },
   },
-
-  // Makanan
   {
     id: 'menu-6',
     name: 'Nasi Goreng Spesial',
+    description: 'Nasi goreng dengan telur, ayam, dan kerupuk',
     price: 25000,
     quantity: 80,
     category: dummyMenuCategories[1],
+    branch: dummyBranches[0],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T11:00:00'),
+    },
   },
   {
     id: 'menu-7',
     name: 'Ayam Geprek',
+    description: 'Ayam goreng tepung dengan sambal bawang',
     price: 20000,
     quantity: 90,
     category: dummyMenuCategories[1],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T11:05:00'),
+    },
   },
   {
     id: 'menu-8',
     name: 'Mie Goreng Jawa',
+    description: 'Mie goreng khas Jawa dengan sayuran dan ayam',
     price: 18000,
     quantity: 85,
     category: dummyMenuCategories[1],
+    branch: dummyBranches[1],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T11:10:00'),
+    },
   },
   {
     id: 'menu-9',
     name: 'Sate Ayam',
+    description: 'Sate ayam dengan bumbu kacang dan lontong',
     price: 22000,
     quantity: 60,
     category: dummyMenuCategories[1],
+    branch: dummyBranches[1],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T11:15:00'),
+    },
   },
   {
     id: 'menu-10',
     name: 'Bakso Kuah Pedas',
+    description: 'Bakso sapi dalam kuah pedas gurih',
     price: 17000,
     quantity: 75,
     category: dummyMenuCategories[1],
+    branch: dummyBranches[0],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T11:20:00'),
+    },
   },
-
-  // Dessert
   {
     id: 'menu-11',
     name: 'Pisang Bakar Keju',
+    description: 'Pisang bakar dengan topping keju dan cokelat',
     price: 12000,
     quantity: 40,
     category: dummyMenuCategories[2],
+    branch: dummyBranches[1],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T12:00:00'),
+    },
   },
   {
     id: 'menu-12',
     name: 'Es Krim Vanila',
+    description: 'Es krim lembut rasa vanila',
     price: 10000,
     quantity: 50,
     category: dummyMenuCategories[2],
+    branch: dummyBranches[1],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T12:05:00'),
+    },
   },
   {
     id: 'menu-13',
     name: 'Pudding Cokelat',
+    description: 'Pudding cokelat lembut dengan saus cokelat',
     price: 8000,
     quantity: 45,
     category: dummyMenuCategories[2],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T12:10:00'),
+    },
   },
   {
     id: 'menu-14',
     name: 'Roti Bakar Cokelat',
+    description: 'Roti bakar isi cokelat meleleh',
     price: 11000,
     quantity: 60,
     category: dummyMenuCategories[2],
+    branch: dummyBranches[2],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T12:15:00'),
+    },
   },
   {
     id: 'menu-15',
     name: 'Kue Lapis',
+    description: 'Kue tradisional berlapis warna-warni',
     price: 9000,
     quantity: 70,
     category: dummyMenuCategories[2],
+    branch: dummyBranches[0],
+    meta: {
+      created_at: new Date('2025-04-01T10:00:00'),
+      updated_at: new Date('2025-04-01T12:20:00'),
+    },
   },
 ];

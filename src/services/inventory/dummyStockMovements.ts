@@ -22,8 +22,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Budi"
   },
   meta: {
-    createdAt: new Date("2025-04-28T11:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-28T11:00:00"),
+    updated_at: null
   }
 },
 {
@@ -47,8 +47,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Budi"
   },
   meta: {
-    createdAt: new Date("2025-04-27T09:15:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-27T09:15:00"),
+    updated_at: null
   }
 },
 {
@@ -72,8 +72,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Siti"
   },
   meta: {
-    createdAt: new Date("2025-04-27T15:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-27T15:00:00"),
+    updated_at: null
   }
 },
 {
@@ -97,8 +97,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Siti"
   },
   meta: {
-    createdAt: new Date("2025-04-25T09:40:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-25T09:40:00"),
+    updated_at: null
   }
 },
 {
@@ -122,8 +122,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Rudi"
   },
   meta: {
-    createdAt: new Date("2025-04-28T08:10:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-28T08:10:00"),
+    updated_at: null
   }
 },
 {
@@ -147,8 +147,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Rudi"
   },
   meta: {
-    createdAt: new Date("2025-04-27T17:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-27T17:00:00"),
+    updated_at: null
   }
 },
 {
@@ -172,8 +172,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Rudi"
   },
   meta: {
-    createdAt: new Date("2025-04-26T13:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-26T13:00:00"),
+    updated_at: null
   }
 },
 {
@@ -197,8 +197,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Dewi"
   },
   meta: {
-    createdAt: new Date("2025-04-28T14:50:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-28T14:50:00"),
+    updated_at: null
   }
 },
 {
@@ -222,8 +222,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Dewi"
   },
   meta: {
-    createdAt: new Date("2025-04-26T15:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-26T15:00:00"),
+    updated_at: null
   }
 },
 {
@@ -247,8 +247,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Budi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -272,8 +272,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Siti"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -297,8 +297,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Rudi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -322,8 +322,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Dewi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -347,8 +347,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Budi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -372,8 +372,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Siti"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -397,8 +397,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Rudi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 },
 {
@@ -422,8 +422,8 @@ export const dummyStockMovements: StockMovement[] = [
     name: "Dewi"
   },
   meta: {
-    createdAt: new Date("2025-04-24T07:00:00"),
-    updatedAt: null
+    created_at: new Date("2025-04-24T07:00:00"),
+    updated_at: null
   }
 }
 ];
