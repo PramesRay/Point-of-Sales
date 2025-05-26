@@ -1,6 +1,6 @@
 const PublicRoutes = {
   path: '/',
-  component: () => import('@/layouts/blank/BlankLayout.vue'),
+  component: () => import('@/views/authentication/LoginPage.vue'),
   meta: {
     requiresAuth: false
   },
