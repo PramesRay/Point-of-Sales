@@ -1,3 +1,7 @@
+import type { Branch } from "./branch";
+import type { IdName } from "./common";
+import type { Meta } from "./meta";
+
 export type AllIncomes = Record<string, number>;
 
 export interface OrderSummary {
@@ -32,13 +36,21 @@ export interface Transaction {
 }
 
 export interface FundRequest {
-  request: string,
-  name: string,
-  price: number,
-  date: Date,
+  id: string,
+  subject: string,
+  notes: string,
+  employee: IdName,
+  amount: number,
   status: 'Pending' | 'Disetujui' | 'Ditolak',
-  branchId: string,
-  branchName: string
+  branch: IdName
+  meta? : Meta
+}
+
+export type CreateFundRequest = Omit<FundRequest, 'id' | 'status' | 'branch' | 'employee' | 'meta'> & {
+  branch_id: string
+}
+export type UpdateFundRequest = Omit<FundRequest, 'employee' | 'branch' | 'meta'> & {
+  branch_id: string
 }
 
 export interface FinanceSummary {

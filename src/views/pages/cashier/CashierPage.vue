@@ -2,6 +2,8 @@
 import { useRoute, useRouter } from 'vue-router';
 import { computed, onMounted } from 'vue';
 import { hasRole } from '@/utils/helpers/user';
+import { useDisplay } from 'vuetify';
+const { mdAndUp, smAndDown } = useDisplay()
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -20,7 +22,7 @@ import { useMenuItems } from '@/composables/useMenuItems';
 // Data Loading
 const { data: me, loading: lu, fetchMe } = useUser();
 const { branches, loading: lb } = useBranchList();
-const { data: currentOrder, loading: lco, error, updateOrder } = useCurrentOrders();
+const { data: currentOrder, loading: lco, error, updateOrder, createOrder, processDirectPayment } = useCurrentOrders();
 const { transactions, loading: ltx } = useTransactions();
 const { init, data: menuItems, categories, loadingData, loadingBranches } = useMenuItems();
 
@@ -68,57 +70,66 @@ const selectedBranch = computed({
   </BaseBreadcrumb>
 
   <v-row>
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Order Card -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
-      <CurrentOrder 
-        :data="currentOrder" 
-        :branch="selectedBranch"
-        :loading="lco" 
-        class="flex-grow-1" 
-      />
-    </v-col>
-    
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Create Order Card -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
-      <CreateOrder 
-        :user="me"
-        :data="menuItems"
-        :categories="categories"
-        :branch="selectedBranch"
-        :loading="lco" 
-        class="flex-grow-1" 
-      />
-    </v-col>
-    
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Order Que -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
-      <CurrentOrderQue
-        :user="me"
-        :data="currentOrder" 
-        :branch="selectedBranch"
-        :loading="lco" 
-        @proses-order="updateOrder"
-        @process-payment="updateOrder"
-        class="flex-grow-1" 
-      />
+    <!-- Kolom Kiri: Current Order + Current Transaction -->
+    <v-col cols="12" md="6">
+      <v-row>
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <CurrentOrder 
+            :data="currentOrder" 
+            :branch="selectedBranch"
+            :loading="lco" 
+            class="flex-grow-1" 
+          />
+        </v-col>
+        
+        <v-col cols="12" v-if="mdAndUp">
+          <CurrentTransaction
+            :data="transactions"
+            :branch="selectedBranch"
+            :loading="ltx"
+            class="flex-grow-1"
+          />
+        </v-col>
+      </v-row>
     </v-col>
 
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Stock Request List -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
-      <CurrentTransaction
-        :data="transactions"
-        :branch="selectedBranch"
-        :loading="ltx"
-        class="flex-grow-1"
-      />
+    <!-- Kolom Kanan: Create Order + Current Order Que -->
+    <v-col cols="12" md="6">
+      <v-row>
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <CreateOrder 
+            :user="me"
+            :data="menuItems"
+            :categories="categories"
+            :branch="selectedBranch"
+            :loading="lco" 
+            @create-order="createOrder"
+            @process-direct-payment="processDirectPayment"
+            class="flex-grow-1" 
+          />
+        </v-col>
+
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <CurrentOrderQue
+            :user="me"
+            :data="currentOrder" 
+            :branch="selectedBranch"
+            :loading="lco" 
+            @proses-order="updateOrder"
+            @process-payment="updateOrder"
+            class="flex-grow-1" 
+          />
+        </v-col>
+
+        <v-col cols="12" v-if="smAndDown">
+          <CurrentTransaction
+            :data="transactions"
+            :branch="selectedBranch"
+            :loading="ltx"
+            class="flex-grow-1"
+          />
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>

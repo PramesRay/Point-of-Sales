@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import type { Branch } from '@/types/branch';
-import type { FundRequest } from '@/types/finance';
+import { ref, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
+
+import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
+
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
 import { formatDate } from "@/utils/helpers/format-date";
-import { ref, computed, watch } from 'vue'
+import type { Employee } from '@/types/employee';
+import { cloneDeep } from 'lodash';
+
+const emit = defineEmits<{
+  (e: 'create-fr', payload: CreateFundRequest): FundRequest
+  (e: 'update-fr', payload: UpdateFundRequest): FundRequest
+}>();
 
 const props = defineProps<{
+  user: Employee;
   data: FundRequest[];
   branch: string;
   loading?: boolean;
@@ -17,7 +28,7 @@ const filteredData = computed(() => {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branchId === props.branch
+    (tx) => tx.branch.id === props.branch
   );
 });
 
@@ -27,16 +38,36 @@ const latestRequest = computed(() => filteredData.value[0]);
 // Sisanya untuk list biasa
 const listRequest = computed(() => filteredData.value.slice(1));
 
+const selectedRequest = ref<FundRequest | null>(null)
+const isNewRequest = ref(false)
+
 const formRef = ref()
 const isFormValid = ref(false)
-const datePickerMenu = ref(false)
+
 const showOverlay = ref(false)
 const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
 const showConfirmDialog = ref(false)
-const currencyValue = ref('');
-const user = JSON.parse(localStorage.getItem('user') || '{}')
-const branches = ref<Branch[]>(user?.branches ?? [{ id: 'branch-1', name: 'Restoran 1' }])
 
+const datePickerMenu = ref(false)
+
+// Payload
+const fundRequestPayload = ref<{
+  subject: string | null;
+  notes: string | null;
+  amount: number | null;
+  amountRaw: string;
+  time: Date | null;
+  branchId: string | null;
+  status: string | null
+}>({
+  subject: null,
+  notes: null,
+  amount: null,
+  amountRaw: '',
+  time: new Date(), // waktu saat ini
+  branchId: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1',
+  status: null
+})
 
 // Form Rules
 const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
@@ -49,48 +80,62 @@ const amtRules = [
 ]
 const descRules = [((v: string) => v.length <= 100 || 'Maks 100 karakter'), ((v: string) => !!v || 'Deskripsi tidak boleh kosong')]
 
-// Payload
-const createFundRequest = ref<{
-  subject: string | null;
-  description: string | null;
-  amount: number | null;
-  amountRaw: string;
-  employee: string | null;
-  time: Date | null;
-  branchId: string | null;
-}>({
-  subject: null,
-  description: null,
-  amount: null,
-  amountRaw: '',
-  employee: user.employee ?? 'Dummy Employee', // ambil dari storage
-  time: new Date(), // waktu saat ini
-  branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1' // ambil dari storage
-})
+function processFundRequest() {
+  if (!fundRequestPayload.value) return
 
-
-function processCreateMovement() {
-  if (!createFundRequest.value) return
-
-  const payload = {
-    subject: createFundRequest.value.subject,
-    description: createFundRequest.value.description,
-    amount: createFundRequest.value.amount,
-    time: createFundRequest.value.time ? new Date(createFundRequest.value.time).toISOString() : null,
-    branchId: createFundRequest.value.branchId,
-    employee: createFundRequest.value.employee
+  const payload: CreateFundRequest = {
+    subject: fundRequestPayload.value.subject ?? '',
+    notes: fundRequestPayload.value.notes ?? '',
+    amount: fundRequestPayload.value.amount ?? 0,
+    branch_id: fundRequestPayload.value.branchId ?? ''
   }
 
-  console.log('Mengirim ke backend:', payload)
-
+  if (isNewRequest.value) {
+    emit('create-fr', payload)
+    console.log('Mengirim ke backend:', payload)
+  } else {
+    const updatePayload: UpdateFundRequest = {
+      id: selectedRequest.value?.id ?? '',
+      status: selectedRequest.value?.status ?? 'Pending',
+      ...payload
+    }
+    emit('update-fr', updatePayload)
+    console.log('Mengirim ke backend:', updatePayload)
+  }
   confirmCancel()
 }
 
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    processCreateMovement()
+    processFundRequest()
   })
+}
+
+function clearPayload() {
+  fundRequestPayload.value = {
+    subject: null,
+    notes: null,
+    amount: null,
+    amountRaw: '',
+    time: new Date(), // waktu saat ini
+    branchId: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1',
+    status: null
+  }
+}
+
+function openAddNew() {
+  selectedRequest.value = null
+  isNewRequest.value = true
+  showOverlay.value = true
+
+  clearPayload()
+}
+
+function openDetail(request: FundRequest) {
+  selectedRequest.value = cloneDeep(request)
+  isNewRequest.value = false
+  showOverlay.value = true
 }
 
 function confirmCancel() {
@@ -98,31 +143,59 @@ function confirmCancel() {
   showConfirmDialog.value = false
   showOverlay.value = false
 
-  if (createFundRequest.value) {
-    createFundRequest.value = {
-      subject: null,
-      description: null,
-      amount: null,
-      amountRaw: '',
-      employee: user.employee ?? 'Dummy Employee', // ambil dari storage
-      time: new Date(), // waktu saat ini
-      branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1' // ambil dari storage
+  if (selectedRequest.value) {
+    fundRequestPayload.value = {
+      ...selectedRequest.value,
+      subject: selectedRequest.value.subject,
+      notes: selectedRequest.value.notes,
+      amount: selectedRequest.value.amount,
+      amountRaw: formatRupiahInput(selectedRequest.value.amount.toString()),
+      branchId: selectedRequest.value.branch.id,
+      status: selectedRequest.value.status,
+      time: selectedRequest.value.meta?.updated_at ?? null
     }
+  }
+
+  if (isNewRequest.value) {
+    clearPayload()
   }
 }
 
 const isChanged = computed(() => {
-  if (!createFundRequest.value) return false
+  if (!fundRequestPayload.value) return false
 
-  return (
-    createFundRequest.value.subject !== null ||
-    createFundRequest.value.description !== null ||
-    createFundRequest.value.amount !== null ||
-    createFundRequest.value.employee !== null ||
-    createFundRequest.value.time !== null ||
-    createFundRequest.value.branchId !== null
-  )
+  if (isNewRequest.value) {
+    return (
+      fundRequestPayload.value.subject !== null ||
+      fundRequestPayload.value.notes !== null ||
+      fundRequestPayload.value.amount !== null
+    )
+  } else {
+    return (
+      fundRequestPayload.value.subject !== selectedRequest.value?.subject ||
+      fundRequestPayload.value.notes !== selectedRequest.value?.notes ||
+      fundRequestPayload.value.amount !== selectedRequest.value?.amount ||
+      fundRequestPayload.value.branchId !== selectedRequest.value?.branch.id ||
+      fundRequestPayload.value.status !== selectedRequest.value?.status ||
+      new Date(fundRequestPayload.value.time!).getTime() !== new Date(selectedRequest.value?.meta?.updated_at!).getTime()
+    )
+  }
 })
+
+watch(selectedRequest, (val) => {
+  if (val) {
+    fundRequestPayload.value = {
+      ...val,
+      subject: val.subject,
+      notes: val.notes,
+      amount: val.amount,
+      branchId: val.branch.id,
+      status: val.status,
+      time: val.meta?.updated_at ?? null,
+      amountRaw: formatRupiahInput(val.amount.toString())
+    }
+  }
+}, { immediate: true })
 
 watch(showOverlay, (isOpen, wasOpen) => {
   if (!isOpen && wasOpen) {
@@ -138,31 +211,30 @@ watch(showOverlay, (isOpen, wasOpen) => {
   }
 })
 
-watch(() => createFundRequest.value.amountRaw, (val) => {
+watch(() => fundRequestPayload.value.amountRaw, (val) => {
   const numeric = val.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
-  createFundRequest.value.amount = numeric ? Number(numeric) : null
+  fundRequestPayload.value.amount = numeric ? Number(numeric) : null
 })
-
 </script>
 
 <template>
   <v-card elevation="0">
     <v-card variant="outlined">
       <v-card-text>
-        <v-row >
+        <v-row>
           <v-col cols="8">
             <div class="d-flex align-center">
               <h4 class="text-h4 mt-1">Permintaan Dana Terkini</h4>
             </div>
             <div v-if="props.branch !== 'all'">
-              <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branchName }}</i>
+              <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
             </div> 
           </v-col>
-          <v-col cols="4" sm="3" class="mt-auto">
+          <v-col cols="4" class="mt-auto text-right">
             <v-btn
               v-if="!loading"
               color="primary"
-              @click="showOverlay = true"
+              @click="openAddNew"
             >
               Tambah
             </v-btn>
@@ -170,40 +242,51 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
         </v-row>
           
         <div v-if="!props.loading">
-          <v-card class="bg-lightsecondary mt-5">
+          <v-card class="bg-lightsecondary mt-5" @click="openDetail(latestRequest)">
             <div v-if="latestRequest" class="pa-5">
-              <span class="text-subtitle-2 text-medium-emphasis">
-                <span v-if="props.branch === 'all'">{{ latestRequest?.branchName }}: </span>{{ formatDate(latestRequest?.date) }}
+              <span class="text-subtitle-2 text-disabled">
+                <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest.meta?.updated_at ? formatDate(latestRequest.meta?.updated_at) : '' }}
               </span>
               <div class="d-inline-flex align-center justify-space-between w-100">
                 <div>
-                  <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ latestRequest?.request }}</h6>
-                  <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.name }}</span>
+                  <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ latestRequest?.subject }}</h6>
+                  <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.employee.name }}</span>
                 </div>
                 <div>
                   <div class="d-flex justify-end">  
-                    <span v-if="latestRequest?.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ latestRequest?.status }}</span>
-                    <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
-                    <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
+                    <span
+                      :class="{
+                        'text-subtitle-2 text-medium-emphasis text-warning': latestRequest?.status === 'Pending',
+                        'text-subtitle-2 text-medium-emphasis text-success': latestRequest?.status === 'Disetujui',
+                        'text-subtitle-2 text-medium-emphasis text-error': latestRequest?.status === 'Ditolak'
+                      }"
+                    >{{ latestRequest?.status }}</span>
                   </div>
-                  <h4 class="text-h4">{{ formatRupiah(latestRequest?.price) }}</h4>
+                  <h4 class="text-h4">{{ formatRupiah(latestRequest?.amount) }}</h4>
                 </div>
               </div>
             </div>
           </v-card>
           <div class="mt-4">
-            <perfect-scrollbar v-bind:style="{ height: '180px' }">
+            <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '12rem'}">
               <v-list v-if="listRequest.length > 0" class="py-0">
-                <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm">
-                  <span class="text-subtitle-2 text-medium-emphasis">
-                    <span v-if="props.branch === 'all'">{{ listRequest?.branchName }}: </span>{{ formatDate(listRequest?.date) }}
+                <v-list-item 
+                  v-for="(listRequest, i) in listRequest" 
+                  :key="i" 
+                  :value="listRequest" 
+                  color="secondary" 
+                  rounded="sm"
+                  @click="openDetail(listRequest)"
+                >
+                  <span class="text-subtitle-2 text-disabled">
+                    <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ listRequest?.branch.name }}: </span>{{ listRequest.meta?.updated_at ? formatDate(listRequest.meta?.updated_at) : '' }}
                   </span>
                   <div class="d-inline-flex align-center justify-space-between w-100">
                     <div>
                       <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                        {{ listRequest?.request }}
+                        {{ listRequest?.subject }}
                       </h6>
-                      <span class="text-subtitle-2 text-medium-emphasis">{{ listRequest?.name }}</span>
+                      <span class="text-subtitle-2 text-medium-emphasis">{{ listRequest?.employee.name }}</span>
                     </div>
                     <div>
                       <div class="d-flex justify-end">
@@ -211,7 +294,7 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
                         <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
                         <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                       </div>
-                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(listRequest?.price) }}</div>
+                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(listRequest?.amount) }}</div>
                     </div>
                   </div>
                   <v-divider class="my-3" />
@@ -244,11 +327,13 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
+    max-width="400"
   >
     <v-card
-      class="rounded-lg pa-6 mt-8 bg-white "
-      style="width: 90vw; max-width: 90vw;"
+      :class="!isNewRequest || selectedRequest === latestRequest ? 'bg-white' : 'bg-lightsecondary'"
+      class="rounded-lg pa-6 mt-8"
+      style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;"
     >
       <v-form ref="formRef" v-model="isFormValid">
         <!-- Close button -->
@@ -262,51 +347,64 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
 
         <div>
           <v-row>
-            <v-col cols="12">
-              <v-text-field
-                :model-value="createFundRequest.time ? formatDate(new Date(createFundRequest.time)) : ''"
-                v-bind="props"
-                label="Tanggal Permintaan"
-                variant="underlined"
-                prepend-icon="mdi-calendar"
-                :readonly="true"
-                :rules="requieredRules"
-                disabled
-                hide-details
+            <v-col cols="6" v-if="!isNewRequest">
+              <v-menu
+              v-model="datePickerMenu"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              min-width="auto"
+            >
+              <template #activator="{ props }">
+                <v-text-field
+                  :model-value="fundRequestPayload.time ? formatDate(new Date(fundRequestPayload.time)) : ''"
+                  v-bind="props"
+                  label="Tanggal Permintaan"
+                  variant="underlined"
+                  prepend-icon="mdi-calendar"
+                  :readonly="true"
+                  :rules="requieredRules"
+                  hide-details
+                />
+              </template>
+              <v-date-picker
+                v-model="fundRequestPayload.time"
+                @update:model-value="datePickerMenu = false"
               />
+            </v-menu>
             </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="6">
-              <v-text-field
-                variant="underlined"
-                v-model="createFundRequest.employee"
-                label="Pegawai"
-                :rules="requieredRules"
-                prepend-icon="mdi-human-male"
-                disabled
-                hide-details
-              />
-            </v-col>
-            <v-col cols="6">
+            <v-col cols="12" v-if="isNewRequest">
               <v-select
                 variant="underlined"
-                v-model="createFundRequest.branchId"
+                v-model="fundRequestPayload.branchId"
                 label="Cabang"
-                :items="branches"
-                :rules="requieredRules"
+                :items="props.user.assigned_branch"
                 item-title="name"
                 item-value="id"
+                :rules="requieredRules"
                 prepend-icon="mdi-home"
-                disabled
+                :disabled="props.user.assigned_branch.length === 1"
                 hide-details
+              />
+            </v-col>
+            <v-col cols="6" v-else>
+              <v-select
+                variant="underlined"
+                v-model="fundRequestPayload.branchId"
+                label="Cabang"
+                :items="[selectedRequest?.branch]"
+                item-title="name"
+                item-value="id"
+                :rules="requieredRules"
+                prepend-icon="mdi-home"
+                :disabled="props.user.assigned_branch.length === 1"
               />
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="12" sm="6">
+            <v-col cols="12">
               <v-text-field 
-                v-model="createFundRequest.amountRaw" 
+                v-model="fundRequestPayload.amountRaw" 
                 control-variant="hidden"
                 variant="underlined"
                 :min="0"
@@ -314,14 +412,14 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
                 prepend-icon="mdi-cash-multiple"
                 label="Jumlah Dana"
                 prefix="Rp"
-                @input="createFundRequest.amountRaw = formatRupiahInput(createFundRequest.amountRaw)"
+                @input="fundRequestPayload.amountRaw = formatRupiahInput(fundRequestPayload.amountRaw)"
               ></v-text-field>
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="12" sm="6">
+            <v-col cols="12">
               <v-text-field
-                v-model="createFundRequest.subject"
+                v-model="fundRequestPayload.subject"
                 label="Judul Permintaan"
                 variant="underlined"
                 prepend-icon="mdi-form-textbox"
@@ -333,7 +431,7 @@ watch(() => createFundRequest.value.amountRaw, (val) => {
           <div>
             <v-textarea
               variant="underlined"
-              v-model="createFundRequest.description"
+              v-model="fundRequestPayload.notes"
               :rules="descRules"
               label="Deskripsi"
               rows="3"

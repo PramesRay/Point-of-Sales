@@ -1,6 +1,6 @@
 import api from '../api';
 import dummyOrderQue from './dummyOrderQueList';
-import type { Order } from '@/types/order'
+import type { CreateOrderPayload, Order } from '@/types/order'
 import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
 
@@ -31,6 +31,30 @@ export async function updateOrderData(payload: {[key: string]: any }): Promise<O
     return res.data;
   } catch (error) {
     console.error('Error updating order status:', error);
+    console.log('Payload:', payload);
+    throw error;
+  }
+}
+
+export async function createOrderData(payload: CreateOrderPayload): Promise<Order> {
+  try {
+    const res = await api.post('/order', { payload });
+    alertStore.showAlert('Order baru telah dibuat!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error creating order:', error);
+    console.log('Payload:', payload);
+    throw error;
+  }
+}
+
+export async function processDirectPaymentOrder(payload: {order: CreateOrderPayload, payment_method: string}): Promise<Order> {
+  try {
+    const res = await api.post('/order/process-direct-payment', { payload });
+    alertStore.showAlert('Order baru telah dibuat!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error creating order:', error);
     console.log('Payload:', payload);
     throw error;
   }

@@ -46,7 +46,7 @@ const currentOrder = computed(() => filteredData.value.length || 0);
       </v-row>
       <v-row v-if="props.loading">
         <v-col cols="12">
-          <v-skeleton-loader type="paragraph" color="transparant bg-primary"></v-skeleton-loader>
+          <v-skeleton-loader type="paragraph" color="transparant bg-secondary"></v-skeleton-loader>
         </v-col>
       </v-row>
     </v-card-text>

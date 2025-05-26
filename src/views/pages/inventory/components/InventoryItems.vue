@@ -1,7 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import type { Category, InventoryItem } from '@/types/inventoryItem';
+import { ref, computed, watch, onMounted } from 'vue'
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
+
+import type { Category, InventoryItem, CreateInventoryItemPayload, UpdateInventoryItemPayload } from '@/types/inventory';
+
 import { formatDate } from '@/utils/helpers/format-date';
+import { useInventoryItems } from '@/composables/useInventoryItems';
+import { cloneDeep } from 'lodash';
+import { formatNumberInput } from '@/utils/helpers/format-input';
+
+const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
+
+onMounted(() => {
+  initItems();
+});
+
+const emit = defineEmits<{
+  (e: 'create-item', payload: CreateInventoryItemPayload): InventoryItem
+  (e: 'update-item', payload: UpdateInventoryItemPayload): InventoryItem
+}>();
 
 const props = defineProps<{
   data: InventoryItem[];
@@ -9,23 +27,28 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const selectedItem = ref<InventoryItem | null>(null)
 const showOverlay = ref(false)
 const formRef = ref()
 const isFormValid = ref(false)
+
+const selectedItem = ref<InventoryItem | null>(null)
 const isNewItem = ref(false)
 const adjustItem = ref<{
   name: string | null;
   description: string | null;
   quantity: number | null;
-  categoryId: string | null;
-  expireDate: Date | null
+  category_id: string | null;
+  expired_date: Date | null,
+  unit: string | null,
+  threshold: number | null
 }>({
   name: null,
   description: null,
   quantity: 0,
-  categoryId: null,
-  expireDate: null
+  category_id: null,
+  expired_date: null,
+  unit: null,
+  threshold: null
 })
 const datePickerMenu = ref(false)
 const adjustmentNotes = ref('')
@@ -35,16 +58,10 @@ const pendingOverlayClose = ref(false)
 
 const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
 const descRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
-const qtyRules = [
-  (v: string) => !!v || 'Jumlah tidak boleh kosong',
-  (v: string) => {
-    const numeric = Number(v.replace(/\D/g, ''))
-    return numeric >= 0 || 'Jumlah tidak boleh kurang dari 0'
-  }
-]
+const qtyRules = [(v: number) => v > 0 || 'Jumlah harus lebih dari 0']
 
 function openDetail(request: InventoryItem) {
-  selectedItem.value = request
+  selectedItem.value = cloneDeep(request)
   isNewItem.value = false
   showOverlay.value = true
 }
@@ -53,12 +70,15 @@ function openAddNew() {
   selectedItem.value = null
   isNewItem.value = true
   showOverlay.value = true
+
   adjustItem.value = {
     name: null,
     description: null,
     quantity: 0,
-    categoryId: null,
-    expireDate: null
+    category_id: null,
+    expired_date: null,
+    unit: null,
+    threshold: null
   }
   adjustmentNotes.value = ''
 }
@@ -70,8 +90,8 @@ const isChanged = computed(() => {
       adjustItem.value.name !== null ||
       adjustItem.value.description !== null ||
       adjustItem.value.quantity !== 0 ||
-      adjustItem.value.categoryId !== null ||
-      adjustItem.value.expireDate !== null ||
+      adjustItem.value.category_id !== null ||
+      adjustItem.value.expired_date !== null ||
       adjustmentNotes.value.trim() !== ''
     )
   } else {
@@ -80,8 +100,8 @@ const isChanged = computed(() => {
       adjustItem.value.name !== selectedItem.value.name ||
       adjustItem.value.description !== selectedItem.value.description ||
       adjustItem.value.quantity !== selectedItem.value.quantity ||
-      adjustItem.value.categoryId !== selectedItem.value.category?.id ||
-      new Date(adjustItem.value.expireDate!).getTime() !== new Date(selectedItem.value.expireDate!).getTime() ||
+      adjustItem.value.category_id !== selectedItem.value.category?.id ||
+      new Date(adjustItem.value.expired_date!).getTime() !== new Date(selectedItem.value.expired_date!).getTime() ||
       adjustmentNotes.value.trim() !== ''
     )
   }
@@ -96,23 +116,42 @@ const currentData = computed(() => {
   return props.data.filter(item => item.category?.id === selectedCtg.value)
 })
 
+const dataItems = computed(() => {
+  if (!inventoryItem.value) return []
+  return inventoryItem.value
+})
+
 function processAdjustment() {
   if (!adjustItem.value) return
-
-  const payload = {
-    id: selectedItem.value?.id,
-    name: adjustItem.value.name,
-    description: adjustItem.value.description,
-    quantity: adjustItem.value.quantity,
-    categoryId: adjustItem.value.categoryId,
-    expiredDate: adjustItem.value.expireDate,
-    adjustmentNotes: adjustmentNotes.value
-  }
-
+  
   if (isNewItem.value) {
+    const payload: CreateInventoryItemPayload = {
+      name: adjustItem.value.name!,
+      description: adjustItem.value.description!,
+      quantity: adjustItem.value.quantity!,
+      unit: adjustItem.value.unit!,
+      threshold: adjustItem.value.threshold!,
+      category_id: adjustItem.value.category_id!,
+      expired_date: adjustItem.value.expired_date!,
+      note: adjustmentNotes.value
+    }
     console.log('Membuat item baru:', payload)
+    emit('create-item', payload)
   } else {
+    if (!selectedItem.value) return
+    const payload: UpdateInventoryItemPayload = {
+      id: selectedItem.value.id,
+      name: adjustItem.value.name!,
+      description: adjustItem.value.description!,
+      quantity: adjustItem.value.quantity!,
+      unit: adjustItem.value.unit!,
+      threshold: adjustItem.value.threshold!,
+      category_id: adjustItem.value.category_id!,
+      expired_date: adjustItem.value.expired_date!,
+      note: adjustmentNotes.value
+    }
     console.log('Mengubah item:', payload)
+    emit('update-item', payload)
   }
   
   confirmCancel()
@@ -136,8 +175,10 @@ function confirmCancel() {
       name: selectedItem.value.name ?? null,
       description: selectedItem.value.description ?? null,
       quantity: selectedItem.value.quantity ?? null,
-      categoryId: selectedItem.value.category?.id ?? null,
-      expireDate: selectedItem.value.expireDate ?? null
+      category_id: selectedItem.value.category?.id ?? null,
+      expired_date: selectedItem.value.expired_date ?? null,
+      unit: selectedItem.value.unit ?? null,
+      threshold: selectedItem.value.threshold ?? null
     }
   }
   
@@ -146,8 +187,10 @@ function confirmCancel() {
       name: null,
       description: null,
       quantity: 0,
-      categoryId: null,
-      expireDate: null
+      category_id: null,
+      expired_date: null,
+      unit: null,
+      threshold: null
     }
   }
   adjustmentNotes.value = ''
@@ -167,11 +210,13 @@ watch(selectedItem, (val) => {
   if (val) {
     adjustItem.value = {
       ...val,
-      categoryId: val.category?.id ?? null,
+      category_id: val.category?.id ?? null,
       name: val.name,
       description: val.description ?? null,
       quantity: val.quantity ?? null,
-      expireDate: val.expireDate ?? null
+      expired_date: val.expired_date ?? null,
+      unit: val.unit ?? null,
+      threshold: val.threshold ?? null
     }
     adjustmentNotes.value = ''
   }
@@ -201,10 +246,10 @@ watch(showOverlay, (isOpen, wasOpen) => {
     <v-card variant="outlined">
       <v-card-text>
         <v-row>
-          <v-col cols="8" sm="6">
+          <v-col cols="8">
             <h4 class="text-h4 mt-1">Stok Gudang</h4>
           </v-col>
-          <v-col cols="4" sm="3" class="mt-auto">
+          <v-col cols="4" class="mt-auto text-right">
             <v-btn
               v-if="!loading"
               color="primary"
@@ -239,7 +284,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
         </div>
 
         <div class="mt-4" v-if="!loading">
-          <perfect-scrollbar v-bind:style="{ height: '180px' }">
+          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '15rem' : '12rem'}">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
                 v-for="(item, i) in currentData"
@@ -249,8 +294,8 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 rounded="sm"
                 @click="openDetail(item)"
               >
-                <span class="text-subtitle-2 text-medium-emphasis">
-                  <i> Expired: {{ formatDate(new Date(item?.expireDate)) }} </i>
+                <span class="text-subtitle-2 text-disabled">
+                  Expired: {{ item?.expired_date ? formatDate(new Date(item?.expired_date)) : 'Tidak ada kadaluarsa' }} 
                 </span>
                 <div class="d-flex justify-space-between align-start w-100">
                   <!-- Kolom kiri -->
@@ -261,7 +306,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                     >
                       {{ item?.name }}
                     </h6>
-                    <i class="text-subtitle-2 text-medium-emphasis">
+                    <i class="text-subtitle-2 text-disabled">
                       {{ item?.description }}
                     </i>
                   </div>
@@ -319,9 +364,13 @@ watch(showOverlay, (isOpen, wasOpen) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
+    max-width="400"
   >
-    <v-card class="rounded-lg pa-6 mt-8 bg-white" style="width: 90vw; max-width: 90vw;">
+    <v-card 
+      class="rounded-lg pa-6 mt-8 bg-white" 
+      style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;"
+    >
       <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="showOverlay = false">
         <v-icon>mdi-close</v-icon>
       </v-btn>
@@ -335,7 +384,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
         <v-row>
           <v-col cols="6">
             <v-select
-              v-model="adjustItem.categoryId"
+              v-model="adjustItem.category_id"
               :items="editableCategories"
               item-title="name"
               item-value="id"
@@ -356,7 +405,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             >
               <template #activator="{ props }">
                 <v-text-field
-                  :model-value="adjustItem.expireDate ? formatDate(new Date(adjustItem.expireDate)) : ''"
+                  :model-value="adjustItem.expired_date ? formatDate(new Date(adjustItem.expired_date)) : ''"
                   v-bind="props"
                   label="Tanggal Expired"
                   variant="underlined"
@@ -367,43 +416,74 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 />
               </template>
               <v-date-picker
-                v-model="adjustItem.expireDate"
+                v-model="adjustItem.expired_date"
                 @update:model-value="datePickerMenu = false"
               />
             </v-menu>
           </v-col>
         </v-row>
 
-        <v-row>
-          <v-col cols="6">
-            <v-text-field
-              v-model="adjustItem.name"
-              label="Nama Barang"
-              :rules="requieredRules"
-              variant="underlined"
-              prepend-icon="mdi-form-textbox"
-              single-line
-            />
-          </v-col>
-          <v-col cols="6">
-            <v-number-input
-              control-variant="split"
-              v-model.number="adjustItem.quantity"
-              variant="plain"
-              :min="0"
-              style="max-width: 140px"
-            />
-          </v-col>
-        </v-row>
+        <v-row class="justify-space-between">
+            <v-col cols="7">
+              <v-combobox
+                variant="underlined"
+                v-model="adjustItem.name"
+                :items="dataItems.map(item => ({ title: item.name, value: item.id }))"
+                :loading="li"
+                label="Nama Barang"
+                :rules="requieredRules"
+                prepend-icon="mdi-form-textbox"
+              />
+            </v-col>
+            <v-col cols="5">
+              <v-text-field
+                type="number"
+                hide-spin-buttons
+                variant="underlined"
+                v-model="adjustItem.threshold"
+                label="Threshold"
+                :min="0"
+                :rules="[v => v > 0 || 'Threshold harus lebih dari 0']"
+                prepend-icon="mdi-alert"
+                @input="adjustItem.threshold = Number(formatNumberInput(String(adjustItem.threshold ?? 0)))"
+              />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="6">
+              <v-combobox
+                variant="underlined"
+                v-model="adjustItem.unit"
+                :items="['pcs', 'kg', 'ltr', 'box']"
+                label="Satuan"
+                :rules="requieredRules"
+                prepend-icon="mdi-scale-balance"
+              />
+            </v-col>
+            <v-col cols="6" class="text-right">
+              <v-number-input 
+                control-variant="split"
+                v-model.number="adjustItem.quantity"
+                variant="plain"
+                :min="0"
+                :rules="qtyRules"
+                style="max-width: 140px"
+              ></v-number-input>
+            </v-col>
+          </v-row>
 
         <v-row class="text-caption text-medium-emphasis">
           <v-col>
-            <v-text-field
+            <v-textarea
               v-model="adjustItem.description"
               label="Deskripsi Barang: "
-              :rules="descRules"
+              :rules="descRules && requieredRules"
               variant="underlined"
               prepend-icon="mdi-text-box"
+              rows="2"
+              auto-grow
+              clearable
+              counter
             />
           </v-col>
         </v-row>
@@ -414,7 +494,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             v-model="adjustmentNotes"
             :rules="descRules"
             label="Opsional"
-            rows="2"
+            rows="3"
             auto-grow
             clear-icon="mdi-close"
             clearable
@@ -426,7 +506,8 @@ watch(showOverlay, (isOpen, wasOpen) => {
           <div class="d-flex justify-end mt-1">
             <v-btn
               color="primary"
-              :disabled="!isFormValid || !isChanged"
+              :disabled="isNewItem ? !isFormValid : !isChanged"
+              :loading="props.loading"
               @click="submitForm"
             >
               Simpan

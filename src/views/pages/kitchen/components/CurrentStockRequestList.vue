@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import type { StockRequestList } from '@/types/inventory';
-import { formatRupiah } from '@/utils/helpers/currency'
-import { formatDate } from "@/utils/helpers/format-date";
 import { ref, computed, watch, onMounted } from 'vue'
+
 import { getTimeAgo } from "@/utils/helpers/time-ago";
+
+import type { StockRequestList } from '@/types/inventory';
 import type { Branch } from '@/types/branch';
+
 import { useInventoryItems } from "@/composables/useInventoryItems";
 const { init: initItems, data: inventoryItem, categories, loading: li } = useInventoryItems();
 
+onMounted(() => {
+  initItems();
+});
 
 const emit = defineEmits<{
   (e: 'create-request', payload: any): void
@@ -71,7 +75,6 @@ const newRequest = ref<{
 
 function openAddRequest() {
   showAddOverlay.value = true
-  initItems();
   // Inisialisasi data form kosong/standar
   newRequest.value = {
     branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1', // ambil dari storage

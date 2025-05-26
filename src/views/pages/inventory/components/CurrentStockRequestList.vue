@@ -1,9 +1,15 @@
 <script setup lang="ts">
-import type { StockRequestList } from '@/types/inventory';
-import { formatRupiah } from '@/utils/helpers/currency'
-import { formatDate } from "@/utils/helpers/format-date";
 import { ref, computed, watch } from 'vue'
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
+
+import type { StockRequestList, ApproveStockRequestPayload } from '@/types/inventory';
+
 import { getTimeAgo } from "@/utils/helpers/time-ago";
+
+const emit = defineEmits<{
+  (e: 'approve-request', payload: ApproveStockRequestPayload): StockRequestList
+}>();
 
 const props = defineProps<{
   data: StockRequestList[];
@@ -71,17 +77,19 @@ function confirmCancel() {
 
 // fungsi simulasi kirim data ke backend
 function prosesApproval() {
-  const payload = {
-    requestId: selectedRequest.value?.id,
-    approvalNote: approvalNote.value,
+  if (!selectedRequest.value) return
+  
+  const payload: ApproveStockRequestPayload = {
+    id: selectedRequest.value.id,
+    note: approvalNote.value,
     items: approvalItems.value.map(item => ({
       id: item.id,
-      status: item.approved ? 'Diterima' : 'Ditolak'
+      status: item.approved ? 'Disetujui' : 'Ditolak'
     }))
   }
 
-  console.log('Mengirim ke backend:', payload)
-  // TODO: kirim via API seperti axios.post('/api/approve-request', payload)
+  emit('approve-request', payload)
+  
   isManuallySaving.value = true
   confirmCancel()
 }
@@ -146,15 +154,15 @@ watch(showOverlay, (isOpen, wasOpen) => {
               @click="openDetail(latestRequest)"
             >
               <div v-if="latestRequest" class="pa-5">
-                <span class="text-subtitle-2 text-medium-emphasis">
-                  <span v-if="props.branch === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
+                <span class="text-subtitle-2 text-disabled">
+                  <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
                 </span>
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <h6 class="text-secondary text-h4 font-weight-bold">
                       {{ latestRequest?.employee.name }}
                     </h6>
-                    <span class="text-subtitle-2 text-medium-emphasis">
+                    <span class="text-subtitle-2 text-disabled">
                       Lihat Detail
                     </span>
                   </div>
@@ -164,27 +172,27 @@ watch(showOverlay, (isOpen, wasOpen) => {
                       <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestRequest.time.createdAt) }}</h4>
-                    <i v-if="latestRequest.time.updatedAt !== null" class="text-subtitle-2 text-medium-emphasis">
-                      Diubah {{ getTimeAgo(latestRequest.time.updatedAt) }}
+                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestRequest.time.created_at) }}</h4>
+                    <i v-if="latestRequest.time.updated_at !== null" class="text-subtitle-2 text-medium-emphasis">
+                      Diubah {{ getTimeAgo(latestRequest.time.updated_at) }}
                     </i>
                   </div>
                 </div>
               </div>
             </v-card>
             <div class="mt-4">
-              <perfect-scrollbar v-bind:style="{ height: '180px' }">
+              <perfect-scrollbar v-bind:style="{ maxHeight: mdAndUp? `30rem` : '12rem' }">
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
-                    <span class="text-subtitle-2 text-medium-emphasis">
-                      <span v-if="props.branch === 'all'">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
+                    <span class="text-subtitle-2 text-disabled">
+                      <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
                     </span>
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
                         <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
                           {{ listRequest?.employee.name }}
                         </h6>
-                        <span class="text-subtitle-2 text-medium-emphasis">
+                        <span class="text-subtitle-2 text-disabled">
                           Lihat Detail
                         </span>
                       </div>
@@ -194,9 +202,9 @@ watch(showOverlay, (isOpen, wasOpen) => {
                           <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listRequest.time.createdAt) }}</div>
-                        <i v-if="listRequest.time.updatedAt" class="text-subtitle-2 text-medium-emphasis">
-                          Diubah {{ getTimeAgo(listRequest.time.updatedAt) }}
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listRequest.time.created_at) }}</div>
+                        <i v-if="listRequest.time.updated_at" class="text-subtitle-2 text-medium-emphasis">
+                          Diubah {{ getTimeAgo(listRequest.time.updated_at) }}
                         </i>
                       </div>
                     </div>
@@ -232,12 +240,13 @@ watch(showOverlay, (isOpen, wasOpen) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
+    max-width="400"
   >
     <v-card
       :class="selectedRequest === latestRequest ? 'bg-lightsecondary' : 'bg-white'"
-      class="rounded-lg pa-6 mt-8"
-      style="width: 90vw; max-width: 90vw;"
+      class="rounded-lg pa-6 height-screen"
+      style="width: clamp(0px, 90dvw, 320px); overflow-y: auto; max-height: 90vh;"
     >
       <!-- Close button -->
       <div
@@ -275,9 +284,9 @@ watch(showOverlay, (isOpen, wasOpen) => {
                   }"
                 >{{ selectedRequest?.status }}</span>
               </div>
-              <h4 v-if="selectedRequest?.time.createdAt" class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
-              <i v-if="selectedRequest?.time.updatedAt" class="text-subtitle-2 text-medium-emphasis">
-                Diubah {{ getTimeAgo(selectedRequest?.time.updatedAt) }}
+              <h4 v-if="selectedRequest?.time.created_at" class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.created_at) }}</h4>
+              <i v-if="selectedRequest?.time.updated_at" class="text-subtitle-2 text-medium-emphasis">
+                Diubah {{ getTimeAgo(selectedRequest?.time.updated_at) }}
               </i>
             </div>
           </div>
@@ -302,7 +311,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 <div class="font-weight-medium">{{ item.name }}</div>
                 <div class="text-caption">Jumlah: {{ item.quantity }} {{ item.unit }}</div>
               </v-col>
-              <v-col cols="5" class="text-right">
+              <v-col cols="5" class="text-right pa-0">
                 <div v-if="(selectedRequest?.status === 'Pending' || selectedRequest?.status === 'Beberapa Disetujui') && item.approved === null">
                   <v-btn
                     icon  

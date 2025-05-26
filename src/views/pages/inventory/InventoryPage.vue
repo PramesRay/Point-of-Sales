@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
+import { hasRole } from '@/utils/helpers/user';
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -16,13 +17,15 @@ import { useStockRequests } from "@/composables/useStockRequest";
 import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
+const { data: me, loading: lu, fetchMe } = useUser();
 const { branches, loading: lb } = useBranchList();
-const { summary, list: stockRequestlist, loading: lsr } = useStockRequests();
-const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
-const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
-const { requests, loading: lfr } = useFundRequests();
+const { summary, list: stockRequestlist, loading: lsr, updateRequest } = useStockRequests();
+const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
+const { init: initStockMovement, data: dataStockMovement, loading: lsm, create: createStockMovement, update: updateStockMovement } = useStockMovements();
+const { requests, loading: lfr, create: createFundRequest, update: updateFundRequest } = useFundRequests();
 
 onMounted(() => {
+  fetchMe();
   initItems();
   initStockMovement();
 });
@@ -31,6 +34,8 @@ onMounted(() => {
 import { computed, onMounted } from 'vue';
 import { useStockMovements } from '@/composables/useStockMovement';
 import { useFundRequests } from '@/composables/useFundRequest';
+import { useUser } from '@/composables/useUser';
+
 const route = useRoute();
 const router = useRouter();
 const branchOptions = computed(() => [
@@ -70,63 +75,71 @@ const selectedBranch = computed({
   </BaseBreadcrumb>
 
   <v-row>
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Restock Card -->
-    <!-- -------------------------------------------------------------------- -->
+    <!-- Kolom Kiri: Current Order + Current Transaction -->
     <v-col cols="12" md="4">
-      <CurrentStockRequestSummary 
-        :data="summary" 
-        :branch="selectedBranch"
-        :loading="lsr" 
-        class="flex-grow-1" 
-      />
+      <v-row>
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <CurrentStockRequestSummary 
+            :data="summary" 
+            :branch="selectedBranch"
+            :loading="lsr" 
+            class="flex-grow-1" 
+          />
+        </v-col>
+        
+        <v-col cols="12">
+          <CurrentStockRequestList 
+            :data="stockRequestlist" 
+            :branch="selectedBranch"
+            :loading="lsr" 
+            class="flex-grow-1"
+            @approve-request="updateRequest"
+          />
+        </v-col>
+      </v-row>
     </v-col>
 
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Stock Request List -->
-    <!-- -------------------------------------------------------------------- -->
+    <!-- Kolom Kanan: Create Order + Current Order Que -->
     <v-col cols="12" md="4">
-      <CurrentStockRequestList 
-        :data="stockRequestlist" 
-        :branch="selectedBranch"
-        :loading="lsr" 
-        class="flex-grow-1" 
-      />
-    </v-col>
+      <v-row>
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <InventoryItems 
+            :data="dataInventory"
+            :categories="categories"
+            :loading="li"
+            class="flex-grow-1"
+            @create-item="createItem"
+            @update-item="updateItem"
+          />
+        </v-col>
 
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Inventory Stock -->
-    <!-- -------------------------------------------------------------------- -->
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <StockMovement
+            :data="dataStockMovement"
+            :categories="categories"
+            :branches="branches"
+            :loading="lsm"
+            class="flex-grow-1"
+            @create-sm="createStockMovement"
+            @update-sm="updateStockMovement"
+          />
+        </v-col>
+      </v-row>
+    </v-col>
     <v-col cols="12" md="4">
-      <InventoryItems 
-        :data="dataInventory"
-        :categories="categories"
-        :loading="li"
-      />
-    </v-col>
-
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Stock Movement -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" lg="8">
-      <StockMovement
-        :data="dataStockMovement"
-        :categories="categories"
-        :branches="branches"
-        :loading="lsm"
-      />
-    </v-col>
-
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Fund Request -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" lg="8">
-      <CurrentFundRequest
-        :data="requests"
-        :branch="selectedBranch"
-        :loading="lfr"
-        class="flex-grow-1"
-      />
+      <v-row>
+        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+          <CurrentFundRequest
+            :user="me"
+            :data="requests"
+            :branch="selectedBranch"
+            :loading="lfr"
+            class="flex-grow-1"
+            @create-fr="createFundRequest"
+            @update-fr="updateFundRequest"
+          />
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>

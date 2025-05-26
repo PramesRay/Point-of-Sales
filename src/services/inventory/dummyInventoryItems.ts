@@ -1,4 +1,4 @@
-import type { InventoryItem } from "@/types/inventoryItem";
+import type { InventoryItem } from "@/types/inventory";
 
 export const dummyInventoryItems: InventoryItem[] = [
   // Bahan Pokok
@@ -11,8 +11,9 @@ export const dummyInventoryItems: InventoryItem[] = [
     },
     description: 'Beras putih premium untuk nasi uduk',
     quantity: 100,
+    unit: 'pcs',
     threshold: 30,
-    expireDate: new Date('2025-07-01'),
+    expired_date: new Date('2025-07-01'),
   },
   {
     id: 'inv-002',
@@ -23,8 +24,9 @@ export const dummyInventoryItems: InventoryItem[] = [
     },
     description: 'Santan cair segar untuk memasak nasi uduk',
     quantity: 50,
+    unit: 'pcs',
     threshold: 20,
-    expireDate: new Date('2025-05-10'),
+    expired_date: new Date('2025-05-10'),
   },
   {
     id: 'inv-003',
@@ -34,8 +36,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Bahan Pokok',
     },
     quantity: 20,
+    unit: 'pcs',
     threshold: 5,
-    expireDate: new Date('2025-05-15'),
+    expired_date: new Date('2025-05-15'),
   },
   {
     id: 'inv-004',
@@ -45,8 +48,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Bahan Pokok',
     },
     quantity: 25,
+    unit: 'pcs',
     threshold: 8,
-    expireDate: new Date('2025-05-18'),
+    expired_date: new Date('2025-05-18'),
   },
   {
     id: 'inv-005',
@@ -56,6 +60,7 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Bahan Pokok',
     },
     quantity: 40,
+    unit: 'pcs',
     threshold: 10,
   },
 
@@ -69,8 +74,9 @@ export const dummyInventoryItems: InventoryItem[] = [
     },
     description: 'Daging ayam untuk goreng atau semur',
     quantity: 30,
+    unit: 'pcs',
     threshold: 10,
-    expireDate: new Date('2025-05-08'),
+    expired_date: new Date('2025-05-08'),
   },
   {
     id: 'inv-007',
@@ -80,8 +86,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Lauk',
     },
     quantity: 100,
+    unit: 'pcs',
     threshold: 30,
-    expireDate: new Date('2025-05-15'),
+    expired_date: new Date('2025-05-15'),
   },
   {
     id: 'inv-008',
@@ -91,8 +98,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Lauk',
     },
     quantity: 60,
+    unit: 'pcs',
     threshold: 15,
-    expireDate: new Date('2025-05-09'),
+    expired_date: new Date('2025-05-09'),
   },
   {
     id: 'inv-009',
@@ -102,8 +110,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Lauk',
     },
     quantity: 45,
+    unit: 'pcs',
     threshold: 12,
-    expireDate: new Date('2025-05-09'),
+    expired_date: new Date('2025-05-09'),
   },
   {
     id: 'inv-010',
@@ -113,6 +122,7 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Lauk',
     },
     quantity: 20,
+    unit: 'pcs',
     threshold: 5,
   },
 
@@ -125,6 +135,7 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Pelengkap',
     },
     quantity: 15,
+    unit: 'pcs',
     threshold: 5,
   },
   {
@@ -136,8 +147,9 @@ export const dummyInventoryItems: InventoryItem[] = [
     },
     description: 'Sambal kacang khas nasi uduk',
     quantity: 10,
+    unit: 'pcs',
     threshold: 5,
-    expireDate: new Date('2025-05-12'),
+    expired_date: new Date('2025-05-12'),
   },
   {
     id: 'inv-013',
@@ -147,8 +159,9 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Pelengkap',
     },
     quantity: 30,
+    unit: 'pcs',
     threshold: 10,
-    expireDate: new Date('2025-05-06'),
+    expired_date: new Date('2025-05-06'),
   },
   {
     id: 'inv-014',
@@ -158,6 +171,7 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Pelengkap',
     },
     quantity: 100,
+    unit: 'pcs',
     threshold: 20,
   },
   {
@@ -168,7 +182,8 @@ export const dummyInventoryItems: InventoryItem[] = [
       name: 'Pelengkap',
     },
     quantity: 15,
+    unit: 'pcs',
     threshold: 5,
-    expireDate: new Date('2025-05-10'),
+    expired_date: new Date('2025-05-10'),
   },
 ]

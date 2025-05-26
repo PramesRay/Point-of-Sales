@@ -40,6 +40,19 @@ export async function createStockRequest(payload: any): Promise<StockRequestList
     return res.data;
   } catch (error) {
     console.warn(`Create stock request failed, using dummy.`, error);
+    console.log('Payload: ', payload)
+    throw error
+  }  
+}
+
+export async function updateStockRequest(payload: any): Promise<StockRequestList> {
+  try {
+    const res = await api.put<StockRequestList>(`/inventory/stock-requests`, payload);
+    alertStore.showAlert('Permintaan Stok berhasil diubah!', 'success');
+    return res.data;
+  } catch (error) {
+    console.warn(`Update stock request failed, using dummy.`, error);
+    console.log('Payload: ', payload)
     throw error
   }  
 }

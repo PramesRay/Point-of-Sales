@@ -1,32 +1,56 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import type { InventoryCategory, StockMovement } from '@/types/inventoryItem';
+import { cloneDeep } from 'lodash';
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
+
+import type { Category, StockMovement, CreateStockMovementPayload, UpdateStockMovementPayload } from '@/types/inventory';
 import type { Branch } from '@/types/branch';
+
 import { formatDate } from '@/utils/helpers/format-date';
+import { useInventoryItems } from '@/composables/useInventoryItems';
+
+const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
+
+onMounted(() => {
+  initItems();
+});
+
+const emit = defineEmits<{
+  (e: 'create-sm', payload: CreateStockMovementPayload): StockMovement
+  (e: 'update-sm', payload: CreateStockMovementPayload): StockMovement
+}>();
 
 const props = defineProps<{
   data: StockMovement[];
-  categories: InventoryCategory[];
+  categories: Category[];
   branches: Branch[];
   loading: boolean;
 }>();
 
 const branches = computed(() => props.branches)
 const editableCategories = computed(() => props.categories)
-const selectedCtg = ref<string | null>('all')
 const categories = computed(() => [
   {id: 'all', name: 'Semua'},
   ...props.categories
 ])
+const dataItems = computed(() => {
+  if (!inventoryItem.value) return []
+  return inventoryItem.value
+})
+
+const selectedCtg = ref<string | null>('all')
 const selectedItem = ref<StockMovement | null>(null)
+
 const formRef = ref()
 const isFormValid = ref(false)
 const datePickerMenu = ref(false)
-const selectedBranch = ref<string>()
+
 const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
 const showConfirmDialog = ref(false)
 const showOverlay = ref(false)
 const isManuallySaving = ref(false)
+
 const isNewItem = ref(false)
 const statusMovement = ref(['Keluar', 'Masuk'])
 
@@ -91,13 +115,7 @@ const isChanged = computed(() => {
   }
 })
 
-function openDetail(request: StockMovement) {
-  selectedItem.value = request
-  isNewItem.value = false
-  showOverlay.value = true
-}
-
-function openAddNew() {
+function clearPayload() {
   dataMovement.value = {
     name: null,
     description: null,
@@ -108,6 +126,15 @@ function openAddNew() {
     branchId: null,
     status: null
   }
+}
+
+function openDetail(request: StockMovement) {
+  selectedItem.value = cloneDeep(request)
+  isNewItem.value = false
+  showOverlay.value = true
+}
+
+function openAddNew() {
   selectedItem.value = null
   isNewItem.value = true
   showOverlay.value = true
@@ -117,21 +144,28 @@ function processdataMovement() {
   if (!dataMovement.value) return
 
   const payload = {
-    id: selectedItem.value?.id,
-    name: dataMovement.value.name,
-    description: dataMovement.value.description,
-    quantity: dataMovement.value.quantity,
-    unit: dataMovement.value.unit,
-    categoryId: dataMovement.value.categoryId,
-    time: dataMovement.value.time ? new Date(dataMovement.value.time).toISOString() : null,
-    branchId: dataMovement.value.branchId
+    name: dataMovement.value.name!,
+    description: dataMovement.value.description!,
+    quantity: dataMovement.value.quantity!,
+    unit: dataMovement.value.unit!,
+    category_id: dataMovement.value.categoryId!,
+    time: dataMovement.value.time ? new Date(dataMovement.value.time) : undefined,
+    branch_id: dataMovement.value.branchId! 
+  }
+
+  const updatePayload: UpdateStockMovementPayload = {
+    id: selectedItem.value?.id!,
+    ...payload
   }
 
   if (isNewItem.value) {
+    emit('create-sm', payload)
     console.log('Membuat item baru:', payload)
   } else {
-    console.log('Mengubah item:', payload)
+    emit('update-sm', updatePayload)
+    console.log('Mengubah item:', updatePayload)
   }
+  
   isManuallySaving.value = true
   confirmCancel()
 }
@@ -160,16 +194,7 @@ function confirmCancel() {
       status: selectedItem.value.status ?? null
     }
   } else {
-    dataMovement.value = {
-      name: null,
-      description: null,
-      quantity: 0,
-      unit: null,
-      categoryId: null,
-      time: null,
-      branchId: null,
-      status: null
-    }
+    clearPayload()
   }
 }
 
@@ -229,10 +254,10 @@ watch(selectedItem, (val) => {
     <v-card variant="outlined">
       <v-card-text>
         <v-row class="justify-space-between">
-          <v-col cols="6" sm="3">
+          <v-col cols="6" >
             <h4 class="text-h4 mt-1">Perpindahan Stok</h4>
           </v-col>
-          <v-col cols="4" sm="3" >
+          <v-col cols="4" class="mt-auto text-right">
             <v-btn
               v-if="!loading"
               color="primary"
@@ -241,7 +266,7 @@ watch(selectedItem, (val) => {
               Tambah
             </v-btn>
           </v-col>
-          <v-col cols="12" sm="6">
+          <v-col cols="12" class="pt-0 py-2">
             <v-select
               color="primary"
               variant="outlined"
@@ -265,7 +290,7 @@ watch(selectedItem, (val) => {
         </div>
 
         <div class="mt-4" v-if="!loading">
-          <perfect-scrollbar v-bind:style="{ height: '180px' }">
+          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '17rem' : '12rem'}">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
                 v-for="(item, i) in currentData"
@@ -276,10 +301,10 @@ watch(selectedItem, (val) => {
                 @click="openDetail(item)"
               >
                 <span class="text-subtitle-2 text-medium-emphasis">
-                  <i> {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }} </i>
+                  <span> {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }} <i class="text-disabled">: {{ item?.branch?.name }}</i> </span>
                 </span>
 
-                <div class="d-flex justify-space-between align-start w-100">
+                <div class="d-flex justify-space-between align-start w-100" >
                   <!-- Kolom kiri -->
                   <div class="pe-4" style="flex: 1">
                     <h6
@@ -288,8 +313,8 @@ watch(selectedItem, (val) => {
                     >
                       {{ item?.name }}
                     </h6>
-                    <i class="text-subtitle-2 text-medium-emphasis">
-                      {{ item?.description }}
+                    <i class="text-subtitle-2 text-disabled">
+                      {{ item.time ? formatDate(new Date(item?.time)) : '-' }}
                     </i>
                   </div>
 
@@ -307,7 +332,7 @@ watch(selectedItem, (val) => {
                       </span>
                     </div>
                     <div
-                      v-if="item?.quantity >= 0"
+                      v-if="item?.quantity! >= 0"
                       class="text-subtitle-1 text-medium-emphasis font-weight-bold my-1"
                     >
                       {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }}
@@ -337,11 +362,12 @@ watch(selectedItem, (val) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
+    max-width="400"
   >
     <v-card
       class="rounded-lg pa-6 mt-8 bg-white "
-      style="width: 90vw; max-width: 90vw;"
+      style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;" 
     >
       <v-form ref="formRef" v-model="isFormValid">
         <!-- Close button -->
@@ -420,9 +446,10 @@ watch(selectedItem, (val) => {
 
           <v-row class="justify-space-between">
             <v-col cols="12">
-              <v-text-field
+              <v-combobox
                 variant="underlined"
                 v-model="dataMovement.name"
+                :items="dataItems.map(item => ({ title: item.name, value: item.id }))"
                 label="Nama Barang"
                 :rules="requieredRules"
                 prepend-icon="mdi-form-textbox"
@@ -431,9 +458,10 @@ watch(selectedItem, (val) => {
           </v-row>
           <v-row>
             <v-col cols="6">
-              <v-text-field
+              <v-combobox
                 variant="underlined"
                 v-model="dataMovement.unit"
+                :items="['pcs', 'kg', 'ltr', 'box']"
                 label="Satuan"
                 :rules="requieredRules"
                 prepend-icon="mdi-scale-balance"

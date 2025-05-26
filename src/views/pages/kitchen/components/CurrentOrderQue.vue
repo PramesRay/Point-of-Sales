@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { cloneDeep } from 'lodash';
+import { useDisplay } from 'vuetify';
+const { mdAndUp, smAndDown } = useDisplay()
 
 import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
@@ -192,13 +194,13 @@ watch(() => cashInput.value, (val) => {
               </div>
             </v-card>
             <div class="mt-4">
-              <perfect-scrollbar v-bind:style="{ height: '180px' }">
+              <perfect-scrollbar :style="{ maxHeight: mdAndUp? '20rem' : '12rem'}">
                 <v-list v-if="listOrderQue?.length > 0" class="py-0">
                   <v-list-item v-for="(listOrderQue, i) in listOrderQue" :key="i" :value="listOrderQue" color="secondary" rounded="sm" @click="openDetail(listOrderQue)">
-                    <span>
+                    <span class="text-subtitle-2 text-medium-emphasis">
                       {{ listOrderQue?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 
                     </span> 
-                    <span v-if="!listOrderQue?.is_take_away" class="text-subtitle-2 text-medium-emphasis">
+                    <span v-if="!listOrderQue?.is_take_away" class="text-subtitle-2 text-disabled">
                       : Meja {{ listOrderQue?.table_number }} 
                     </span>
                     <div class="d-inline-flex align-center justify-space-between w-100">
@@ -263,12 +265,12 @@ watch(() => cashInput.value, (val) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
   >
     <v-card
       :class="selectedOrder === latestOrderQue ? 'bg-lightsecondary' : 'bg-white'"
-      class="rounded-lg pa-6 mt-8"
-      style="width: 90vw; max-width: 90vw; max-height: 90vh;"
+      class="rounded-lg pa-6 ma-4 height-screen"
+      style="width: clamp(340px, 90vw, 340px); overflow-y: auto; max-height: 90vh;"
     >
       <!-- Close button -->
       <v-btn
@@ -468,12 +470,12 @@ watch(() => cashInput.value, (val) => {
     v-model="inPayment"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
   >
     <v-card
       :class="selectedOrder === latestOrderQue ? 'bg-lightsecondary' : 'bg-white'"
-      class="rounded-lg pa-6 mt-8"
-      style="width: 90vw; max-width: 90vw; max-height: 90vh;"
+      class="rounded-lg pa-6 mt-8 height-screen"
+      style="width: clamp(340px, 90vw, 340px); overflow-y: auto; max-height: 90vh;"
     >
       <!-- Close button -->
       <v-btn

@@ -4,26 +4,26 @@ import type { FundRequest } from '@/types/finance';
  * Dummy fund request data per branch
  */
 const dummyFundRequestData: FundRequest[] = [
-  { request: 'Belanja Bahan',           name: 'Khodijah', price: 1500000, date: new Date('2022-07-25'), status: 'Pending', branchId: 'branch-1', branchName: 'Restoran 1' },
-  { request: 'Belanja Kebutuhan Dapur', name: 'Teddy',    price:   50000, date: new Date('2022-07-24'), status: 'Pending', branchId: 'branch-1', branchName: 'Restoran 1' },
-  { request: 'Print Banner',            name: 'Ozi',      price:   50000, date: new Date('2022-07-23'), status: 'Pending', branchId: 'branch-1', branchName: 'Restoran 1' },
-  { request: 'Transportasi',            name: 'Ujang',    price:  200000, date: new Date('2022-07-22'), status: 'Ditolak', branchId: 'branch-1', branchName: 'Restoran 1' },
-  { request: 'Belanja Kertas Resi',     name: 'Silmi',    price:   50000, date: new Date('2022-07-21'), status: 'Disetujui', branchId: 'branch-1', branchName: 'Restoran 1' },
-  { request: 'Belanja Bahan',           name: 'Rina',     price: 1400000, date: new Date('2022-07-26'), status: 'Pending', branchId: 'branch-2', branchName: 'Restoran 2' },
-  { request: 'Perbaikan Peralatan',     name: 'Dian',     price:  800000, date: new Date('2022-07-25'), status: 'Pending', branchId: 'branch-2', branchName: 'Restoran 2' },
-  { request: 'Print Menu',              name: 'Bagas',    price:   30000, date: new Date('2022-07-24'), status: 'Disetujui', branchId: 'branch-2', branchName: 'Restoran 2' },
-  { request: 'Transportasi',            name: 'Fajar',    price:  150000, date: new Date('2022-07-23'), status: 'Pending', branchId: 'branch-2', branchName: 'Restoran 2' },
-  { request: 'Lain-lain',               name: 'Ayu',      price:   70000, date: new Date('2022-07-22'), status: 'Ditolak', branchId: 'branch-2', branchName: 'Restoran 2' },
-  { request: 'Belanja Bahan',           name: 'Anton',    price: 1600000, date: new Date('2022-07-27'), status: 'Pending', branchId: 'branch-3', branchName: 'Restoran 3' },
-  { request: 'Belanja Bumbu',           name: 'Lina',     price:   90000, date: new Date('2022-07-26'), status: 'Disetujui', branchId: 'branch-3', branchName: 'Restoran 3' },
-  { request: 'Transportasi',            name: 'Hadi',     price:  120000, date: new Date('2022-07-25'), status: 'Pending', branchId: 'branch-3', branchName: 'Restoran 3' },
-  { request: 'Cetak Struk',             name: 'Sari',     price:   40000, date: new Date('2022-07-24'), status: 'Disetujui', branchId: 'branch-3', branchName: 'Restoran 3' },
-  { request: 'Lain-lain',               name: 'Rizky',    price:   60000, date: new Date('2022-07-23'), status: 'Ditolak', branchId: 'branch-3', branchName: 'Restoran 3' },
-  { request: 'Belanja Bahan',           name: 'Yuni',     price: 1550000, date: new Date('2022-07-28'), status: 'Pending', branchId: 'branch-4', branchName: 'Restoran 4' },
-  { request: 'Perbaikan Peralatan',     name: 'Gilang',   price:  950000, date: new Date('2022-07-27'), status: 'Pending', branchId: 'branch-4', branchName: 'Restoran 4' },
-  { request: 'Cetak Brosur',            name: 'Nita',     price:   45000, date: new Date('2022-07-26'), status: 'Disetujui', branchId: 'branch-4', branchName: 'Restoran 4' },
-  { request: 'Transportasi',            name: 'Eko',      price:  130000, date: new Date('2022-07-25'), status: 'Pending', branchId: 'branch-4', branchName: 'Restoran 4' },
-  { request: 'Lain-lain',               name: 'Bambang',  price:   80000, date: new Date('2022-07-24'), status: 'Ditolak', branchId: 'branch-4', branchName: 'Restoran 4' }
+  { id: 'fun-req/001' , subject: 'Belanja Bahan',           employee: {id: 'emp-001', name: 'Khodijah'}, notes: '-', amount: 1500000, meta: {created_at: new Date('2022-07-25'), updated_at: new Date('2022-07-25')}, status: 'Pending', branch: {id: 'branch-1', name: 'Restoran 1'} },
+  { id: 'fun-req/002' , subject: 'Belanja Kebutuhan Dapur', employee: {id: 'emp-002', name: 'Teddy'},    notes: '-', amount:   50000, meta: {created_at: new Date('2022-07-24'), updated_at: new Date('2022-07-24')}, status: 'Pending', branch: {id: 'branch-1', name: 'Restoran 1'} },
+  { id: 'fun-req/003' , subject: 'Print Banner',            employee: {id: 'emp-003', name: 'Ozi'},      notes: '-', amount:   50000, meta: {created_at: new Date('2022-07-23'), updated_at: new Date('2022-07-23')}, status: 'Pending', branch: {id: 'branch-1', name: 'Restoran 1'} },
+  { id: 'fun-req/004' , subject: 'Transportasi',            employee: {id: 'emp-004', name: 'Ujang'},    notes: '-', amount:  200000, meta: {created_at: new Date('2022-07-22'), updated_at: new Date('2022-07-22')}, status: 'Ditolak', branch: {id: 'branch-1', name: 'Restoran 1'} },
+  { id: 'fun-req/005' , subject: 'Belanja Kertas Resi',     employee: {id: 'emp-005', name: 'Silmi'},    notes: '-', amount:   50000, meta: {created_at: new Date('2022-07-21'), updated_at: new Date('2022-07-21')}, status: 'Disetujui', branch: {id: 'branch-1', name: 'Restoran 1'} },
+  { id: 'fun-req/006' , subject: 'Belanja Bahan',           employee: {id: 'emp-006', name: 'Rina'},     notes: '-', amount: 1400000, meta: {created_at: new Date('2022-07-26'), updated_at: new Date('2022-07-26')}, status: 'Pending', branch: {id: 'branch-2', name: 'Restoran 2'} },
+  { id: 'fun-req/007' , subject: 'Perbaikan Peralatan',     employee: {id: 'emp-007', name: 'Dian'},     notes: '-', amount:  800000, meta: {created_at: new Date('2022-07-25'), updated_at: new Date('2022-07-25')}, status: 'Pending', branch: {id: 'branch-2', name: 'Restoran 2'} },
+  { id: 'fun-req/008' , subject: 'Print Menu',              employee: {id: 'emp-008', name: 'Bagas'},    notes: '-', amount:   30000, meta: {created_at: new Date('2022-07-24'), updated_at: new Date('2022-07-24')}, status: 'Disetujui', branch: {id: 'branch-2', name: 'Restoran 2'} },
+  { id: 'fun-req/009' , subject: 'Transportasi',            employee: {id: 'emp-009', name: 'Fajar'},    notes: '-', amount:  150000, meta: {created_at: new Date('2022-07-23'), updated_at: new Date('2022-07-23')}, status: 'Pending', branch: {id: 'branch-2', name: 'Restoran 2'} },
+  { id: 'fun-req/010' , subject: 'Lain-lain',               employee: {id: 'emp-010', name: 'Ayu'},      notes: '-', amount:   70000, meta: {created_at: new Date('2022-07-22'), updated_at: new Date('2022-07-22')}, status: 'Ditolak', branch: {id: 'branch-2', name: 'Restoran 2'} },
+  { id: 'fun-req/011' , subject: 'Belanja Bahan',           employee: {id: 'emp-011', name: 'Anton'},    notes: '-', amount: 1600000, meta: {created_at: new Date('2022-07-27'), updated_at: new Date('2022-07-27')}, status: 'Pending', branch: {id: 'branch-3', name: 'Restoran 3'} },
+  { id: 'fun-req/012' , subject: 'Belanja Bumbu',           employee: {id: 'emp-012', name: 'Lina'},     notes: '-', amount:   90000, meta: {created_at: new Date('2022-07-26'), updated_at: new Date('2022-07-26')}, status: 'Disetujui', branch: {id: 'branch-3', name: 'Restoran 3'} },
+  { id: 'fun-req/013' , subject: 'Transportasi',            employee: {id: 'emp-013', name: 'Hadi'},     notes: '-', amount:  120000, meta: {created_at: new Date('2022-07-25'), updated_at: new Date('2022-07-25')}, status: 'Pending', branch: {id: 'branch-3', name: 'Restoran 3'} },
+  { id: 'fun-req/014' , subject: 'Cetak Struk',             employee: {id: 'emp-014', name: 'Sari'},     notes: '-', amount:   40000, meta: {created_at: new Date('2022-07-24'), updated_at: new Date('2022-07-24')}, status: 'Disetujui', branch: {id: 'branch-3', name: 'Restoran 3'} },
+  { id: 'fun-req/015' , subject: 'Lain-lain',               employee: {id: 'emp-015', name: 'Rizky'},    notes: '-', amount:   60000, meta: {created_at: new Date('2022-07-23'), updated_at: new Date('2022-07-23')}, status: 'Ditolak', branch: {id: 'branch-3', name: 'Restoran 3'} },
+  { id: 'fun-req/016' , subject: 'Belanja Bahan',           employee: {id: 'emp-016', name: 'Yuni'},     notes: '-', amount: 1550000, meta: {created_at: new Date('2022-07-28'), updated_at: new Date('2022-07-28')}, status: 'Pending', branch: {id: 'branch-4', name: 'Restoran 4'} },
+  { id: 'fun-req/017' , subject: 'Perbaikan Peralatan',     employee: {id: 'emp-017', name: 'Gilang'},   notes: '-', amount:  950000, meta: {created_at: new Date('2022-07-27'), updated_at: new Date('2022-07-27')}, status: 'Pending', branch: {id: 'branch-4', name: 'Restoran 4'} },
+  { id: 'fun-req/018' , subject: 'Cetak Brosur',            employee: {id: 'emp-018', name: 'Nita'},     notes: '-', amount:   45000, meta: {created_at: new Date('2022-07-26'), updated_at: new Date('2022-07-26')}, status: 'Disetujui', branch: {id: 'branch-4', name: 'Restoran 4'} },
+  { id: 'fun-req/019' , subject: 'Transportasi',            employee: {id: 'emp-019', name: 'Eko'},      notes: '-', amount:  130000, meta: {created_at: new Date('2022-07-25'), updated_at: new Date('2022-07-25')}, status: 'Pending', branch: {id: 'branch-4', name: 'Restoran 4'} },
+  { id: 'fun-req/020' , subject: 'Lain-lain',               employee: {id: 'emp-020', name: 'Bambang'},  notes: '-', amount:   80000, meta: {created_at: new Date('2022-07-24'), updated_at: new Date('2022-07-24')}, status: 'Ditolak', branch: {id: 'branch-4', name: 'Restoran 4'} }
 ];
 
 export default dummyFundRequestData;
