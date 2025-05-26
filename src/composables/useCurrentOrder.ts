@@ -1,7 +1,8 @@
 import { ref, watchEffect } from 'vue'
-import { fetchCurrentOrder, updateOrderData } from '@/services/totalOrder/currentOrderService'
-import type { Order } from '@/types/order'
+import { fetchCurrentOrder, updateOrderData, createOrderData, processDirectPaymentOrder } from '@/services/totalOrder/currentOrderService'
+import type { CreateOrderPayload, Order } from '@/types/order'
 import { useRoute } from 'vue-router'
+import { create } from 'lodash';
 
 export function useCurrentOrders() {
   const route     = useRoute();
@@ -32,7 +33,33 @@ export function useCurrentOrders() {
     } finally {
       loading.value = false;
     }
+  }
+
+  async function createOrder(payload: CreateOrderPayload) {
+    try {
+      loading.value = true;
+      await createOrderData(payload);
+      await load(branchId.value);
+    } catch (e) {
+      console.error("Gagal membuat order:", e);
+    } finally {
+      loading.value = false;
     }
+  } 
+
+  async function processDirectPayment(payload: {order: CreateOrderPayload, payment_method: string}) {
+    try {
+      loading.value = true;
+      await processDirectPaymentOrder(payload);
+      await load(branchId.value);
+    } catch (error) {
+      console.error('Error creating direct payment order:', error);
+      console.log('Payload:', payload);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
 
 
   watchEffect(() => {
@@ -41,5 +68,5 @@ export function useCurrentOrders() {
     load(id);
   });
 
-  return { load, updateOrder, data, loading, error };
+  return { load, updateOrder, createOrder, processDirectPayment, data, loading, error };
 }

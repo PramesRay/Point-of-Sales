@@ -1,7 +1,7 @@
 import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchFundRequests } from '@/services/finance/fundRequestService';
-import type { FundRequest } from '@/types/finance';
+import { fetchFundRequests, createFundRequest, updateFundRequest } from '@/services/finance/fundRequestService';
+import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
 
 export function useFundRequests() {
   const route     = useRoute();
@@ -22,11 +22,35 @@ export function useFundRequests() {
     }
   }
 
+  async function create(payload: CreateFundRequest) {
+    try {
+      loading.value = true;
+      await createFundRequest(payload);
+      await load(branchId.value);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function update(payload: UpdateFundRequest) {
+    try {
+      loading.value = true;
+      await updateFundRequest(payload);
+      await load(branchId.value);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   watchEffect(() => {
     const id = String(route.query.branch || 'all');
     branchId.value = id;
     load(id);
   });
 
-  return { branchId, requests, loading, error };
+  return { load, branchId, requests, loading, error, create, update };
 }

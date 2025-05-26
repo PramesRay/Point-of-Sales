@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { fetchCategoryInventoryItems, fetchStockMovements } from '@/services/inventory/inventoryItemService';
-import type { Category, StockMovement } from '@/types/inventoryItem';
+import { fetchCategoryInventoryItems, fetchStockMovements, createStockMovement, updateStockMovement } from '@/services/inventory/inventoryItemService';
+import type { Category, StockMovement } from '@/types/inventory';
 
 export function useStockMovements() {
   const data      = ref<StockMovement[]>([]);
@@ -21,5 +21,29 @@ export function useStockMovements() {
     }
   }
 
-  return { init, data, categories, loading, error };
+  async function create(payload: any) {
+    try {
+      loading.value = true;
+      await createStockMovement(payload);
+      await init();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function update(payload: any) {
+    try {
+      loading.value = true;
+      await updateStockMovement(payload);
+      await init();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return { init, data, categories, loading, error, create, update };
 }

@@ -1,6 +1,6 @@
 import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
-import { createStockRequest, fetchStockRequestList, fetchStockRequestSummary } from '@/services/inventory/stockRequestService';
+import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchStockRequestSummary } from '@/services/inventory/stockRequestService';
 import type { StockRequestList, StockRequestSummary } from '@/types/inventory';
 
 export function useStockRequests() {
@@ -28,6 +28,19 @@ export function useStockRequests() {
     try {
       loading.value = true;
       await createStockRequest(payload);
+      await load(branchId.value);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateRequest(payload: any) {
+    try {
+      loading.value = true;
+      await updateStockRequest(payload);
+      await load(branchId.value);
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -41,5 +54,5 @@ export function useStockRequests() {
     load(id);
   });
 
-  return { branchId, summary, list, loading, error, createRequest };
+  return { branchId, summary, list, loading, error, createRequest, updateRequest };
 }

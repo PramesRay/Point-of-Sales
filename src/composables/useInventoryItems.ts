@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { fetchCategoryInventoryItems, fetchInventoryItem } from '@/services/inventory/inventoryItemService';
-import type { Category, InventoryItem } from '@/types/inventoryItem';
+import { fetchCategoryInventoryItems, fetchInventoryItem, createItem as createInventoryItem, updateItem as updateInventoryItem } from '@/services/inventory/inventoryItemService';
+import type { Category, CreateInventoryItemPayload, InventoryItem, UpdateInventoryItemPayload } from '@/types/inventory';
 
 export function useInventoryItems() {
   const data      = ref<InventoryItem[]>([]);
@@ -21,5 +21,29 @@ export function useInventoryItems() {
     }
   }
 
-  return { init, data, categories, loading, error };
+  async function createItem(payload: CreateInventoryItemPayload) {
+    try {
+      loading.value = true;
+      await createInventoryItem(payload);
+      await init();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateItem(payload: UpdateInventoryItemPayload) {
+    try {
+      loading.value = true;
+      await updateInventoryItem(payload);
+      await init();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return { init, data, categories, loading, error, createItem, updateItem };
 }
