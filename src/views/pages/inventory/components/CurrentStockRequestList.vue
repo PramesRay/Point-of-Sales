@@ -5,7 +5,7 @@ const { mdAndUp } = useDisplay()
 
 import type { StockRequestList, ApproveStockRequestPayload } from '@/types/inventory';
 
-import { getTimeAgo } from "@/utils/helpers/time-ago";
+import { getTimeDiff } from "@/utils/helpers/time";
 
 const emit = defineEmits<{
   (e: 'approve-request', payload: ApproveStockRequestPayload): StockRequestList
@@ -172,9 +172,9 @@ watch(showOverlay, (isOpen, wasOpen) => {
                       <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestRequest.time.created_at) }}</h4>
+                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.time.created_at) }}</h4>
                     <i v-if="latestRequest.time.updated_at !== null" class="text-subtitle-2 text-medium-emphasis">
-                      Diubah {{ getTimeAgo(latestRequest.time.updated_at) }}
+                      Diubah {{ getTimeDiff(latestRequest.time.updated_at) }}
                     </i>
                   </div>
                 </div>
@@ -202,9 +202,9 @@ watch(showOverlay, (isOpen, wasOpen) => {
                           <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listRequest.time.created_at) }}</div>
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.time.created_at) }}</div>
                         <i v-if="listRequest.time.updated_at" class="text-subtitle-2 text-medium-emphasis">
-                          Diubah {{ getTimeAgo(listRequest.time.updated_at) }}
+                          Diubah {{ getTimeDiff(listRequest.time.updated_at) }}
                         </i>
                       </div>
                     </div>
@@ -284,9 +284,9 @@ watch(showOverlay, (isOpen, wasOpen) => {
                   }"
                 >{{ selectedRequest?.status }}</span>
               </div>
-              <h4 v-if="selectedRequest?.time.created_at" class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.created_at) }}</h4>
+              <h4 v-if="selectedRequest?.time.created_at" class="text-h4 text-right">{{ getTimeDiff(selectedRequest?.time.created_at) }}</h4>
               <i v-if="selectedRequest?.time.updated_at" class="text-subtitle-2 text-medium-emphasis">
-                Diubah {{ getTimeAgo(selectedRequest?.time.updated_at) }}
+                Diubah {{ getTimeDiff(selectedRequest?.time.updated_at) }}
               </i>
             </div>
           </div>

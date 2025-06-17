@@ -46,7 +46,7 @@ const earningData = computed(() => {
         </div> -->
       </div>
       <h2 class="text-h1 font-weight-medium">
-        {{ formatRupiah(earningData) }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
+        {{ earningData ? formatRupiah(earningData) : '0' }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
       </h2>
       <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pendapatan</span>
     </v-card-text>

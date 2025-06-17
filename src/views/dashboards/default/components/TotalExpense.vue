@@ -97,7 +97,7 @@ onMounted(() => {
   updateChartHeight();
   window.addEventListener('resize', updateChartHeight);
   if (isReady.value && hasValidChartData.value) {
-    showChart.value = true; 
+    showChart.value = false; 
   }
 });
 
@@ -107,44 +107,48 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <v-card elevation="0" :loading="props.loading">
-    <v-card variant="outlined">
+  <div>
+    <v-card 
+      elevation="0"
+    >
       <v-card-text>
-        <v-row>
-          <v-col cols="12" sm="6">
-            <div class="d-flex align-center justify-space-between">
-              <div>
-                <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
-                <h3 class="text-h3 mt-1">
-                  {{ formatRupiah(totalExpense) }}
-                </h3>
-              </div>
+        <v-row no-gutters>
+          <v-col cols="12" sm="5" class="d-flex align-center">
+            <div>
+              <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
+              <h3 class="text-h3 mt-1">
+                {{ formatRupiah(totalExpense) }}
+              </h3>
+            </div>
+          </v-col>
+          
+          <v-col cols="12" sm="7">
+            <div class="d-flex align-center my-2">
+              <v-select
+                class="mx-2"
+                color="primary"
+                variant="outlined"
+                hide-details
+                v-model="select"
+                :items="items"
+                label="Pilih Waktu"
+                single-line
+              />
               <v-btn
                 icon
                 size="small"
-                variant="text"
+                :variant="showChart ? 'tonal' : 'text'"
                 @click="showChart = !showChart"
               >
-                <component :is="showChart ? ChevronUpIcon : ChevronDownIcon" width="20" />
+                <v-icon :opacity="showChart ? 1 : 0.5">mdi-poll</v-icon>
               </v-btn>
             </div>
           </v-col>
-
-          <v-col cols="12" sm="6">
-            <v-select
-              color="primary"
-              variant="outlined"
-              hide-details
-              v-model="select"
-              :items="items"
-              label="Pilih Waktu"
-              single-line
-            />
-          </v-col>
         </v-row>
 
-        <v-expand-transition >
-          <div v-if="showChart" class="mt-4">
+        <div v-if="showChart">        
+        <v-expand-transition v-show="showChart">
+          
             <v-skeleton-loader
               v-if="props.loading"
               type="card"
@@ -162,9 +166,9 @@ onUnmounted(() => {
             <div v-else class="text-center text-medium-emphasis mt-5">
               Tidak ada data untuk periode ini.
             </div>
-          </div>
         </v-expand-transition>
+        </div>
       </v-card-text>
     </v-card>
-  </v-card>
+  </div>
 </template>

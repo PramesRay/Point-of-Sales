@@ -98,9 +98,12 @@ const { title, breadcrumbs, useCustomDividerIcon } = props;
     .v-field {
       background: transparent !important;
       padding: 0;
-      min-height: 32px;
-      height: 32px;
+      min-height: 36px;
+      height: 36px;
       align-items: center;
+    }
+    .v-select__selection {
+      display: inline;
     }
     .v-select__selection-text {
       padding: 0 !important;

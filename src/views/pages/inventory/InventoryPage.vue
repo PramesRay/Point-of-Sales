@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
-import { useDisplay } from 'vuetify';
 import { hasRole } from '@/utils/helpers/user';
 
 // imported components
@@ -20,7 +19,7 @@ import { useInventoryItems } from "@/composables/useInventoryItems";
 const { data: me, loading: lu, fetchMe } = useUser();
 const { branches, loading: lb } = useBranchList();
 const { summary, list: stockRequestlist, loading: lsr, updateRequest } = useStockRequests();
-const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
+const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm, create: createStockMovement, update: updateStockMovement } = useStockMovements();
 const { requests, loading: lfr, create: createFundRequest, update: updateFundRequest } = useFundRequests();
 
@@ -48,6 +47,9 @@ const selectedBranch = computed({
     router.replace({ query: { ...route.query, branch: val } });
   }
 });
+const selectedBranchObject = computed(() => {
+  return branchOptions.value.find(branch => branch.id === selectedBranch.value) || { id: 'all', name: 'Semua Cabang' }
+})
 </script>
 
 <template>
@@ -108,8 +110,8 @@ const selectedBranch = computed({
             :categories="categories"
             :loading="li"
             class="flex-grow-1"
-            @create-item="createItem"
             @update-item="updateItem"
+            @delete-item="deleteItem"
           />
         </v-col>
 
@@ -132,7 +134,8 @@ const selectedBranch = computed({
           <CurrentFundRequest
             :user="me"
             :data="requests"
-            :branch="selectedBranch"
+            :inv_items="dataInventory"
+            :branch="selectedBranchObject"
             :loading="lfr"
             class="flex-grow-1"
             @create-fr="createFundRequest"

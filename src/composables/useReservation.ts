@@ -1,40 +1,61 @@
 import { ref, watchEffect } from 'vue'
-import { fetchBranchList } from '@/services/common/branch/branchService'
-import { fetchReservationData } from '@/services/currentReservation/reservationService'
-import type { Reservation } from '@/types/reservation'
-import type { Branch } from '@/types/branch'
+import { createReservation, fetchReservationData, updateReservation } from '@/services/currentReservation/reservationService'
+import type { Reservation, CreateReservationPayload, UpdateReservationPayload } from '@/types/reservation'
+import { useRoute } from 'vue-router'
 
-const branches = ref<Branch[]>([]);
-const selectedBranch = ref<string>(''); // default kosong
-const data = ref<Reservation[] | null>(null);
-const loadingBranches = ref(true);
-const loadingData = ref(true);
+export function useReservation() {
+  const route     = useRoute();
+  const branchId  = ref<string>(String(route.query.branch || 'all'));
+  const data = ref<Reservation[]>([]);
+  const loading = ref(true);
 
-async function init() {
-  loadingBranches.value = true;
-  branches.value = await fetchBranchList();
-  loadingBranches.value = false;
+async function load(id: string) {
+  try {
+    loading.value = true;
+    data.value = await fetchReservationData(id);
+  } catch (e: any) {
+    throw e
+  } finally {
+    loading.value = false;
+  }
+}
 
-  if (branches.value.length > 0) {
-    selectedBranch.value ||= branches.value[0].id; // hanya set jika kosong
+async function create(payload: CreateReservationPayload) {
+  try {
+    loading.value = true;
+    await createReservation(payload);
+    await load(branchId.value);
+  } catch (e: any) {
+    throw e
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function update(payload: UpdateReservationPayload) {
+  try {
+    loading.value = true;
+    await updateReservation(payload);
+    await load(branchId.value);
+  } catch (e: any) {
+    throw e
+  } finally {
+    loading.value = false;
   }
 }
 
 // Watch fetch timesheet when branch changes
-watchEffect(async () => {
-  if (!selectedBranch.value) return;
-  loadingData.value = true;
-  data.value = await fetchReservationData(selectedBranch.value);
-  loadingData.value = false;
+watchEffect(() => {
+  const id = String(route.query.branch || 'all');
+  branchId.value = id;
+  load(id);
 });
 
-export function useReservation() {
   return {
-    branches,
-    selectedBranch,
     data,
-    loadingBranches,
-    loadingData,
-    init,
+    loading,
+    load,
+    create,
+    update
   };
 }

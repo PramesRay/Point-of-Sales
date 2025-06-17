@@ -8,6 +8,9 @@ import type { Category, StockMovement, CreateStockMovementPayload, UpdateStockMo
 import type { Branch } from '@/types/branch';
 
 import { formatDate } from '@/utils/helpers/format-date';
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore();
+
 import { useInventoryItems } from '@/composables/useInventoryItems';
 
 const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
@@ -29,14 +32,23 @@ const props = defineProps<{
 }>();
 
 const branches = computed(() => props.branches)
-const editableCategories = computed(() => props.categories)
+const editableCategories = computed(() => props.categories.filter(ctg => ctg.id !== 'new'))
 const categories = computed(() => [
   {id: 'all', name: 'Semua'},
   ...props.categories
 ])
+
+
 const dataItems = computed(() => {
   if (!inventoryItem.value) return []
-  return inventoryItem.value
+  return inventoryItem.value.map(item => {
+    const newItem = { ...item }
+    if (newItem.category?.id === 'new') {
+      newItem.name += ' (Baru)'
+    }
+    return newItem
+  })
+
 })
 
 const selectedCtg = ref<string | null>('all')
@@ -44,46 +56,62 @@ const selectedItem = ref<StockMovement | null>(null)
 
 const formRef = ref()
 const isFormValid = ref(false)
-const datePickerMenu = ref(false)
+const datePickerMenuExp = ref(false)
+const dateMenu = ref(false)
+const dateModel = ref<Date | null>(null);
+const timeMenu = ref(false)
+const timeModel = ref<string>('');
+const isUpdatingTime = ref(false)
+const isNewItem = ref(false)
+const itemQuantity = ref(0)
 
 const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
 const showConfirmDialog = ref(false)
 const showOverlay = ref(false)
 const isManuallySaving = ref(false)
 
-const isNewItem = ref(false)
-const statusMovement = ref(['Keluar', 'Masuk'])
-
 // Payload
-const dataMovement = ref<{
-  name: string | null,
-  description: string | null,
-  quantity: number | 0,
-  unit: string | null,
-  categoryId: string | null,
-  time: Date | null,
-  branchId: string | null,
-  status: string | null
-}>({
-  name: null,
+const dataMovement = ref<{[K in keyof Omit<StockMovement, 'meta'>]: StockMovement[K] | null}>({
+  id: null,
   description: null,
-  quantity: 0,
-  unit: null,
-  categoryId: null,
-  time: null,
-  branchId: null,
-  status: null
+  branch: {
+    id: '',
+    name: ''
+  },
+  status: null,
+  time: new Date(),
+  item: {
+    id: '',
+    name: '',
+    description: '',
+    category: {
+      id: '',
+      name: ''
+    },
+    expired_date: new Date(),
+    purchase_price: 0,
+    unit: '',
+    quantity: 0,
+    threshold: 0,
+    meta: {
+      created_at: new Date(),
+      updated_at: new Date()
+    }
+  }
 })
 
 // Form Rules
-const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
-const qtyRules = [(v: number) => !!v || 'Jumlah tidak boleh kosong', (v: number) => v >= 0 || 'Jumlah tidak boleh kurang dari 0']
-const descRules = [((v: string) => v.length <= 100 || 'Maks 100 karakter'), ((v: string) => !!v || 'Deskripsi tidak boleh kosong')]
+const rules = {
+  required: [(v: string) => !!v || 'Data tidak boleh kosong'],
+  required_obj: [(v: { id: string; name: string }) => !!v.id  || 'Data tidak boleh kosong'],
+  qty: [(v: number) => !!v || 'Jumlah tidak boleh kosong', (v: number) => v >= 0 || 'Jumlah tidak boleh kurang dari 0'],
+  desc: [(v: string) => v.length <= 100 || 'Maksimal 100 karakter'],
+}
 
 const currentData = computed(() => {
   if (!props.data?.length || !selectedCtg.value) return []
   if (selectedCtg.value === 'all') return props.data
-  return props.data.filter(item => item.category?.id === selectedCtg.value)
+  return props.data.filter(item => item.item.category?.id === selectedCtg.value)
 })
 
 const isChanged = computed(() => {
@@ -91,41 +119,114 @@ const isChanged = computed(() => {
 
   if (isNewItem.value) {
     return (
-      dataMovement.value.name !== null ||
       dataMovement.value.description !== null ||
-      dataMovement.value.branchId !== null ||
-      dataMovement.value.unit !== null ||
-      dataMovement.value.quantity !== 0 ||
-      dataMovement.value.categoryId !== null ||
       dataMovement.value.status !== null ||
+      dataMovement.value.branch !== null ||
+      dataMovement.value.item !== null ||
       dataMovement.value.time !== null
     )
   } else {
     if (!selectedItem.value) return false
     return (
-      dataMovement.value.name !== selectedItem.value.name ||
       dataMovement.value.description !== selectedItem.value.description ||
-      dataMovement.value.unit !== selectedItem.value.unit ||
-      dataMovement.value.branchId !== selectedItem.value.branch?.id ||
-      dataMovement.value.quantity !== selectedItem.value.quantity ||
-      dataMovement.value.categoryId !== selectedItem.value.category?.id ||
       dataMovement.value.status !== selectedItem.value.status ||
+      dataMovement.value.branch !== selectedItem.value.branch ||
+      dataMovement.value.item !== selectedItem.value.item ||
       new Date(dataMovement.value.time!).getTime() !== new Date(selectedItem.value.time!).getTime()
     )
   }
 })
 
+// Format Date untuk time dan exp
+const formatedDateTime = computed(() => {
+  if (!dataMovement.value.time) return ''
+  return formatDate(dataMovement.value.time).slice(0, -12)
+})
+const formatedClockTime = computed(() => {
+  if (!dataMovement.value.time) return ''
+  return formatDate(dataMovement.value.time).slice(-5)
+})
+const formatedDateExp = computed(() => {
+  if (!dataMovement.value.item?.expired_date) return ''
+  return formatDate(dataMovement.value.item.expired_date).slice(0, -12)
+})
+
+// Handler saat pilih tanggal
+function onDatePicked(val: Date | null) {
+  if (!val) return;
+
+  if (!dataMovement.value.time) dataMovement.value.time = new Date()
+
+  const time = dataMovement.value.time
+
+  dataMovement.value.time = new Date(
+    val.getFullYear(),
+    val.getMonth(),
+    val.getDate(),
+    time.getHours(),
+    time.getMinutes(),
+    0
+  )
+  dateMenu.value = false
+  setTimeout(() => {
+    timeMenu.value = true
+    isUpdatingTime.value = true
+  } , 100)
+}
+
+
+function onTimePicked(val: string) {
+  isUpdatingTime.value = true
+  if (!dataMovement.value.time) {
+    dataMovement.value.time = new Date()
+  }
+
+  const oldDate = dataMovement.value.time
+  const [hours, minutes] = val.split(':').map(Number) 
+  dataMovement.value.time = new Date(
+    oldDate.getFullYear(),
+    oldDate.getMonth(),
+    oldDate.getDate(),
+    hours,
+    minutes,
+    0
+  )
+  
+  timeModel.value = ''
+  timeMenu.value = false
+}
+
 function clearPayload() {
   dataMovement.value = {
-    name: null,
+    id: null,
     description: null,
-    quantity: 0,
-    unit: null,
-    categoryId: null,
-    time: null,
-    branchId: null,
+    branch: null,
+    time: new Date(),
+    item: {
+      id: '',
+      name: '',
+      description: '',
+      category: {
+        id: '',
+        name: ''
+      },
+      expired_date: new Date(),
+      purchase_price: 0,
+      unit: '',
+      quantity: 0,
+      threshold: 0,
+      meta: {
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    },
     status: null
   }
+
+  timeModel.value = ''
+  dateModel.value = null
+  isUpdatingTime.value = false
+  itemQuantity.value = 0
 }
 
 function openDetail(request: StockMovement) {
@@ -135,34 +236,36 @@ function openDetail(request: StockMovement) {
 }
 
 function openAddNew() {
-  selectedItem.value = null
   isNewItem.value = true
   showOverlay.value = true
+  
+  clearPayload()
 }
 
 function processdataMovement() {
   if (!dataMovement.value) return
 
-  const payload = {
-    name: dataMovement.value.name!,
-    description: dataMovement.value.description!,
-    quantity: dataMovement.value.quantity!,
-    unit: dataMovement.value.unit!,
-    category_id: dataMovement.value.categoryId!,
-    time: dataMovement.value.time ? new Date(dataMovement.value.time) : undefined,
-    branch_id: dataMovement.value.branchId! 
-  }
+  console.log('data movement before', dataMovement.value)
 
-  const updatePayload: UpdateStockMovementPayload = {
+  const payload: CreateStockMovementPayload = JSON.parse(JSON.stringify({
+    description: dataMovement.value.description!,
+    time: dataMovement.value.time!,
+    item: dataMovement.value.item!,
+    status: dataMovement.value.status!,
+    category_id: dataMovement.value.item?.category.id!,
+    branch_id: dataMovement.value.branch?.id!
+  }))
+
+  const updatePayload: UpdateStockMovementPayload = JSON.parse(JSON.stringify({
     id: selectedItem.value?.id!,
     ...payload
-  }
+  }))
 
   if (isNewItem.value) {
-    emit('create-sm', payload)
+    emit('create-sm', (payload))
     console.log('Membuat item baru:', payload)
   } else {
-    emit('update-sm', updatePayload)
+    emit('update-sm', (updatePayload))
     console.log('Mengubah item:', updatePayload)
   }
   
@@ -184,17 +287,35 @@ function confirmCancel() {
 
   if (selectedItem.value) {
     dataMovement.value = {
-      name: selectedItem.value.name ?? null,
+      id: selectedItem.value.id,
       description: selectedItem.value.description ?? null,
-      quantity: selectedItem.value.quantity ?? 0,
-      unit: selectedItem.value.unit ?? null,
-      categoryId: selectedItem.value.category?.id ?? null,
+      branch: selectedItem.value.branch ?? null,
+      item: selectedItem.value.item ?? null,
       time: selectedItem.value.time ?? null,
-      branchId: selectedItem.value.branch?.id ?? null,
       status: selectedItem.value.status ?? null
     }
   } else {
     clearPayload()
+  }
+}
+
+function updateItem(id: string) {
+  if (id) {
+    // Cari item berdasarkan id barang yang dipilih
+    const item = dataItems.value.find(item => item.id === id)
+    if (item) {
+      dataMovement.value.item = cloneDeep(item)
+      itemQuantity.value = item.quantity
+
+      dataMovement.value.item.quantity = 0
+      if (dataMovement.value.item?.category.id == 'new') {
+        dataMovement.value.item.category = {
+          id: '',
+          name: ''
+        }
+        alertStore.showAlert('Pilih Kategori untuk barang baru!', 'warning');
+      }
+    } else console.log('item not found')
   }
 }
 
@@ -236,13 +357,11 @@ watch(showOverlay, (isOpen, wasOpen) => {
 watch(selectedItem, (val) => {
   if (val) {
     dataMovement.value = {
-      name: val.name ?? null,
+      id: val.id,
       description: val.description ?? null,
-      quantity: val.quantity ?? 0,
-      unit: val.unit ?? null,
-      categoryId: val.category?.id ?? null,
+      branch: val.branch ?? null,
+      item: val.item ?? null,
       time: val.time ?? null,
-      branchId: val.branch?.id ?? null,
       status: val.status ?? null
     }
   }
@@ -254,7 +373,7 @@ watch(selectedItem, (val) => {
     <v-card variant="outlined">
       <v-card-text>
         <v-row class="justify-space-between">
-          <v-col cols="6" >
+          <v-col cols="8" >
             <h4 class="text-h4 mt-1">Perpindahan Stok</h4>
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
@@ -266,7 +385,7 @@ watch(selectedItem, (val) => {
               Tambah
             </v-btn>
           </v-col>
-          <v-col cols="12" class="pt-0 py-2">
+          <v-col cols="12">
             <v-select
               color="primary"
               variant="outlined"
@@ -284,12 +403,12 @@ watch(selectedItem, (val) => {
         </v-row>
 
         <!-- Menambahkan Skeleton Loader untuk menunggu data -->
-        <div v-if="loading">
+        <div v-if="props.loading">
           <v-skeleton-loader type="paragraph"></v-skeleton-loader>
           <v-skeleton-loader type="paragraph"></v-skeleton-loader>
         </div>
 
-        <div class="mt-4" v-if="!loading">
+        <div class="mt-4" v-if="!props.loading">
           <perfect-scrollbar :style="{ maxHeight: mdAndUp? '17rem' : '12rem'}">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
@@ -300,22 +419,22 @@ watch(selectedItem, (val) => {
                 rounded="sm"
                 @click="openDetail(item)"
               >
-                <span class="text-subtitle-2 text-medium-emphasis">
-                  <span> {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }} <i class="text-disabled">: {{ item?.branch?.name }}</i> </span>
-                </span>
+              <i class="text-subtitle-2 text-disabled">
+                {{ item.time ? formatDate(new Date(item?.time)).slice(0, -12)+': '+formatDate(new Date(item?.time)).slice(-5) : '-' }}
+              </i>
 
                 <div class="d-flex justify-space-between align-start w-100" >
                   <!-- Kolom kiri -->
                   <div class="pe-4" style="flex: 1">
                     <h6
-                      class="text-h4 text-medium-emphasis font-weight-bold"
-                      style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                    class="text-h4 text-medium-emphasis font-weight-bold"
+                    style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
                     >
-                      {{ item?.name }}
-                    </h6>
-                    <i class="text-subtitle-2 text-disabled">
-                      {{ item.time ? formatDate(new Date(item?.time)) : '-' }}
-                    </i>
+                    {{ item?.item.name }}
+                  </h6>
+                  <span class="text-subtitle-2 text-disabled">
+                    {{ item?.branch?.name }}
+                  </span>
                   </div>
 
                   <!-- Kolom kanan -->
@@ -332,10 +451,10 @@ watch(selectedItem, (val) => {
                       </span>
                     </div>
                     <div
-                      v-if="item?.quantity! >= 0"
+                      v-if="item?.item.quantity! >= 0"
                       class="text-subtitle-1 text-medium-emphasis font-weight-bold my-1"
                     >
-                      {{ item?.quantity != null && item?.unit ? `${item.quantity} ${item.unit}` : '-' }}
+                      {{ item?.item.quantity != null && item?.item.unit ? `${item.item.quantity} ${item.item.unit}` : '-' }}
                     </div>
                   </div>
                 </div>
@@ -364,11 +483,11 @@ watch(selectedItem, (val) => {
     scroll-strategy="none"
     class="d-flex justify-center align-center"
     max-width="400"
-  >
+    >
     <v-card
       class="rounded-lg pa-6 mt-8 bg-white "
       style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;" 
-    >
+      >
       <v-form ref="formRef" v-model="isFormValid">
         <!-- Close button -->
         <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="showOverlay = false">
@@ -378,122 +497,207 @@ watch(selectedItem, (val) => {
           <h4 class="text-h4 mt-1">{{ isNewItem ? 'Buat Perpindahan Stok' : 'Ubah Perpindahan Stok'}}</h4>
         </div>
         <v-divider class="my-3" />
-
-        <div>
-          <v-row>
-            <v-col cols="6">
-              <v-select
+        
+        <PerfectScrollbar :style="{ maxHeight: mdAndUp? '80dvh' : '70dvh'}">
+          <div class="text-h4 text-disabled text-center mb-3">Informasi Perpindahan </div>
+          <v-row no-gutters class="justify-center">
+            <v-col cols="7">
+              <v-text-field
+                v-model="formatedDateTime"
+                label="Tanggal"
+                prepend-inner-icon="mdi-calendar"
+                readonly
+                :active="dateMenu"
+                :focused="dateMenu"
                 variant="underlined"
-                v-model="dataMovement.categoryId"
-                :items="editableCategories"
-                :rules="requieredRules"
-                item-title="name"
-                item-value="id"
-                label="Kategori"
-                prepend-icon="mdi-shape"
+                :rules="rules.required"
               />
-            </v-col>
-            <v-col cols="6">
-              <v-menu
-                v-model="datePickerMenu"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
-                <template #activator="{ props }">
-                  <v-text-field
-                    :model-value="dataMovement.time ? formatDate(new Date(dataMovement.time)) : ''"
-                    v-bind="props"
-                    label="Tanggal Perpindahan"
-                    variant="underlined"
-                    prepend-icon="mdi-calendar"
-                    :readonly="true"
-                    :rules="requieredRules"
+                <v-dialog
+                  v-model="dateMenu"
+                  :close-on-content-click="false"
+                  activator="parent"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290"
+                  min-width="290"
+                >
+                  <v-date-picker
+                    v-model="dateModel"
+                    @update:model-value="onDatePicked"
+                    :max="new Date()"
+                    no-title
+                    scrollable
                   />
-                </template>
-                <v-date-picker
-                  v-model="dataMovement.time"
-                  @update:model-value="datePickerMenu = false"
-                />
-              </v-menu>
+              </v-dialog>
+            </v-col>
+
+            <v-col cols="3">
+              <v-text-field
+                v-model="formatedClockTime"
+                label="Waktu"
+                prepend-inner-icon="mdi-clock-outline"
+                readonly
+                :active="timeMenu"
+                :focused="timeMenu"
+                variant="underlined"
+                :rules="rules.required"
+              >
+                <v-dialog
+                  v-model="timeMenu"
+                  activator="parent"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290"
+                  min-width="290"
+                >
+                <!-- two digit hour in :min -->
+                  <v-time-picker
+                    v-model="timeModel"
+                    format="24hr"
+                    @update:model-value="onTimePicked"
+                    :max="dataMovement.time?.toLocaleDateString() === new Date().toLocaleDateString() ? new Date().toTimeString().slice(0, 5) : '23:59'"
+                  />
+                </v-dialog>
+              </v-text-field>
             </v-col>
           </v-row>
-          <v-row class="justify-space-between">
-            <v-col cols="6">
+          <v-row no-gutters class="justify-space-between">
+            <v-col cols="6" class="pe-2">
               <v-select
                 variant="underlined"
                 v-model="dataMovement.status"
-                :items="statusMovement"
-                :rules="requieredRules"
-                label="Kategori"
-                prepend-icon="mdi-format-vertical-align-center"
+                :items="['Masuk', 'Keluar', 'Penyesuaian']"
+                :rules="rules.required"
+                label="Tipe"
+                prepend-inner-icon="mdi-format-vertical-align-center"
               />
             </v-col>
-            <v-col cols="6">
+            <v-col cols="6" class="ps-2">
               <v-select
                 variant="underlined"
-                v-model="dataMovement.branchId"
+                v-model="dataMovement.branch"
                 label="Cabang"
                 :items="branches"
-                :rules="requieredRules"
+                :rules="rules.required"
                 item-title="name"
                 item-value="id"
-                prepend-icon="mdi-home"
+                prepend-inner-icon="mdi-home"
+                return-object 
               />
             </v-col>
           </v-row>
-
-          <v-row class="justify-space-between">
-            <v-col cols="12">
-              <v-combobox
-                variant="underlined"
-                v-model="dataMovement.name"
-                :items="dataItems.map(item => ({ title: item.name, value: item.id }))"
-                label="Nama Barang"
-                :rules="requieredRules"
-                prepend-icon="mdi-form-textbox"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="6">
-              <v-combobox
-                variant="underlined"
-                v-model="dataMovement.unit"
-                :items="['pcs', 'kg', 'ltr', 'box']"
-                label="Satuan"
-                :rules="requieredRules"
-                prepend-icon="mdi-scale-balance"
-              />
-            </v-col>
-            <v-col cols="6" class="text-right">
-              <v-number-input 
-                control-variant="split"
-                v-model.number="dataMovement.quantity"
-                variant="plain"
-                :min="0"
-                :rules="qtyRules"
-                style="max-width: 140px"
-              ></v-number-input>
-            </v-col>
-          </v-row>
-
-          <div >
+          
+          <div>
             <v-textarea
               variant="underlined"
               v-model="dataMovement.description"
-              :rules="descRules"
+              :rules="rules.desc && rules.required"
               label="Deskripsi"
               rows="2"
               auto-grow
-              prepend-icon="mdi-text-long"
+              prepend-inner-icon="mdi-text-long"
               clear-icon="mdi-close"
               clearable
               counter
             />
           </div>
-        </div>
+          
+          <div class="text-h4 text-disabled text-center mb-3">Informasi Barang </div>
+
+          <v-row no-gutters class="justify-space-between">
+            <v-col cols="5" class="pe-2">
+              <v-select
+                variant="underlined"
+                v-model="dataMovement.item.category"
+                :items="editableCategories"
+                :rules="rules.required_obj"
+                :disabled="dataMovement.item.id == ''"
+                item-title="name"
+                item-value="id"
+                label="Kategori"
+                prepend-inner-icon="mdi-shape"
+                return-object 
+              />
+            </v-col>
+            <v-col cols="7" class="ps-2">
+              <v-autocomplete
+              variant="underlined"
+              v-model="dataMovement.item.id"
+              @update:model-value="updateItem(dataMovement.item.id)"
+              :items="dataItems"
+              :loading="li"
+              item-title="name"
+              item-value="id"
+              label="Nama Barang"
+              :rules="rules.required"
+              prepend-inner-icon="mdi-form-textbox"
+            />
+            </v-col>
+          </v-row>
+          <v-row no-gutters class="justify-center">
+            <v-col cols="3" class="pe-2">
+              <v-text-field
+                variant="underlined"
+                v-model="dataMovement.item.unit"
+                disabled
+                label="Satuan"
+                :rules="rules.required"
+                prepend-inner-icon="mdi-scale-balance"
+              />
+            </v-col>
+            <v-col cols="7" class="ps-2 d-flex align-center">
+              <v-number-input 
+                style="max-width: 8rem"
+                inset
+                control-variant="split"
+                v-model.number="dataMovement.item.quantity"
+                :label="'Jumlah' + (dataMovement.status ? ' ' + dataMovement.status : '')"
+                variant="plain"
+                :min="0"
+                :rules="rules.qty"
+                :disabled="dataMovement.item.id == '' || !dataMovement.status"
+              ></v-number-input>
+              <span class="text-subtitle-2 text-medium-emphasis" >
+                <div>
+                    Dari:
+                </div>
+                {{ itemQuantity + ' ' + dataMovement.item.unit}}
+              </span>
+            </v-col>
+            <!-- expired -->
+            <v-col cols="7">
+              <v-text-field
+                v-model="formatedDateExp"
+                label="Tanggal Expired"
+                prepend-inner-icon="mdi-calendar"
+                readonly
+                :active="datePickerMenuExp"
+                :focused="datePickerMenuExp"
+                variant="underlined"
+                :rules="rules.required"
+                :disabled="dataMovement.item.id == ''"
+              />
+                <v-dialog
+                  v-model="datePickerMenuExp"
+                  activator="parent"
+                  transition="scale-transition"
+                  offset-y
+                  max-width="290"
+                  min-width="290"
+                >
+                  <v-date-picker
+                    v-model="dataMovement.item.expired_date"
+                    @update:model-value="datePickerMenuExp = false"
+                    :min="!isNewItem ? null : new Date()"
+                    no-title
+                    scrollable
+                  />
+              </v-dialog>
+            </v-col> 
+          </v-row>
+
+        </PerfectScrollbar>
 
         <v-divider class="my-3" />
       

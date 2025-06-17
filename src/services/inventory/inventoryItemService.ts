@@ -85,3 +85,14 @@ export async function updateItem(payload: UpdateInventoryItemPayload): Promise<I
     throw error
   }  
 }
+
+export async function deleteItem(id: string): Promise<void> {
+  try {
+    await api.delete(`/inventory/items/${id}`);
+    alertStore.showAlert('Item berhasil dihapus!', 'success');
+  } catch (error) {
+    alertStore.showAlert('Item gagal dihapus!', 'error');
+    console.warn(`Delete item failed, using dummy.`, error);
+    throw error
+  }  
+}

@@ -94,8 +94,9 @@ const selectedBranch = computed({
     <!-- -------------------------------------------------------------------- -->
     <!-- Current Stock Request List -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
+    <v-col cols="12" md="4" v-if="me">
       <CurrentStockRequestList 
+        :user="me"
         :data="stockRequestlist" 
         :branch="selectedBranch"
         :loading="lsr" 

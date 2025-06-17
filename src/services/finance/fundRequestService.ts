@@ -44,11 +44,22 @@ export async function createFundRequest(payload: CreateFundRequest): Promise<Fun
 export async function updateFundRequest(payload: UpdateFundRequest): Promise<FundRequest> {
   try {
     const res = await api.put<FundRequest>(`/finance/fund-requests`, payload);
-    alertStore.showAlert('Permintaan Dana berhasil diubah!', 'success');
+    alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');
     return res.data;
   } catch (error) {
-    alertStore.showAlert('Permintaan Dana gagal diubah!', 'error');
+    alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'error');
     console.warn(`Update fund request failed, using dummy.`, error);
+    throw error
+  }
+}
+
+export async function deleteFundRequest(id: string): Promise<void> {
+  try {
+    await api.delete(`/finance/fund-requests/${id}`);
+    alertStore.showAlert(`Permintaan Dana ${id} berhasil dihapus!`, 'success');
+  } catch (error) {
+    alertStore.showAlert(`Permintaan Dana ${id} gagal dihapus!`, 'error');
+    console.warn(`Delete fund request failed, using dummy.`, error);
     throw error
   }
 }

@@ -2,26 +2,32 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useEmployeeActive } from '@/composables/useEmployeeActive'
 import type { EmployeeActive } from '@/types/employeeActive';
+import type { Employee } from '@/types/employee';
+import type { IdName } from '@/types/common';
+
+const props = defineProps<{
+  data: EmployeeActive[];
+  branch: IdName;
+  loading: boolean;
+}>();
+
+const currentData = computed(() => {
+  if (!props.data?.length) return undefined;
+  return props.data.filter(tx => tx.branch.id === props.branch.id)[0]
+})
+
+const data = computed(() => currentData.value );
 
 const tab = ref('1');
-const { data, branches, selectedBranch, init, loadingBranches, loadingData } = useEmployeeActive()
-
-onMounted(() => {
-  init();
-});
-
-const currentData = computed(() => data.value ?? { active: 0, week: [], month: []})
 
 const currentSeries = computed(() => {
-  if (!branches) return { series: [] };
-  
   const range = tab.value === "1" ? "week" : "month";
 
   return {
     series: [
       {
         name: 'series1',
-        data: currentData?.value?.[range]
+        data: data.value?.[range]
       }
     ]
   };
@@ -82,31 +88,17 @@ const chartOptions = computed(() => {
         <v-btn icon rounded="sm" color="darksecondary" variant="flat">
           <BuildingStoreIcon stroke-width="1.5" width="25" />
         </v-btn>
-        <div class="mx-3">
-          <v-select
-              class="custom-select font-weight-medium"
-              variant="plain"
-              hide-details
-              density="compact"
-              v-model="selectedBranch"
-              :items="branches"
-              item-title="name"
-              item-value="id"
-              label="Pilih Restoran"
-              :loading="loadingBranches"
-              :return-object="false"
-              single-line
-            >
-            </v-select>
+        <div class="mx-3 my-auto">
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch.name }}</span>
         </div>
-        <div v-if="!loadingData|!loadingBranches" class="ml-auto z-1">
+        <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">
             <v-tab value="1" hide-slider >Minggu</v-tab>
             <v-tab value="2" hide-slider >Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
-      <v-row v-if="!loadingData">
+      <v-row v-if="!props.loading">
         <v-col cols="6">
           <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
             <div class="d-flex align-baseline">
@@ -127,19 +119,11 @@ const chartOptions = computed(() => {
           </v-tabs-window>
         </v-col>
       </v-row>
-      <v-row v-if="loadingData & !loadingBranches">
+      <v-row v-if="props.loading">
         <v-col cols="12">
-          <v-skeleton-loader type="paragraph" color="transparant bg-secondary"></v-skeleton-loader>
+          <!-- <v-skeleton-loader type="paragraf" color="transparant bg-primary"></v-skeleton-loader> -->
         </v-col>
       </v-row>
     </v-card-text>
   </v-card>
 </template>
-
-<style>
-.custom-select .v-field__input {
-  font-size: 0.8rem !important;
-  color: #fff !important;
-}
-
-</style>

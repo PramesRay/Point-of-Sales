@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useDisplay } from 'vuetify';
+const { mdAndUp, smAndDown } = useDisplay()
 
-import { getTimeAgo } from "@/utils/helpers/time-ago";
+import { getTimeDiff } from "@/utils/helpers/time";
 
-import type { StockRequestList } from '@/types/inventory';
+import type { CreateStockRequestPayload, StockRequestList } from '@/types/inventory';
 import type { Branch } from '@/types/branch';
 
 import { useInventoryItems } from "@/composables/useInventoryItems";
+import type { Employee } from '@/types/employee';
 const { init: initItems, data: inventoryItem, categories, loading: li } = useInventoryItems();
 
 onMounted(() => {
@@ -18,6 +21,7 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
+  user: Employee;
   data: StockRequestList[];
   branch: string;
   loading?: boolean;
@@ -49,26 +53,21 @@ const listRequest = computed(() => filteredData.value.slice(1));
 
 const formRef = ref()
 const isFormValid = ref(false)
-const selectedRequest = ref<StockRequestList | null>(null)
+
 const showOverlay = ref(false)
+const showAddOverlay = ref(false)
 const showConfirmDialog = ref(false)
 const pendingOverlayClose = ref(false)
 const isManuallySaving = ref(false)
+
+const selectedRequest = ref<StockRequestList | null>(null)
 const approvalItems = ref<any[]>([])
 const approvalNote = ref('')
-const showAddOverlay = ref(false)
-const user = JSON.parse(localStorage.getItem('user') || '{}')
-const branches = ref<Branch[]>(user?.branches ?? [{ id: 'branch-1', name: 'Restoran 1' }])
-const notesRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
 
-const newRequest = ref<{
-  branchId: string | null,
-  employee: string | null,
-  items: any[],
-  note: string | null,
-}>({
-  branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1', // ambil dari storage
-  employee: user.employee ?? 'Dummy Employee', // ambil dari storage
+const noteRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
+
+const newRequest = ref<CreateStockRequestPayload>({
+  branch_id: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1',
   items: [],
   note: '',
 })
@@ -77,8 +76,7 @@ function openAddRequest() {
   showAddOverlay.value = true
   // Inisialisasi data form kosong/standar
   newRequest.value = {
-    branchId: user?.branches?.length === 1 ? user.branches[0].id : 'branch-1', // ambil dari storage
-    employee: user.employee ?? 'Dummy Employee', // ambil dari storage
+    branch_id: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1', // ambil dari storage
     items: [],
     note: '',
   }
@@ -87,12 +85,10 @@ function openAddRequest() {
 function addItem() {
   if (!newRequest.value.items) newRequest.value.items = []
   newRequest.value.items.push({
-    item: {
-      name: '',
+      id: null,
+      name: null,
       quantity: 1,
-      unit: ''
-    },
-    status: 'Pending'
+      unit: null
   })
 }
 
@@ -106,7 +102,7 @@ const isChanged = computed(() => {
   if (!newRequest.value) return false
 
   return (
-    newRequest.value.branchId !== branches.value[0].id ||
+    newRequest.value.branch_id !== props.user.assigned_branch[0].id ||
     newRequest.value.items.length > 0
   )
 })
@@ -132,8 +128,7 @@ function confirmCancel() {
 // fungsi simulasi kirim data ke backend
 function createRequest() {
   const payload = {
-    branchId: newRequest.value.branchId,
-    employee: newRequest.value.employee,
+    branch_id: newRequest.value.branch_id,
     items: newRequest.value.items,
     note: newRequest.value.note
   }
@@ -149,6 +144,16 @@ function submitForm() {
     if (!res) return
     createRequest()
   })
+}
+
+function updateItem(index: number) {
+  if (newRequest.value.items[index].id) {
+    const item = filteredInventoryItem.value.find(item => item.id === newRequest.value.items[index].id)
+    if (item) {
+      newRequest.value.items[index].name = item.name
+      newRequest.value.items[index].unit = item.unit
+    }
+  }
 }
 
 // saat overlay terbuka, clone item untuk keperluan approval
@@ -191,25 +196,25 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
   <v-card elevation="0">
     <v-card variant="outlined">
       <v-card-text>
-          <v-row >
-          <v-col cols="8">
-            <div class="d-flex align-center">
-              <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
-            </div>
-            <div v-if="props.branch !== 'all'">
-              <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
-            </div> 
-          </v-col>
-          <v-col cols="4" sm="3" class="mt-auto">
-            <v-btn
-              v-if="!loading"
-              color="primary"
-              @click="openAddRequest"
-            >
-              Tambah
-            </v-btn>
-          </v-col>
-        </v-row>
+          <v-row class="justify-space-between">
+            <v-col cols="8">
+              <div class="d-flex align-center">
+                <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
+              </div>
+              <div v-if="props.branch !== 'all'">
+                <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
+              </div> 
+            </v-col>
+            <v-col cols="4" sm="3" class="mt-auto">
+              <v-btn
+                v-if="!loading"
+                color="primary"
+                @click="openAddRequest"
+              >
+                Tambah
+              </v-btn>
+            </v-col>
+          </v-row>
 
           <div v-if="!props.loading">
             <v-card class="bg-lightsecondary mt-5"
@@ -234,16 +239,16 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
                       <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestRequest.time.createdAt) }}</h4>
-                    <i v-if="latestRequest.time.updatedAt !== null" class="text-subtitle-2 text-disabled">
-                      Diubah {{ getTimeAgo(latestRequest.time.updatedAt) }}
+                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.time.created_at) }}</h4>
+                    <i v-if="latestRequest.time.updated_at !== null" class="text-subtitle-2 text-disabled">
+                      Diubah {{ getTimeDiff(latestRequest.time.updated_at) }}
                     </i>
                   </div>
                 </div>
               </div>
             </v-card>
             <div class="mt-4">
-              <perfect-scrollbar v-bind:style="{ height: '180px' }">
+              <perfect-scrollbar :style="{ maxHeight: mdAndUp? '20rem' : '12rem'}">
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <span class="text-subtitle-2 text-medium-emphasis">
@@ -264,9 +269,9 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
                           <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listRequest.time.createdAt) }}</div>
-                        <i v-if="listRequest.time.updatedAt" class="text-subtitle-2 text-disabled">
-                          Diubah {{ getTimeAgo(listRequest.time.updatedAt) }}
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.time.created_at) }}</div>
+                        <i v-if="listRequest.time.updated_at" class="text-subtitle-2 text-disabled">
+                          Diubah {{ getTimeDiff(listRequest.time.updated_at) }}
                         </i>
                       </div>
                     </div>
@@ -301,12 +306,12 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
     v-model="showOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
   >
     <v-card
       :class="selectedRequest === latestRequest ? 'bg-lightsecondary' : 'bg-white'"
-      class="rounded-lg pa-6 mt-8"
-      style="width: 90vw; max-width: 90vw;"
+      class="rounded-lg pa-6 heigh-screen"
+      style="width: clamp(340px, 90vw, 340px); overflow-y: auto; max-height: 90vh;"
     >
       <!-- Close button -->
       <v-btn
@@ -345,9 +350,9 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
                   }"
                 >{{ selectedRequest?.status }}</span>
               </div>
-              <h4 v-if="selectedRequest?.time.createdAt" class="text-h4 text-right">{{ getTimeAgo(selectedRequest?.time.createdAt) }}</h4>
-              <i v-if="selectedRequest?.time.updatedAt" class="text-subtitle-2 text-disabled">
-                Diubah {{ getTimeAgo(selectedRequest?.time.updatedAt) }}
+              <h4 v-if="selectedRequest?.time.created_at" class="text-h4 text-right">{{ getTimeDiff(selectedRequest?.time.created_at) }}</h4>
+              <i v-if="selectedRequest?.time.updated_at" class="text-subtitle-2 text-disabled">
+                Diubah {{ getTimeDiff(selectedRequest?.time.updated_at) }}
               </i>
             </div>
           </div>
@@ -389,11 +394,11 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
     v-model="showAddOverlay"
     fullscreen
     scroll-strategy="none"
-    class="d-flex justify-center align-start"
+    class="d-flex justify-center align-center"
   >
     <v-card 
-      class="rounded-lg pa-6 mt-8 bg-white" 
-      style="width: 90vw; max-width: 90vw; max-height: 90vh;"
+      class="rounded-lg pa-6 height-screen" 
+      style="width: clamp(340px, 90vw, 340px); overflow-y: auto; max-height: 90vh;"
     >
       <v-btn
         icon
@@ -408,40 +413,25 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
       <v-divider class="my-4"></v-divider>
       <v-form ref="formRef" v-model="isFormValid">
         <v-row>
-          <v-col cols="6">
-            <v-text-field
-              variant="underlined"
-              v-model="newRequest.employee"
-              label="Pegawai"
-              :rules="[v => !!v || 'Pegawai tidak terdeteksi']"
-              prepend-icon="mdi-human-male"
-              disabled
-              hide-details
-            />
-          </v-col>
-          <v-col cols="6">
+          <v-col cols="12" class="py-0">
             <v-select
-              variant="underlined"
-              v-model="newRequest.branchId"
+              v-model="newRequest.branch_id"
+              :items="props.user.assigned_branch"
               label="Cabang"
-              :items="branches"
-              :rules="[v => !!v || 'Cabang tidak terdeteksi']"
               item-title="name"
               item-value="id"
-              prepend-icon="mdi-home"
-              :disabled="branches.length === 1"
-              hide-details
-            />
+              :disabled="props.user.assigned_branch.length === 1"
+              :rules="[v => !!v || 'Cabang wajib diisi']"
+              prepend-inner-icon="mdi-home"
+            ></v-select>
           </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12" sm="6">
+          <v-col cols="12" class="pt-0">
             <div class="text-caption text-medium-emphasis">
               Catatan: 
             </div>
             <v-textarea
               v-model="newRequest.note"
-              :rules="notesRules"
+              :rules="noteRules"
               label="Opsional"
               rows="2"
               auto-grow
@@ -452,8 +442,11 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
           </v-col>
         </v-row>
 
-        <h4 class="text-h5 my-2">Daftar Item:</h4>
-        <perfect-scrollbar class="scrollable" style="max-height: 40vh; overflow-y: scroll; overflow-x: hidden;">
+        <h4 class="text-h5 my-2">
+          Daftar Item: 
+          <span class="text-subtitle-2 text-medium-emphasis">{{ newRequest.items.length }} item</span>
+        </h4>
+        <perfect-scrollbar class="scrollable" style="max-height: 49dvh; overflow-y: scroll; overflow-x: hidden;">
           <v-row
             v-for="(item, index) in newRequest.items"
             :key="index"
@@ -463,11 +456,12 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
             <v-divider v-if="index > 0" class="my-2"></v-divider>
             <v-col cols="10">
               <v-autocomplete
-                v-model="item.item.name"
+                v-model="item.id"
+                @update:model-value="updateItem(index)"
                 :items="filteredInventoryItem.map(item => ({ title: item.name, value: item.id }))"
                 :loading="li"
                 variant="underlined"
-                label="Nama Item"
+                :label="'Nama Item #' + (index + 1)"
                 :rules="[v => !!v || 'Nama item wajib diisi']"
               />
             </v-col>
@@ -478,7 +472,7 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
             </v-col>
             <v-col cols="6" class="pe-2">
               <v-number-input
-                v-model.number="item.item.quantity"
+                v-model.number="item.quantity"
                 control-variant="split"
                 variant="underlined"
                 label="Jumlah"
@@ -487,19 +481,19 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
               />
             </v-col>
             <v-col cols="6" class="ps-3">
-              <v-autocomplete
-                v-model="item.item.unit"
+              <v-select
+                v-model="item.unit"
                 variant="underlined"
-                :items="['pcs', 'kg', 'ltr', 'box']"
                 label="Satuan"
+                disabled
                 :rules="[v => !!v || 'Satuan wajib diisi']"
               />
             </v-col>
           </v-row>
         </perfect-scrollbar>
-
+        
         <v-btn
-          class="mt-2"
+          class="mt-2 mx-auto"
           variant="outlined"
           color="primary"
           @click="addItem"

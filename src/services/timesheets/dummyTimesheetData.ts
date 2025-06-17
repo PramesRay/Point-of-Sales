@@ -1,46 +1,438 @@
 import type { TimesheetData } from '@/types/timesheet'
 
-const dummyTimesheetData: Record<string, TimesheetData> = {
-  "branch-1": {
+const dummyTimesheetData: TimesheetData[] = [
+  {
+    branch: {
+      id: "branch-1",
+      name: "Restoran 1"
+    }, 
     open_hour: 5,
     employee: [
-      { name: 'Aldi', role: 'Manajer', last_active: 5, status: 'aktif' },
-      { name: 'Rina', role: 'Supervisor', last_active: 5, status: 'aktif' },
-      { name: 'Budi', role: 'Pelayan', last_active: 5, status: 'aktif' },
-      { name: 'Siti', role: 'Kasir', last_active: 0, status: 'offline' },
-      { name: 'Joko', role: 'Koki', last_active: 0, status: 'offline' }
-    ]
+    { 
+      id: 'emp-000',
+      name: 'Aldi', 
+      role: ['cashier'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Rina', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Budi', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Siti', 
+      role: ['admin'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Joko', 
+      role: ['owner'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    }]
   },
-  "branch-2": {
+  {    
+    branch: {
+      id: "branch-2",
+      name: "Restoran 2"
+    }, 
     open_hour: 6,
     employee: [
-      { name: 'Dian', role: 'Manajer', last_active: 6, status: 'aktif' },
-      { name: 'Fajar', role: 'Supervisor', last_active: 6, status: 'aktif' },
-      { name: 'Tono', role: 'Pelayan', last_active: 6, status: 'aktif' },
-      { name: 'Ayu', role: 'Kasir', last_active: 0, status: 'offline' },
-      { name: 'Bagas', role: 'Koki', last_active: 0, status: 'offline' }
-    ]
+    { 
+      id: 'emp-000',
+      name: 'Dian', 
+      role: ['cashier'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Fajar', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Tono', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Ayu', 
+      role: ['admin'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Bagas', 
+      role: ['owner'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    }]
   },
-  "branch-3": {
+  {    
+    branch: {
+      id: "branch-3",
+      name: "Restoran 3"
+    }, 
     open_hour: 4,
     employee: [
-      { name: 'Lina', role: 'Manajer', last_active: 4, status: 'aktif' },
-      { name: 'Rizky', role: 'Supervisor', last_active: 4, status: 'aktif' },
-      { name: 'Anton', role: 'Pelayan', last_active: 4, status: 'aktif' },
-      { name: 'Sari', role: 'Kasir', last_active: 0, status: 'offline' },
-      { name: 'Hadi', role: 'Koki', last_active: 0, status: 'offline' }
-    ]
+    { 
+      id: 'emp-000',
+      name: 'Lina', 
+      role: ['cashier'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Rizky', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Anton', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Sari', 
+      role: ['admin'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Hadi', 
+      role: ['owner'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    }]
   },
-  "branch-4": {
+  {    
+    branch: {
+      id: "branch-4",
+      name: "Restoran 4"
+    }, 
     open_hour: 7,
     employee: [
-      { name: 'Yuni', role: 'Manajer', last_active: 7, status: 'aktif' },
-      { name: 'Gilang', role: 'Supervisor', last_active: 7, status: 'aktif' },
-      { name: 'Nita', role: 'Pelayan', last_active: 7, status: 'aktif' },
-      { name: 'Eko', role: 'Kasir', last_active: 0, status: 'offline' },
-      { name: 'Bambang', role: 'Koki', last_active: 0, status: 'offline' }
-    ]
+    { 
+      id: 'emp-000',
+      name: 'Yuni', 
+      role: ['cashier'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Gilang', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Nita', 
+      role: ['kitchen'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: true,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Eko', 
+      role: ['admin'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,  
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    },
+    { 
+      id: 'emp-000',
+      name: 'Bambang', 
+      role: ['owner'], 
+      activity: {
+        last_active: new Date('2025-05-27T16:00:00'), 
+        is_active: false,
+        branch: {
+          id: "branch-1",
+          name: "Restoran 1"
+        }, 
+      },
+      access: ['all'],
+      email: 'rina.kitchen@example.com',
+      assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
+      meta: {
+        created_at: new Date('2024-10-01T08:00:00Z'),
+        updated_at: new Date('2025-05-01T09:30:00Z'),
+      }
+    }]
   }
-};
+]
 
 export default dummyTimesheetData;

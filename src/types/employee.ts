@@ -1,7 +1,7 @@
 import type { IdName } from "./common";
 import type { Meta } from "./meta";
 
-export type UserRole = 'admin' | 'cashier' | 'kitchen' | 'owner';
+export type UserRole = 'admin' | 'cashier' | 'kitchen' | 'owner' | 'finance';
 
 export type AccessKey =
   | 'read:orders'

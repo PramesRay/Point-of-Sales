@@ -1,6 +1,6 @@
 import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
-import { fetchFundRequests, createFundRequest, updateFundRequest } from '@/services/finance/fundRequestService';
+import { fetchFundRequests, createFundRequest, updateFundRequest, deleteFundRequest } from '@/services/finance/fundRequestService';
 import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
 
 export function useFundRequests() {
@@ -38,6 +38,18 @@ export function useFundRequests() {
     try {
       loading.value = true;
       await updateFundRequest(payload);
+      await load(branchId.value);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function remove(id: string) {
+    try {
+      loading.value = true;
+      await deleteFundRequest(id);
       await load(branchId.value);
     } catch (e: any) {
       error.value = e;

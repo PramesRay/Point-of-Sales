@@ -1,5 +1,5 @@
 import type { Branch } from "./branch"
-import type { Category } from "./inventoryItem"
+import type { Category } from "./inventory"
 import type { Meta } from "./meta"
 
 export interface Menu {

@@ -3,9 +3,9 @@ import type { Employee } from '@/types/employee'
 export const dummyUser: Employee = {
   id: 'emp-001',
   name: 'Rina Ayu',
-  email: 'rina.kitchen@example.com',
   role: ['admin'],
   access: ['all'],
+  email: 'rina.kitchen@example.com',
   assigned_branch: [{ id: 'branch-1', name: 'Restoran 1' }],
   activity: {
     is_active: true,

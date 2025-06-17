@@ -19,11 +19,6 @@ const tab = ref('1');
 const branchName = computed(() => stockRequest.value?.branch.name || '-');
 const currentRequest = computed(() => stockRequest.value?.summary.request || 0);
 
-watch(() => props.data, (newData) => {
-  console.log('props.data berubah:', newData);
-  console.log('stockRequest sekarang:', stockRequest.value);
-});
-
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
 
@@ -70,7 +65,7 @@ const chartOptions = computed(() => {
       },
       y: {
         title: {
-          formatter: () => 'Total Request'
+          formatter: () => 'Total Permintaan'
         }
       },
       marker: {
@@ -89,21 +84,6 @@ const chartOptions = computed(() => {
           <ShoppingCartIcon stroke-width="1.5" width="20" />
         </v-btn>
         <div class="mx-3 my-auto">
-          <!-- <v-select
-              class="custom-select font-weight-medium"
-              variant="plain"
-              hide-details
-              density="compact"
-              v-model="selectedBranch"
-              :items="branches"
-              item-title="name"
-              item-value="id"
-              label="Pilih Restoran"
-              :loading="loadingBranches"
-              :return-object="false"
-              single-line
-            >
-          </v-select> -->
           <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">

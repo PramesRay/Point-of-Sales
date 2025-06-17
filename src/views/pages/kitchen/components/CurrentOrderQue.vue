@@ -6,7 +6,7 @@ const { mdAndUp, smAndDown } = useDisplay()
 
 import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
-import { getTimeAgo } from "@/utils/helpers/time-ago";
+import { getTimeDiff } from "@/utils/helpers/time";
 import { hasRole } from '@/utils/helpers/user';
 
 import type { Order, OrderItem } from '@/types/order';
@@ -45,11 +45,12 @@ const showOverlay = ref(false)
 const showConfirmDialog = ref(false)
 const pendingOverlayClose = ref(false)
 const isManuallySaving = ref(false)
-const orderStatus = ref('')
+
 const paymentMethod = ref('')
 const inPayment = ref(false)
 const cashInput = ref('')
 const cashNumber = ref(0)
+const copied = ref(false)
 
 const amtRules = [
   (v: string) => !!v || 'Jumlah tidak boleh kosong',
@@ -61,12 +62,14 @@ const amtRules = [
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
+  copied.value = true
 }
 
-function openDetail(request: Order) {
-  selectedOrder.value = cloneDeep(request)
+
+function openDetail(order: Order) {
+  selectedOrder.value = cloneDeep(order)
   showOverlay.value = true
-  orderStatus.value = request.status ?? ''
+  copied.value = false
 }
 
 function confirmCancel() {
@@ -77,11 +80,11 @@ function confirmCancel() {
 
   if (selectedOrder.value) selectedOrder.value = null
 
-  orderStatus.value = ''
   paymentMethod.value = ''
   inPayment.value = false
   cashInput.value = ''
   cashNumber.value = 0
+  copied.value = false
 }
 
 // fungsi simulasi kirim data ke backend
@@ -95,7 +98,7 @@ function processOrder(status: "Pending" | "Diproses" | "Selesai" | "Batal") {
     status: status,
   })
   
-  if (orderStatus.value === 'Selesai' || orderStatus.value === 'Batal') {
+  if (selectedOrder.value?.status === 'Selesai' || selectedOrder.value?.status === 'Batal') {
     isManuallySaving.value = true
     confirmCancel()
   }
@@ -185,9 +188,9 @@ watch(() => cashInput.value, (val) => {
                         }"
                       >{{ latestOrderQue?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeAgo(latestOrderQue.meta.created_at) }}</h4>
+                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestOrderQue.meta.created_at) }}</h4>
                     <i v-if="latestOrderQue?.meta?.updated_at !== null" class="text-subtitle-2 text-disabled">
-                      Diubah {{ getTimeAgo(latestOrderQue.meta.updated_at) }}
+                      Diubah {{ getTimeDiff(latestOrderQue.meta.updated_at) }}
                     </i>
                   </div>
                 </div>
@@ -227,9 +230,9 @@ watch(() => cashInput.value, (val) => {
                             }"
                           >{{ listOrderQue?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeAgo(listOrderQue.meta.created_at) }}</div>
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listOrderQue.meta.created_at) }}</div>
                         <i v-if="listOrderQue?.meta?.updated_at" class="text-subtitle-2 text-disabled">
-                          Diubah {{ getTimeAgo(listOrderQue.meta.updated_at) }}
+                          Diubah {{ getTimeDiff(listOrderQue.meta.updated_at) }}
                         </i>
                       </div>
                     </div>
@@ -327,7 +330,7 @@ watch(() => cashInput.value, (val) => {
                   size="x-small"
                   @click="copyToClipboard(selectedOrder?.customer.phone ?? '')"
                 >
-                  <v-icon>mdi-content-copy</v-icon>
+                  <v-icon>{{ copied ? 'mdi-clipboard-check-multiple-outline' : 'mdi-clipboard-multiple-outline'}}</v-icon>
                 </v-btn>
               </div>
               <div class="text-subtitle-2 text-medium-emphasis">
@@ -352,9 +355,9 @@ watch(() => cashInput.value, (val) => {
                   'text-primary': selectedOrder?.status === 'Diproses'
                 }"
               >{{ selectedOrder?.status }}</div>
-              <h4 v-if="selectedOrder?.meta.created_at" class="text-h4">{{ getTimeAgo(selectedOrder?.meta.created_at) }}</h4>
+              <h4 v-if="selectedOrder?.meta.created_at" class="text-h4">{{ getTimeDiff(selectedOrder?.meta.created_at) }}</h4>
               <i v-if="selectedOrder?.meta.updated_at" class="text-subtitle-2 text-disabled">
-                Diubah {{ getTimeAgo(selectedOrder?.meta.updated_at) }}
+                Diubah {{ getTimeDiff(selectedOrder?.meta.updated_at) }}
               </i>
             </div>
             </v-col>
@@ -406,15 +409,15 @@ watch(() => cashInput.value, (val) => {
         </v-list-item>
       </perfect-scrollbar>
 
-      <v-divider class="my-3"></v-divider>
+      <!-- <v-divider class="my-3"></v-divider> -->
 
       <!-- Tombol proses -->
-      <v-row v-if="props.user.role ?? hasRole(props.user.role, ['admin', 'kitchen'])">
-        <v-col cols="12" v-if="orderStatus === 'Pending'">
+      <v-row v-if="(props.user.role ?? hasRole(props.user.role, ['admin', 'kitchen'])) && selectedOrder?.payment_status === 'Pending'">
+        <v-col cols="12" v-if="selectedOrder.status === 'Pending'">
           <v-btn 
             color="warning" 
             block
-            @click="orderStatus = 'Diproses', processOrder('Diproses')"
+            @click="processOrder('Diproses')"
             :disabled="props.loading"
             :variant="props.loading? 'outlined' : 'elevated'"
             :loading="props.loading"
@@ -422,11 +425,11 @@ watch(() => cashInput.value, (val) => {
             Proses Pesanan
           </v-btn>
         </v-col>
-        <v-col cols="12" v-if="orderStatus === 'Diproses'">
+        <v-col cols="12" v-if="selectedOrder.status === 'Diproses'">
           <v-btn 
             color="primary"
             block
-            @click="orderStatus = 'Selesai', processOrder('Selesai')"
+            @click="processOrder('Selesai')"
             :disabled="props.loading"
             :variant="props.loading? 'outlined' : 'elevated'"
             :loading="props.loading"
@@ -442,7 +445,7 @@ watch(() => cashInput.value, (val) => {
           <v-btn 
             color="error"
             block
-            @click="orderStatus = 'Batal', processOrder('Batal')"
+            @click="showConfirmDialog = true"
             :disabled="props.loading"
             variant="outlined"
             :loading="props.loading"
@@ -590,4 +593,19 @@ watch(() => cashInput.value, (val) => {
       </v-row>
     </v-card>
   </v-overlay>
+
+  <v-dialog v-model="showConfirmDialog" persistent max-width="400">
+    <v-card class="pa-3">
+      <v-card-title class="text-h3">Batalkan Pesanan?</v-card-title>
+      <v-card-text class="text-subtitle-1 text-medium-emphasis">
+        Apakah Anda yakin ingin membatalkan pesanan ini?
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="showConfirmDialog = false">Kembali</v-btn>
+        <v-btn variant="elevated" color="error" @click="processOrder('Batal')">Ya, Batalkan</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
 </template>

@@ -1,5 +1,6 @@
 import type { Branch } from "./branch";
 import type { IdName } from "./common";
+import type { InventoryItem } from "./inventory";
 import type { Meta } from "./meta";
 
 export type AllIncomes = Record<string, number>;
@@ -41,16 +42,34 @@ export interface FundRequest {
   notes: string,
   employee: IdName,
   amount: number,
-  status: 'Pending' | 'Disetujui' | 'Ditolak',
+  items: {
+      item: Pick<InventoryItem, 'id' | 'name' | 'purchase_price' | 'unit'>
+      status: 'Disetujui' | 'Ditolak' | 'Pending';
+      quantity: number
+    }[]
+    status: 'Disetujui'| 'Beberapa Disetujui' | 'Ditolak' | 'Pending';
   branch: IdName
+  approvement: {
+    by: IdName[]
+    note: string
+  }
   meta? : Meta
 }
 
-export type CreateFundRequest = Omit<FundRequest, 'id' | 'status' | 'branch' | 'employee' | 'meta'> & {
+export type CreateFundRequest = Omit<FundRequest, 'id' | 'status' | 'branch' | 'employee' | 'items' | 'approvement' | 'meta'> & {
   branch_id: string
+  items: {
+    item_id: string
+    quantity: number
+  }[]
 }
-export type UpdateFundRequest = Omit<FundRequest, 'employee' | 'branch' | 'meta'> & {
+export type UpdateFundRequest = Omit<FundRequest, 'employee' | 'branch' | 'items' | 'approvement' | 'meta'> & {
   branch_id: string
+  items: {
+    item_id: string
+    quantity: number
+  }[]
+  approvement_note: string
 }
 
 export interface FinanceSummary {

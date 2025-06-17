@@ -36,27 +36,32 @@ export interface Category {
 export interface InventoryItem {
   id: string
   name: string
-  description?: string
-  unit?: string
-  category?: Category
-  quantity?: number
-  threshold?: number
-  expired_date?: Date
-  meta?: Meta
+  description: string
+  unit: string
+  purchase_price: number
+  category: IdName
+  quantity: number
+  threshold: number
+  expired_date: Date
+  meta: Meta
+}
+
+export type CreateInventoryItemPayload = Pick<InventoryItem, 'name' | 'description' | 'purchase_price' | 'threshold'> & {
+  category_id: string
+}
+
+export type UpdateInventoryItemPayload = Omit<CreateInventoryItemPayload, 'category_id'> & {
+  id: string
 }
 
 export interface StockMovement { 
   id: string
-  name: string
-  description?: string
-  category?: Category
-  branch?: Branch
-  employee?: IdName
-  quantity?: number
-  unit?: string 
-  status?: 'Masuk' | 'Keluar' 
-  time?: Date
-  meta?: Meta
+  description: string
+  status: 'Masuk' | 'Keluar' | 'Penyesuaian'
+  branch: IdName
+  time: Date
+  item: InventoryItem
+  meta: Meta
 }
 
 export type CreateStockMovementPayload = Omit<StockMovement, 'id' | 'meta' | 'category' | 'branch'> & {
@@ -70,38 +75,12 @@ export type UpdateStockMovementPayload = Omit<StockMovement, 'meta' | 'category'
 }
 
 
-export interface createStockRequestPayload {
-  branch: string
-  employee: string
+export interface CreateStockRequestPayload {
+  branch_id: string
   note: string
-  items: {
-    item: string
-    quantity: number
-  }[]
+  items: {[K in keyof Pick<InventoryItem, 'id' | 'name' | 'unit' | 'quantity'>]: InventoryItem[K] | null}[]
 }
 
-export interface CreateInventoryItemPayload {
-  category_id: string
-  name: string
-  description: string
-  note: string
-  unit: string
-  quantity: number
-  threshold: number
-  expired_date: Date
-}
-
-export interface UpdateInventoryItemPayload {
-  id: string
-  name: string
-  category_id: string
-  description: string
-  note: string
-  unit: string
-  quantity: number
-  threshold: number
-  expired_date: Date
-}
 
 export interface ApproveStockRequestPayload {
   id: string

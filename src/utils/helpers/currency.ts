@@ -15,6 +15,12 @@ export const formatRupiahInput = (value: string | number): string => {
   return angka.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
+export const formatRupiahInputR = (input: string): number => {
+  // Hapus semua karakter kecuali digit
+  const onlyDigits = input.replace(/\D/g, '')
+  return onlyDigits.length === 0 ? 0 : parseInt(onlyDigits, 10)
+}
+
 
 export const shortenNumber = (num: number) => {
   if (num >= 1_000_000_000) return { value: (num / 1_000_000_000).toFixed(1), suffix: 'M' };

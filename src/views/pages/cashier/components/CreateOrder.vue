@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { cloneDeep, create } from 'lodash';
 
-import type { Category } from '@/types/inventoryItem';
+import type { Category } from '@/types/inventory';
 import type { Menu } from '@/types/menu'
 import type { CreateOrderPayload, Order } from '@/types/order';
 import type { Employee } from '@/types/employee';
@@ -138,6 +138,7 @@ function openAddItem(menu: Menu) {
   if (!currentItem.value) return
 
   currentItem.value.id = menu.id
+  itemPayload.value.id = menu.id
   currentItem.value.name = menu.name
   currentItem.value.description = menu.description
   currentItem.value.price = menu.price
@@ -180,13 +181,27 @@ function addItemToCart() {
   pendingOverlayClose.value = true
   showOverlayInputItem.value = false
 
-  orderPayload.value.items.push({
-    id: itemPayload.value.id,
-    name: currentItem.value.name,
-    quantity: itemPayload.value.quantity,
-    note: itemPayload.value.note,
-    price: currentItem.value.price
-  })
+  // Cek apakah item dengan id dan note yang sama sudah ada
+  const existingItem = orderPayload.value.items.find(item => 
+    item.id === itemPayload.value.id && item.note === itemPayload.value.note
+  );
+
+  console.log('existingItem', existingItem)
+  console.log('itemPayload', itemPayload.value)
+
+  if (existingItem) {
+    // Jika item sudah ada, hanya tambahkan kuantitasnya
+    existingItem.quantity += itemPayload.value.quantity;
+  } else {
+    // Jika item belum ada, tambahkan item baru ke keranjang
+    orderPayload.value.items.push({
+      id: itemPayload.value.id,
+      name: currentItem.value.name,
+      quantity: itemPayload.value.quantity,
+      note: itemPayload.value.note,
+      price: currentItem.value.price
+    });
+  }
 
   resetItem()
 }
@@ -358,18 +373,44 @@ watch(() => cashInput.value, (val) => {
           <v-btn color="darkprimary" icon rounded="sm" variant="flat">
             <ShoppingCartIcon stroke-width="1.5" width="20" />
           </v-btn>
-          <div>
-            <h4 class="text-h4 font-weight-medium"> Pesanan Baru: </h4>
-          </div>
-            <v-text-field
-              v-model="orderPayload.table_number"
-              placeholder="Nomor Meja"
-              :rules="requieredRules"
-              variant="plain"
-              class="small-font text-medium-emphasis table-number-input"
-              single-line
-              hide-details
-            />
+          <v-row>
+            <v-col cols="12">
+              <h4 class="text-h4 font-weight-medium"> Pesanan Baru: </h4> 
+              <v-row>
+                <v-col cols="7">
+                  <v-select
+                  class="small-font"
+                  density="compact"
+                  v-model="orderPayload.is_take_away"
+                    :items="[
+                      { value: false, text: 'Makan di Tempat' },
+                      { value: true, text: 'Bawa Pulang' }
+                    ]"
+                    item-title="text"
+                    item-value="value"
+                    placeholder="Bawa Pulang?"
+                    variant="plain"
+                    :prepend-inner-icon="orderPayload.is_take_away == true ? 'mdi-store-outline' : 'mdi-food'"
+                    :rules="booleanReqRules"
+                    single-line
+                    hide-details
+                    />
+                  </v-col>
+                  <v-divider vertical class="my-4"></v-divider>
+                  <v-col cols="5">
+                    <v-text-field
+                      v-model="orderPayload.table_number"
+                      placeholder="Nomor Meja"
+                      :rules="requieredRules"
+                      variant="plain"
+                      class="small-font text-medium-emphasis table-number-input"
+                      single-line
+                      hide-details
+                      />
+                  </v-col>
+                </v-row>
+            </v-col>
+          </v-row>
         </div>
 
         <div class="mt-4" v-if="!loading">
@@ -436,6 +477,15 @@ watch(() => cashInput.value, (val) => {
           </div>
 
           <!-- Preview Cart -->
+          <div class="text-center" v-if="showDetailOrder">
+            <v-btn 
+              icon
+              variant="text"
+              size="x-small"
+              class="text-center">
+              <v-icon>mdi-chevron-up</v-icon>
+            </v-btn>
+          </div>
           <v-card
             class="bg-primary overflow-hidden bubble-shape-sm my-1"
             rounded="md"
@@ -479,23 +529,6 @@ watch(() => cashInput.value, (val) => {
                       hide-details
                       hide-spin-buttons
                     />
-                    <v-select
-                      class="small-font"
-                      density="compact"
-                      v-model="orderPayload.is_take_away"
-                      :items="[
-                        { value: false, text: 'Makan di Tempat' },
-                        { value: true, text: 'Bawa Pulang' }
-                      ]"
-                      item-title="text"
-                      item-value="value"
-                      placeholder="Bawa Pulang?"
-                      variant="plain"
-                      :prepend-inner-icon="orderPayload.is_take_away == true ? 'mdi-store-outline' : 'mdi-food'"
-                      :rules="booleanReqRules"
-                      single-line
-                      hide-details
-                    />
                   </div>
                 </v-col>
                 <v-col cols="5" class="text-right my-auto">
@@ -508,20 +541,20 @@ watch(() => cashInput.value, (val) => {
                 </v-col>
               </v-row>
             </v-card-text>
-            <!-- <div class="text-center mb-1">
-              <v-btn 
-                icon
-                variant="text"
-                size="x-small"
-                class="text-center">
-                <v-icon>mdi-chevron-down</v-icon>
-              </v-btn>
-            </div> -->
           </v-card>
+          <div class="text-center" v-if="!showDetailOrder">
+            <v-btn 
+              icon
+              variant="text"
+              size="x-small"
+              class="text-center">
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </div>
           
           <!-- Daftar Cart Item -->
           <v-expand-transition>
-            <div v-if="showDetailOrder" class="my-4">
+            <div v-if="showDetailOrder" class="mt-4">
               <h4 class="text-h4">Daftar Item:</h4>
             <div class="mt-2" v-if="orderPayload.items.length > 0">
               <perfect-scrollbar class="scrollable" style="max-height: 30dvh; overflow-y: scroll; overflow-x: hidden;">
@@ -639,21 +672,19 @@ watch(() => cashInput.value, (val) => {
     </v-btn>
     
     <v-row class="align-center">
-      <v-col cols="5" class="">
+      <v-col cols="5">
         <h4 class="text-h4 text-medium-emphasis text-center">
           <div>{{ currentItem?.name }}</div>
           <div>{{ formatRupiah(currentItem?.price) }}</div>
         </h4>
       </v-col>
       <v-divider vertical inset></v-divider>
-      <v-col cols="6" class="">
+      <v-col cols="6">
         <div class="text-subtitle-1 text-disabled">
           {{ currentItem?.description }}
         </div>
       </v-col>
     </v-row>
-
-      <v-form ref="formRef" v-model="isFormValid">
         <div class="mx-auto mt-2 w-50">
           <v-number-input 
           v-model="itemPayload.quantity" 
@@ -691,12 +722,9 @@ watch(() => cashInput.value, (val) => {
             <v-btn
               color="primary" 
               @click="addItemToCart"
-              :disabled="!isFormValid"
-              :variant="isFormValid ? 'elevated' : 'outlined'"
             >Tambah</v-btn>
           </v-col>
         </v-row>
-      </v-form>
     </v-card>
   </v-overlay>
 

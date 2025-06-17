@@ -2,33 +2,24 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useTotalOrder } from '@/composables/useTotalOrder'
 import type { FinanceSummary } from '@/types/finance';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: FinanceSummary[];
-  branch: string;
+  branch: IdName;
   loading: boolean;
 }>();
 
 const orderData = computed(() => {
   if (!props.data?.length) return undefined;
   return props.data
-    .filter(tx => tx.branchId === props.branch)
-    .map(item => ({
-      branchId: item.branchId,
-      branchName: item.branchName,
-      order: item.order
-    }))[0]
+    .filter(tx => tx.branchId === props.branch.id)
+    .map(item => ({order: item.order}))[0]
 });
 
 const tab = ref('1');
 
-const branchName = computed(() => orderData.value?.branchName || '-');
 const currentOrder = computed(() => orderData.value?.order.current || 0);
-
-// watch(() => props.data, (newData) => {
-//   console.log('props.data berubah:', newData);
-//   console.log('orderData sekarang:', orderData.value);
-// });
 
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
@@ -110,7 +101,7 @@ const chartOptions = computed(() => {
               single-line
             >
           </v-select> -->
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch.name }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-primary">

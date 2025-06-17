@@ -1,4 +1,4 @@
-import type { Category } from "@/types/inventoryItem";
+import type { Category } from "@/types/inventory";
 
 export const dummyInventoryItemsCategories: Category[] = [
   {
@@ -15,5 +15,10 @@ export const dummyInventoryItemsCategories: Category[] = [
     id: 'cat-003',
     name: 'Pelengkap',
     description: 'Pelengkap hidangan nasi uduk seperti sambal dan kerupuk'
+  },
+  {
+    id: 'new',
+    name: 'Baru',
+    description: 'Barang Baru'
   },
 ]
