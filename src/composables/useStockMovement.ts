@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { fetchCategoryInventoryItems, fetchStockMovements, createStockMovement, updateStockMovement } from '@/services/inventory/inventoryItemService';
+import { fetchCategoryInvItem, fetchStockMovements, createStockMovement, updateStockMovement } from '@/services/inventory/inventoryItemService';
 import type { Category, StockMovement } from '@/types/inventory';
 
 export function useStockMovements() {
@@ -13,7 +13,7 @@ export function useStockMovements() {
     error.value   = null;
     try {
       data.value = await fetchStockMovements();
-      categories.value = await fetchCategoryInventoryItems()
+      categories.value = await fetchCategoryInvItem()
     } catch (e: any) {
       error.value = e;
     } finally {

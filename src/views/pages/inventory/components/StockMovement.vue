@@ -12,6 +12,8 @@ import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
 
 import { useInventoryItems } from '@/composables/useInventoryItems';
+import { useUserStore } from '@/stores/authUser';
+const userStore = useUserStore();
 
 const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
 
@@ -31,7 +33,6 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-const branches = computed(() => props.branches)
 const editableCategories = computed(() => props.categories.filter(ctg => ctg.id !== 'new'))
 const categories = computed(() => [
   {id: 'all', name: 'Semua'},
@@ -63,7 +64,7 @@ const timeMenu = ref(false)
 const timeModel = ref<string>('');
 const isUpdatingTime = ref(false)
 const isNewItem = ref(false)
-const itemQuantity = ref(0)
+const unit = ref('')
 
 const pendingOverlayClose = ref(false) // tandai kalau user sedang coba tutup overlay
 const showConfirmDialog = ref(false)
@@ -71,39 +72,33 @@ const showOverlay = ref(false)
 const isManuallySaving = ref(false)
 
 // Payload
-const dataMovement = ref<{[K in keyof Omit<StockMovement, 'meta'>]: StockMovement[K] | null}>({
-  id: null,
+const payload = ref<{
+  description: string | null,
+  branch_id: string,
+  status: string | null,
+  time: Date,
+  item: {
+    id: string | null,
+    category_id: string | null,
+    quantity: number
+  }
+}>({
   description: null,
-  branch: {
-    id: '',
-    name: ''
-  },
+  branch_id: userStore.me!.assigned_branch![0].id,
   status: null,
   time: new Date(),
   item: {
-    id: '',
-    name: '',
-    description: '',
-    category: {
-      id: '',
-      name: ''
-    },
-    expired_date: new Date(),
-    purchase_price: 0,
-    unit: '',
-    quantity: 0,
-    threshold: 0,
-    meta: {
-      created_at: new Date(),
-      updated_at: new Date()
-    }
+    id: null,
+    category_id: null,
+    quantity: 0
   }
 })
 
 // Form Rules
 const rules = {
   required: [(v: string) => !!v || 'Data tidak boleh kosong'],
-  required_obj: [(v: { id: string; name: string }) => !!v.id  || 'Data tidak boleh kosong'],
+  item_required: [(v: number) => payload.value.item.id !== null && payload.value.item.id !== "" || 'Pilih item terlebih dahulu'],
+  status_required: [(v: string) => payload.value.status !== null && payload.value.status !== "" || 'Pilih status terlebih dahulu'],
   qty: [(v: number) => !!v || 'Jumlah tidak boleh kosong', (v: number) => v >= 0 || 'Jumlah tidak boleh kurang dari 0'],
   desc: [(v: string) => v.length <= 100 || 'Maksimal 100 karakter'],
 }
@@ -115,51 +110,51 @@ const currentData = computed(() => {
 })
 
 const isChanged = computed(() => {
-  if (!dataMovement.value) return false
+  if (!payload.value) return false
 
   if (isNewItem.value) {
     return (
-      dataMovement.value.description !== null ||
-      dataMovement.value.status !== null ||
-      dataMovement.value.branch !== null ||
-      dataMovement.value.item !== null ||
-      dataMovement.value.time !== null
+      payload.value.description !== null ||
+      payload.value.status !== null ||
+      payload.value.branch_id !== null ||
+      payload.value.time !== null ||
+      payload.value.item.id !== null ||
+      payload.value.item.category_id !== null ||
+      payload.value.item.quantity !== 0
     )
   } else {
     if (!selectedItem.value) return false
     return (
-      dataMovement.value.description !== selectedItem.value.description ||
-      dataMovement.value.status !== selectedItem.value.status ||
-      dataMovement.value.branch !== selectedItem.value.branch ||
-      dataMovement.value.item !== selectedItem.value.item ||
-      new Date(dataMovement.value.time!).getTime() !== new Date(selectedItem.value.time!).getTime()
+      payload.value.description !== selectedItem.value.description ||
+      payload.value.status !== selectedItem.value.status ||
+      payload.value.branch_id !== selectedItem.value.branch.id ||
+      payload.value.time !== selectedItem.value.time ||
+      payload.value.item.id !== selectedItem.value.item.id ||
+      payload.value.item.category_id !== selectedItem.value.item.category?.id ||
+      payload.value.item.quantity !== selectedItem.value.item.quantity
     )
   }
 })
 
 // Format Date untuk time dan exp
 const formatedDateTime = computed(() => {
-  if (!dataMovement.value.time) return ''
-  return formatDate(dataMovement.value.time).slice(0, -12)
+  if (!payload.value.time) return ''
+  return formatDate(payload.value.time).slice(0, -12)
 })
 const formatedClockTime = computed(() => {
-  if (!dataMovement.value.time) return ''
-  return formatDate(dataMovement.value.time).slice(-5)
-})
-const formatedDateExp = computed(() => {
-  if (!dataMovement.value.item?.expired_date) return ''
-  return formatDate(dataMovement.value.item.expired_date).slice(0, -12)
+  if (!payload.value.time) return ''
+  return formatDate(payload.value.time).slice(-5)
 })
 
 // Handler saat pilih tanggal
 function onDatePicked(val: Date | null) {
   if (!val) return;
 
-  if (!dataMovement.value.time) dataMovement.value.time = new Date()
+  if (!payload.value.time) payload.value.time = new Date()
 
-  const time = dataMovement.value.time
+  const time = payload.value.time
 
-  dataMovement.value.time = new Date(
+  payload.value.time = new Date(
     val.getFullYear(),
     val.getMonth(),
     val.getDate(),
@@ -177,13 +172,13 @@ function onDatePicked(val: Date | null) {
 
 function onTimePicked(val: string) {
   isUpdatingTime.value = true
-  if (!dataMovement.value.time) {
-    dataMovement.value.time = new Date()
+  if (!payload.value.time) {
+    payload.value.time = new Date()
   }
 
-  const oldDate = dataMovement.value.time
+  const oldDate = payload.value.time
   const [hours, minutes] = val.split(':').map(Number) 
-  dataMovement.value.time = new Date(
+  payload.value.time = new Date(
     oldDate.getFullYear(),
     oldDate.getMonth(),
     oldDate.getDate(),
@@ -197,36 +192,21 @@ function onTimePicked(val: string) {
 }
 
 function clearPayload() {
-  dataMovement.value = {
-    id: null,
+  payload.value = {
     description: null,
-    branch: null,
-    time: new Date(),
+    branch_id: userStore.me!.assigned_branch![0].id,
     item: {
-      id: '',
-      name: '',
-      description: '',
-      category: {
-        id: '',
-        name: ''
-      },
-      expired_date: new Date(),
-      purchase_price: 0,
-      unit: '',
-      quantity: 0,
-      threshold: 0,
-      meta: {
-        created_at: new Date(),
-        updated_at: new Date()
-      }
+      id: null,
+      category_id: null,
+      quantity: 0
     },
+    time: new Date(),
     status: null
   }
 
   timeModel.value = ''
   dateModel.value = null
   isUpdatingTime.value = false
-  itemQuantity.value = 0
 }
 
 function openDetail(request: StockMovement) {
@@ -243,28 +223,17 @@ function openAddNew() {
 }
 
 function processdataMovement() {
-  if (!dataMovement.value) return
-
-  console.log('data movement before', dataMovement.value)
-
-  const payload: CreateStockMovementPayload = JSON.parse(JSON.stringify({
-    description: dataMovement.value.description!,
-    time: dataMovement.value.time!,
-    item: dataMovement.value.item!,
-    status: dataMovement.value.status!,
-    category_id: dataMovement.value.item?.category.id!,
-    branch_id: dataMovement.value.branch?.id!
-  }))
-
-  const updatePayload: UpdateStockMovementPayload = JSON.parse(JSON.stringify({
-    id: selectedItem.value?.id!,
-    ...payload
-  }))
+  if (!payload.value) return
+  console.log('data movement before', payload.value)
 
   if (isNewItem.value) {
-    emit('create-sm', (payload))
-    console.log('Membuat item baru:', payload)
+    emit('create-sm', (payload.value as CreateStockMovementPayload))
+    console.log('Membuat item baru:', payload.value)
   } else {
+    const updatePayload: UpdateStockMovementPayload = {
+      id: selectedItem.value?.id!,
+      ...payload.value as CreateStockMovementPayload
+    }
     emit('update-sm', (updatePayload))
     console.log('Mengubah item:', updatePayload)
   }
@@ -286,13 +255,16 @@ function confirmCancel() {
   showOverlay.value = false
 
   if (selectedItem.value) {
-    dataMovement.value = {
-      id: selectedItem.value.id,
+    payload.value = {
       description: selectedItem.value.description ?? null,
-      branch: selectedItem.value.branch ?? null,
-      item: selectedItem.value.item ?? null,
+      branch_id: selectedItem.value.branch.id ?? null,
+      item: {
+        id: selectedItem.value.item.id,
+        category_id: selectedItem.value.item.category.id,
+        quantity: selectedItem.value.item.quantity,
+      },
       time: selectedItem.value.time ?? null,
-      status: selectedItem.value.status ?? null
+      status: selectedItem.value.status ?? null,
     }
   } else {
     clearPayload()
@@ -304,15 +276,10 @@ function updateItem(id: string) {
     // Cari item berdasarkan id barang yang dipilih
     const item = dataItems.value.find(item => item.id === id)
     if (item) {
-      dataMovement.value.item = cloneDeep(item)
-      itemQuantity.value = item.quantity
-
-      dataMovement.value.item.quantity = 0
-      if (dataMovement.value.item?.category.id == 'new') {
-        dataMovement.value.item.category = {
-          id: '',
-          name: ''
-        }
+      unit.value = item.unit
+      
+      if (payload.value.item.category_id == 'new') {
+        payload.value.item.category_id = ''
         alertStore.showAlert('Pilih Kategori untuk barang baru!', 'warning');
       }
     } else console.log('item not found')
@@ -356,11 +323,14 @@ watch(showOverlay, (isOpen, wasOpen) => {
 
 watch(selectedItem, (val) => {
   if (val) {
-    dataMovement.value = {
-      id: val.id,
+    payload.value = {
       description: val.description ?? null,
-      branch: val.branch ?? null,
-      item: val.item ?? null,
+      branch_id: val.branch.id ?? null,
+      item: {
+        id: val.item.id,
+        category_id: val.item.category.id,
+        quantity: val.item.quantity
+      },
       time: val.time ?? null,
       status: val.status ?? null
     }
@@ -404,7 +374,6 @@ watch(selectedItem, (val) => {
 
         <!-- Menambahkan Skeleton Loader untuk menunggu data -->
         <div v-if="props.loading">
-          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
           <v-skeleton-loader type="paragraph"></v-skeleton-loader>
         </div>
 
@@ -556,7 +525,7 @@ watch(selectedItem, (val) => {
                     v-model="timeModel"
                     format="24hr"
                     @update:model-value="onTimePicked"
-                    :max="dataMovement.time?.toLocaleDateString() === new Date().toLocaleDateString() ? new Date().toTimeString().slice(0, 5) : '23:59'"
+                    :max="payload.time?.toLocaleDateString() === new Date().toLocaleDateString() ? new Date().toTimeString().slice(0, 5) : '23:59'"
                   />
                 </v-dialog>
               </v-text-field>
@@ -566,24 +535,24 @@ watch(selectedItem, (val) => {
             <v-col cols="6" class="pe-2">
               <v-select
                 variant="underlined"
-                v-model="dataMovement.status"
+                v-model="payload.status"
                 :items="['Masuk', 'Keluar', 'Penyesuaian']"
                 :rules="rules.required"
                 label="Tipe"
                 prepend-inner-icon="mdi-format-vertical-align-center"
+                @update:model-value="formRef.validate()"
               />
             </v-col>
             <v-col cols="6" class="ps-2">
               <v-select
                 variant="underlined"
-                v-model="dataMovement.branch"
+                v-model="payload.branch_id"
                 label="Cabang"
-                :items="branches"
+                :items="userStore.me!.assigned_branch || []"
                 :rules="rules.required"
                 item-title="name"
                 item-value="id"
                 prepend-inner-icon="mdi-home"
-                return-object 
               />
             </v-col>
           </v-row>
@@ -591,7 +560,7 @@ watch(selectedItem, (val) => {
           <div>
             <v-textarea
               variant="underlined"
-              v-model="dataMovement.description"
+              v-model="payload.description"
               :rules="rules.desc && rules.required"
               label="Deskripsi"
               rows="2"
@@ -609,22 +578,19 @@ watch(selectedItem, (val) => {
             <v-col cols="5" class="pe-2">
               <v-select
                 variant="underlined"
-                v-model="dataMovement.item.category"
+                v-model="payload.item.category_id"
                 :items="editableCategories"
-                :rules="rules.required_obj"
-                :disabled="dataMovement.item.id == ''"
+                :rules="[...rules.item_required]"
                 item-title="name"
                 item-value="id"
                 label="Kategori"
                 prepend-inner-icon="mdi-shape"
-                return-object 
               />
             </v-col>
             <v-col cols="7" class="ps-2">
               <v-autocomplete
               variant="underlined"
-              v-model="dataMovement.item.id"
-              @update:model-value="updateItem(dataMovement.item.id)"
+              v-model="payload.item.id"
               :items="dataItems"
               :loading="li"
               item-title="name"
@@ -632,14 +598,15 @@ watch(selectedItem, (val) => {
               label="Nama Barang"
               :rules="rules.required"
               prepend-inner-icon="mdi-form-textbox"
+              @update:model-value="updateItem(payload.item.id!), formRef.validate()"
             />
             </v-col>
           </v-row>
           <v-row no-gutters class="justify-center">
             <v-col cols="3" class="pe-2">
               <v-text-field
+                v-model="unit"
                 variant="underlined"
-                v-model="dataMovement.item.unit"
                 disabled
                 label="Satuan"
                 :rules="rules.required"
@@ -648,25 +615,24 @@ watch(selectedItem, (val) => {
             </v-col>
             <v-col cols="7" class="ps-2 d-flex align-center">
               <v-number-input 
+                v-model.number="payload.item.quantity"
                 style="max-width: 8rem"
                 inset
                 control-variant="split"
-                v-model.number="dataMovement.item.quantity"
-                :label="'Jumlah' + (dataMovement.status ? ' ' + dataMovement.status : '')"
+                :label="'Jumlah' + (payload.status ? ' ' + payload.status : '')"
                 variant="plain"
                 :min="0"
-                :rules="rules.qty"
-                :disabled="dataMovement.item.id == '' || !dataMovement.status"
+                :rules="[...rules.qty, ...rules.item_required, ...rules.status_required]"
               ></v-number-input>
               <span class="text-subtitle-2 text-medium-emphasis" >
                 <div>
                     Dari:
                 </div>
-                {{ itemQuantity + ' ' + dataMovement.item.unit}}
+                {{ payload.item.quantity + ' ' + unit }}
               </span>
             </v-col>
             <!-- expired -->
-            <v-col cols="7">
+            <!-- <v-col cols="7">
               <v-text-field
                 v-model="formatedDateExp"
                 label="Tanggal Expired"
@@ -675,26 +641,25 @@ watch(selectedItem, (val) => {
                 :active="datePickerMenuExp"
                 :focused="datePickerMenuExp"
                 variant="underlined"
-                :rules="rules.required"
-                :disabled="dataMovement.item.id == ''"
+                :rules="[...rules.required, ...rules.item_required]"
               />
-                <v-dialog
-                  v-model="datePickerMenuExp"
-                  activator="parent"
-                  transition="scale-transition"
-                  offset-y
-                  max-width="290"
-                  min-width="290"
-                >
-                  <v-date-picker
-                    v-model="dataMovement.item.expired_date"
-                    @update:model-value="datePickerMenuExp = false"
-                    :min="!isNewItem ? null : new Date()"
-                    no-title
-                    scrollable
-                  />
+              <v-dialog
+                v-model="datePickerMenuExp"
+                activator="parent"
+                transition="scale-transition"
+                offset-y
+                max-width="290"
+                min-width="290"
+              >
+                <v-date-picker
+                  v-model="payload.expired_date"
+                  @update:model-value="datePickerMenuExp = false"
+                  :min="!isNewItem ? null : new Date()"
+                  no-title
+                  scrollable
+                />
               </v-dialog>
-            </v-col> 
+            </v-col>  -->
           </v-row>
 
         </PerfectScrollbar>

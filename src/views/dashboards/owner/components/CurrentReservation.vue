@@ -7,7 +7,6 @@ import type { IdName } from '@/types/common';
 import type { CreateReservationPayload, Reservation, UpdateReservationPayload } from '@/types/reservation';
 
 import { formatDate } from '@/utils/helpers/format-date'
-import type { Employee } from '@/types/employee';
 import type { Customer } from '@/types/customer';
 import { cloneDeep } from 'lodash';
 import { watch } from 'vue';
@@ -20,23 +19,23 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   data: Reservation[];
-  branch: IdName;
-  branch_option: Branch[]
+  branch: IdName | undefined;
+  branch_option: IdName[]
   loading: boolean;
 }>();
 
 // branch option tanpa semua cabang
 const branchOptions = computed(() => {
-  return props.branch_option.filter(branch => branch.id !== 'all')
+  return props.branch_option.filter(branch => branch.id !== '')
 })
 
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
-  if (props.branch.id === 'all') {
+  if (!props.branch || props.branch.id === '') {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch.id
+    (tx) => tx.branch.id === props.branch?.id
   );
 })
 const latestReservation = computed(() => currentData.value[0])
@@ -335,12 +334,13 @@ watch(showOverlay, (isOpen, wasOpen) => {
       <v-card-text>
         <v-row>
           <v-col cols="7">
-            <h4 class="text-h4 mt-1">Daftar Reservasi
-            <span 
-              class="text-subtitle-2 text-medium-emphasis ml-1"
-              v-if="props.branch.id !== 'all'"
-            >{{ props.branch.name }}</span>
-            </h4>
+            <div>
+              <h4 class="text-h4 mt-1">Daftar Reservasi</h4>
+            </div>
+            <div class="text-subtitle-2 text-medium-emphasis"
+              v-if="props.branch?.id !== 'all'"
+              >{{ props.branch?.name }}
+            </div>
           </v-col>
           <v-col cols="5" class="mt-auto text-right">
             <v-btn
@@ -378,7 +378,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
           </div>
         </v-card>
         <div v-if="!props.loading" class="mt-4">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '15rem' : '12rem'}">
+          <perfect-scrollbar :style="{ maxHeight: '15rem'}">
             <v-list lines="two" class="py-0">
               <v-list-item 
                 v-for="(listReservation, i) in listReservation" 

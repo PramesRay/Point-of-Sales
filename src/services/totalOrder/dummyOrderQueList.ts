@@ -13,7 +13,6 @@ const dummyOrdersQue: Order[] = [
   },
   table_number: "10",
   customer: {
-    id: "cust-2",
     name: "Bu Ani",
     phone: "08123456789"
   },
@@ -68,7 +67,6 @@ const dummyOrdersQue: Order[] = [
   },
   table_number: "10",
   customer: {
-    id: "cust-2",
     name: "Bu Ani",
     phone: "08123456789"
   },
@@ -109,7 +107,6 @@ const dummyOrdersQue: Order[] = [
   },
   table_number: "7",
   customer: {
-    id: "cust-2",
     name: "Bu Ani",
     phone: "08123456789"
   },
@@ -157,7 +154,6 @@ const dummyOrdersQue: Order[] = [
   },
   table_number: "20",
   customer: {
-    id: "cust-1",
     name: "Pak Joko",
     phone: "08123456789"
   },
@@ -205,7 +201,6 @@ const dummyOrdersQue: Order[] = [
   },
   table_number: "18",
   customer: {
-    id: "cust-1",
     name: "Pak Joko",
     phone: "08123456789"
   },

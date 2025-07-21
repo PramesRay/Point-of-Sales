@@ -7,18 +7,28 @@ import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: EmployeeActive[];
-  branch: IdName;
+  branch: IdName | undefined;
   loading: boolean;
 }>();
 
 const currentData = computed(() => {
-  if (!props.data?.length) return undefined;
-  return props.data.filter(tx => tx.branch.id === props.branch.id)[0]
+  if (!props.branch || props.branch.id === '') {
+    return props.data.filter((tx) => tx.branch.id === 'all')[0];
+  }
+  return props.data.filter((tx) => tx.branch.id === props.branch?.id)[0];
 })
 
-const data = computed(() => currentData.value );
+const data = computed(() => {
+  console.log('currentData', currentData.value)
+  return currentData.value
+});
 
 const tab = ref('1');
+
+// watcher untuk props loading
+watch(() => props.loading, () => {
+  console.log('props.loading', props.loading)
+})
 
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
@@ -27,7 +37,7 @@ const currentSeries = computed(() => {
     series: [
       {
         name: 'series1',
-        data: data.value?.[range]
+        data: data.value[range]
       }
     ]
   };
@@ -55,10 +65,6 @@ const chartOptions = computed(() => {
     stroke: {
       curve: 'smooth',
       width: 3
-    },
-    yaxis: {
-      min: 0,
-      max: 16 // perlu diganti jadi (max number in data + 1)
     },
     tooltip: {
       theme: 'light',
@@ -89,20 +95,20 @@ const chartOptions = computed(() => {
           <BuildingStoreIcon stroke-width="1.5" width="25" />
         </v-btn>
         <div class="mx-3 my-auto">
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch.name }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name }}</span>
         </div>
-        <div v-if="!props.loading" class="ml-auto z-1">
+        <div v-if="!props.loading && data" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">
             <v-tab value="1" hide-slider >Minggu</v-tab>
             <v-tab value="2" hide-slider >Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
-      <v-row v-if="!props.loading">
+      <v-row v-if="!props.loading && data">
         <v-col cols="6">
           <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
             <div class="d-flex align-baseline">
-              <span class="mx-1"> {{ data?.active }} </span>
+              <span class="mx-1"> {{ data.active }} </span>
               <span class="text-body-2"> Aktif </span>
             </div>
           </h2>
@@ -111,19 +117,29 @@ const chartOptions = computed(() => {
         <v-col cols="6">
           <v-tabs-window v-model="tab" class="z-1">
             <v-tabs-window-item value="1">
-              <apexchart type="line" height="90" :options="chartOptions" :series="currentSeries?.series"></apexchart>
+              <apexchart
+                v-if="currentSeries?.series && currentSeries.series.length && tab === '1'"
+                type="line"
+                height="90"
+                :options="chartOptions"
+                :series="currentSeries?.series">
+              </apexchart>
             </v-tabs-window-item>
             <v-tabs-window-item value="2">
-              <apexchart type="line" height="90" :options="chartOptions" :series="currentSeries?.series"> </apexchart>
+              <apexchart
+                v-if="currentSeries?.series && currentSeries.series.length && tab === '2'"
+                type="line"
+                height="90"
+                :options="chartOptions"
+                :series="currentSeries?.series"> 
+              </apexchart>
             </v-tabs-window-item>
           </v-tabs-window>
         </v-col>
       </v-row>
-      <v-row v-if="props.loading">
-        <v-col cols="12">
-          <!-- <v-skeleton-loader type="paragraf" color="transparant bg-primary"></v-skeleton-loader> -->
-        </v-col>
-      </v-row>
+      <div v-if="props.loading">
+        <v-skeleton-loader type="paragraph" color="transparant bg-secondary"></v-skeleton-loader>
+      </div>
     </v-card-text>
   </v-card>
 </template>

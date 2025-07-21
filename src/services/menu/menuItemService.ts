@@ -1,35 +1,233 @@
 import api from "../api";
-import type { Category } from "@/types/inventoryItem";
-import type { Menu } from '@/types/menu'
+import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/inventory";
+import type { CreateMenuPayload, Menu, MenuSale, UpdateMenuPayload } from '@/types/menu'
 import { dummyMenuCategories } from "./dummyMenuCategories";
-import { dummyMenus } from "./dummyMenuItems";
+import { dummyMenuItems } from "./dummyMenuItems";
+import { dummyMenuSale } from "./dummyMenuSale";
 
-export async function fetchMenuItems(branchId?: string): Promise<Menu[]> {
-  if (branchId && branchId !== 'all') {
-    try {
-      const res = await api.get<Menu[]>(`/kitchen/menus/${branchId}`);
-      return res.data;
-    } catch (error) {
-      console.warn(`Fetch Menu Item failed, using dummy.`, error);
-      return dummyMenus
-    }  
-  }
-
+export async function fetchMenuItems(
+  branchId?: string,
+  page?: number,
+  limit?: number,
+  search?: string,
+  sortBy?: string,
+  sortDesc: boolean = false
+): Promise<{ data: Menu[]; total: number }> {
   try {
-    const res = await api.get<Menu[]>(`/kitchen/menus/all`);
-    return res.data;
+    const url = '/kitchen/menus'
+    const query = new URLSearchParams()
+
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return {
+      data: res.data.data,
+      total: res.data.meta?.total ?? res.data.data.length,
+    }
   } catch (error) {
-    console.warn(`Fetch Menu Item failed, using dummy.`, error);
-    return dummyMenus
-  }  
+    console.warn('Fetch Menu Item failed, using dummy.', error)
+    let dummy = dummyMenuItems
+
+    // 1. Filter by branch
+    if (branchId) {
+      dummy = dummy.filter(item =>
+        item.available_in_branch.some(branch => branch.id === branchId)
+      )
+    }
+
+    // 2. Search global by string match semua field yang bisa di-string-kan
+    if (search) {
+      const keyword = search.toLowerCase()
+      dummy = dummy.filter(item =>
+        Object.values(item).some(val => {
+          if (val == null) return false
+          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
+          return String(val).toLowerCase().includes(keyword)
+        })
+      )
+    }
+
+    // 3. Optional: sort
+    if (sortBy && dummy.length > 0 && Object.prototype.hasOwnProperty.call(dummy[0], sortBy)) {
+      dummy = dummy.sort((a, b) => {
+        const valA = a[sortBy as keyof Menu]
+        const valB = b[sortBy as keyof Menu]
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB)
+        }
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDesc ? valB - valA : valA - valB
+        }
+
+        return 0
+      })
+    }
+
+
+    const total = dummy.length
+
+    // 4. Optional: pagination
+    if (typeof page === 'number' && typeof limit === 'number') {
+      const start = (page - 1) * limit
+      dummy = dummy.slice(start, start + limit)
+    }
+
+    return { data: dummy, total }
+  }
 }
 
-export async function fetchCategorMenuItems(): Promise<Category[]> {
+export async function fetchMenuSales(
+  branchId?: string,
+  page?: number,
+  limit?: number,
+  search?: string,
+  sortBy?: string,
+  sortDesc: boolean = false
+): Promise<{ data: MenuSale[]; total: number }> {
+  try {
+    const url = '/kitchen/menu-sales'
+    const query = new URLSearchParams()
+
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return {
+      data: res.data.data,
+      total: res.data.meta?.total ?? res.data.data.length,
+    }
+  } catch (error) {
+    console.warn('Fetch Menu Item failed, using dummy.', error)
+    let dummy = dummyMenuSale
+
+    // 1. Filter by branch
+    if (branchId) {
+      dummy = dummy.filter(item =>
+        item.available_in_branch.some(branch => branch.id === branchId)
+      )
+    }
+
+    // 2. Search global by string match semua field yang bisa di-string-kan
+    if (search) {
+      const keyword = search.toLowerCase()
+      dummy = dummy.filter(item =>
+        Object.values(item).some(val => {
+          if (val == null) return false
+          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
+          return String(val).toLowerCase().includes(keyword)
+        })
+      )
+    }
+
+    // 3. Optional: sort
+    if (sortBy && dummy.length > 0 && Object.prototype.hasOwnProperty.call(dummy[0], sortBy)) {
+      dummy = dummy.sort((a, b) => {
+        const valA = a[sortBy as keyof Menu]
+        const valB = b[sortBy as keyof Menu]
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB)
+        }
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDesc ? valB - valA : valA - valB
+        }
+
+        return 0
+      })
+    }
+
+
+    const total = dummy.length
+
+    // 4. Optional: pagination
+    if (typeof page === 'number' && typeof limit === 'number') {
+      const start = (page - 1) * limit
+      dummy = dummy.slice(start, start + limit)
+    }
+
+    return { data: dummy, total }
+  }
+}
+
+export async function createMenu(menu: CreateMenuPayload): Promise<Menu> {
+  try {
+    const res = await api.post<Menu>('/kitchen/menus', menu);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to create menu:', error);
+    throw error;
+  }
+}
+
+export async function updateMenu(menu: UpdateMenuPayload): Promise<Menu> {
+  try {
+    const res = await api.put<Menu>(`/kitchen/menus/${menu.id}`, menu);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to update menu:', error);
+    throw error;
+  }
+}
+
+export async function deleteMenu(id: string): Promise<void> {
+  try {
+    await api.delete(`/kitchen/menus/${id}`);
+  } catch (error) {
+    console.error('Failed to delete menu:', error);
+    throw error;
+  }
+}
+
+export async function fetchCategorMenu(): Promise<Category[]> {
   try {
     const res = await api.get<Category[]>(`/kitchen/menu/category`);
     return res.data;
   } catch (error) {
     console.warn(`Fetch Menu Item's Category failed, using dummy.`, error);
-    return dummyMenuCategories
-  } 
+    return dummyMenuCategories; // Gunakan data dummy jika gagal
+  }
+}
+
+// create category
+export async function createCategoryMenu(payload: CreateCategoryPayload): Promise<Category> {
+  try {
+    const res = await api.post<Category>(`/kitchen/menu/category`, payload);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to create category:', error);
+    throw error;
+  }
+}
+
+// update category
+export async function updateCategoryMenu(payload: UpdateCategoryPayload): Promise<Category> {
+  try {
+    const res = await api.put<Category>(`/kitchen/menu/category`, payload);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to update category:', error);
+    throw error;
+  }
+}
+
+// delete category
+export async function deleteCategoryMenu(id: string): Promise<void> {
+  try {
+    await api.delete(`/kitchen/menu/category/${id}`);
+  } catch (error) {
+    console.error('Failed to delete category:', error);
+    throw error;
+  }
 }

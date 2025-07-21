@@ -11,6 +11,7 @@ const alertStore = useAlertStore();
       :type="alert.type"
       border
       closable
+      class="mb-1"
     >
       {{ alert.message }}
       <template v-if="alert.count > 1">

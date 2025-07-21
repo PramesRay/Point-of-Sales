@@ -11,7 +11,7 @@ export type TotalOrder = {
 
 export interface Order {
   id: string 
-  branch: Branch
+  branch: IdName
   employee: IdName
   table_number: string
   customer: Customer 
@@ -25,42 +25,29 @@ export interface Order {
 
 export interface OrderItem {
   id: string
-  name: string
   quantity: number
-  price: number
-  note?: string
+  note: string | null
+  status: 'Pending' | 'Diproses' | 'Selesai' | 'Refund'
+  // name: string
+  // price: number
 }
 
-// payload
-export interface CreateOrderPayload {
+export type CreateOrderPayload = Pick<Order, 'table_number'|'is_take_away'|'customer'> & {
   branch_id: string
-  employee_id: string
-  table_number: string
-  customer: {
-    name: string
-    phone?: string
-  }
-  is_take_away: boolean | null
   items: {
-    id: string       // id dari menu
+    id: string // id dari menu
     quantity: number
     note: string
   }[]
 }
 
-export interface UpdateOrderPayload {
-  id: string
-  branch_id: string
-  employee_id: string
-  table_number: string
-  customer: {
-    name: string
-    phone?: string
-  }
-  is_take_away: boolean
-  items: {
-    id: string       // id dari menu
-    quantity: number
-    note?: string
-  }[]
+export type CreateDirectPaymentOrderPayload = CreateOrderPayload & {
+  payment_method: string
+}
+
+export type UpdateOrderPayload = CreateOrderPayload & Pick<Order, 'id'>
+export type UpdateOrderStatusPayload = Pick<Order, 'status' | 'id'>
+export type UpdateOrderItemStatusPayload = Pick<Order, 'id'> & { items: Pick<OrderItem, 'id' | 'status'>[] }
+export type UpdateOrderPaymentPayload = Pick<Order, 'id'> & {
+  payment_method: string
 }

@@ -3,10 +3,11 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { formatRupiah } from '@/utils/helpers/currency';
 import type { FinanceSummary } from '@/types/finance';
 import { ChevronDownIcon, ChevronUpIcon } from 'vue-tabler-icons';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: FinanceSummary[];
-  branch: string;
+  branch: IdName | undefined;
   loading: boolean;
 }>();
 
@@ -24,7 +25,7 @@ const items = ['Hari ini', 'Minggu ini', 'Bulan ini', 'Tahun ini'];
 
 const branchExpenseData = computed(() => {
   if (!props.data?.length) return undefined;
-  return props.data.find(exp => exp.branchId === props.branch)?.expense;
+  return props.data.find(exp => exp.branchId === (props.branch?.id || 'all'))?.expense;
 });
 
 const isReady = computed(() => {
@@ -96,9 +97,9 @@ const updateChartHeight = () => {
 onMounted(() => {
   updateChartHeight();
   window.addEventListener('resize', updateChartHeight);
-  if (isReady.value && hasValidChartData.value) {
-    showChart.value = false; 
-  }
+  // if (isReady.value && hasValidChartData.value) {
+  //   showChart.value = false; 
+  // }
 });
 
 onUnmounted(() => {
@@ -115,7 +116,7 @@ onUnmounted(() => {
         <v-row no-gutters>
           <v-col cols="12" sm="5" class="d-flex align-center">
             <div>
-              <span class="text-subtitle-2 text-disabled font-weight-bold">Total Pengeluaran</span>
+              <span class="text-subtitle-1 text-medium-emphasis  font-weight-bold">Total Pengeluaran <span class="text-subtitle-2 text-disabled" v-if="props.branch?.id !== 'all' && !props.loading">: {{ props.branch?.name }}</span></span>
               <h3 class="text-h3 mt-1">
                 {{ formatRupiah(totalExpense) }}
               </h3>
@@ -147,8 +148,7 @@ onUnmounted(() => {
         </v-row>
 
         <div v-if="showChart">        
-        <v-expand-transition v-show="showChart">
-          
+          <v-expand-transition v-show="showChart">
             <v-skeleton-loader
               v-if="props.loading"
               type="card"
@@ -166,7 +166,7 @@ onUnmounted(() => {
             <div v-else class="text-center text-medium-emphasis mt-5">
               Tidak ada data untuk periode ini.
             </div>
-        </v-expand-transition>
+          </v-expand-transition>
         </div>
       </v-card-text>
     </v-card>

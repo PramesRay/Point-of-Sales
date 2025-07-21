@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import type { Order } from '@/types/order';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: Order[];
-  branch: string;
+  branch: IdName | undefined;
   loading: boolean;
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (props.branch === 'all') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch
+    (tx) => tx.branch.id === props.branch?.id
   );
 });
 
-const branchName = computed(() => props.branch === 'all' ? 'Semua Cabang' : filteredData.value[0]?.branch.name || '-');
+const branchName = computed(() => (!props.branch || props.branch.id === 'all') ? 'Semua Cabang' : props.branch?.name ?? '-');
 const currentOrder = computed(() => filteredData.value.length || 0);
 </script>
 

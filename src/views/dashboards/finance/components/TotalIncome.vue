@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps, computed } from 'vue';
 import { formatRupiah } from '@/utils/helpers/currency';
-import { useSlideIndicator } from '@/composables/useSlideIndicator';
+import { useSlideIndicator } from '@/composables/non-services/useSlideIndicator';
 import { TableIcon } from 'vue-tabler-icons';
 import type { FinanceSummary } from '@/types/finance';
 import { useDisplay } from 'vuetify';
@@ -108,14 +108,13 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
     </div>
   </div>
 </div>
-  
 
-  <div class="carousel-container d-flex flex-column h-100" v-else>
-    <v-skeleton-loader
-      type="list-item-avatar-two-line"
-      class="py-4"
-    />
-  </div>
+<div class="w-100" v-else>
+  <v-skeleton-loader
+    type="list-item-avatar-two-line"
+    class="py-4"
+  />
+</div>
 </template>
 
 <style scoped lang="scss">

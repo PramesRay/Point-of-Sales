@@ -4,18 +4,24 @@ import { cloneDeep } from 'lodash';
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
+import ScrollContainer from '@/components/shared/ScrollContainer.vue'
+import DetailCategory from './sub-components/DetailCategory.vue';
+
 import type { Category, InventoryItem, CreateInventoryItemPayload, UpdateInventoryItemPayload } from '@/types/inventory';
 
 import { useInventoryItems } from '@/composables/useInventoryItems';
 
-import { formatNumberInput } from '@/utils/helpers/format-input';
 import { getTimeDiff } from '@/utils/helpers/time';
 import { formatRupiahInput } from '@/utils/helpers/currency';
+import { formatDate } from '@/utils/helpers/format-date';
 
-const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
+import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
+
+const { openOverlay } = useOverlayManager()
+const { loadCategory, categories: ctg, loading: li } = useInventoryItems();
 
 onMounted(() => {
-  initItems();
+  loadCategory();
 });
 
 const emit = defineEmits<{
@@ -28,6 +34,8 @@ const props = defineProps<{
   data: InventoryItem[];
   categories: Category[];
   loading: boolean;
+
+  refresh: () => void
 }>();
 
 const showOverlay = ref(false)
@@ -35,22 +43,23 @@ const formRef = ref()
 const isFormValid = ref(false)
 const showConfirmDialog = ref(false)
 const pendingOverlayClose = ref(false)
+const expModal = ref(false)
 
 const selectedItem = ref<InventoryItem | null>(null)
-const adjustItem = ref<{[K in keyof Omit<InventoryItem, 'meta'>]: InventoryItem[K] | null}>({
+const payload = ref<{[K in keyof UpdateInventoryItemPayload]: UpdateInventoryItemPayload[K] | null}>({
   id: null,
   name: null,
   description: null,
-  category: null,
+  category_id: null,
   purchase_price: null,
   threshold: null,
-  expired_date: null,
-  quantity: null,
-  unit: null
+  unit: null,
+  expired_date: null
 })
 const selectedCtg = ref<string | null>('all')
-const action = ref<'create' | 'update' | 'delete' | null>(null)
+const action = ref<'create' | 'update' | 'delete' | 'category' | null>(null)
 const inputCurrency = ref('')
+const formattedDate = computed(() => payload.value.expired_date ? formatDate(payload.value.expired_date).split(' pukul')[0] : '')
 
 const rules = {
   required_text: [(v: string) => !!v || 'Data tidak boleh kosong'],
@@ -67,28 +76,27 @@ const cautions = {
 
 function clearPayload() {
   if (selectedItem.value) {
-    adjustItem.value = {
-      ...selectedItem.value,
-      name: selectedItem.value.name ?? null,
-      description: selectedItem.value.description ?? null,
-      category: selectedItem.value.category ?? null,
-      purchase_price: selectedItem.value.purchase_price ?? null,
-      threshold: selectedItem.value.threshold ?? null,
-      expired_date: selectedItem.value.expired_date ?? null,
-      quantity: selectedItem.value.quantity ?? null,
-      unit: selectedItem.value.unit ?? null
+    payload.value = {
+      id: selectedItem.value.id,
+      name: selectedItem.value.name,
+      description: selectedItem.value.description,
+      category_id: selectedItem.value.category.id,
+      purchase_price: selectedItem.value.purchase_price,
+      threshold: selectedItem.value.threshold,
+      unit: selectedItem.value.unit,
+      expired_date: selectedItem.value.expired_date
+
     }
   } else if (action.value === 'create') {
-    adjustItem.value = {
+    payload.value = {
       id: null,
       name: null,
       description: null,
-      category: null,
+      category_id: null,
       purchase_price: null,
       threshold: null,
-      expired_date: null,
-      quantity: null,
-      unit: null
+      unit: null,
+      expired_date: null
     }
   }
   inputCurrency.value = ''
@@ -98,8 +106,6 @@ function openAddNew() {
   selectedItem.value = null
   action.value = 'create'
   clearPayload()
-
-  adjustItem.value.category = { id: 'new', name: 'Baru' }
 
   showOverlay.value = true
 }
@@ -113,66 +119,60 @@ function openDetail(request: InventoryItem) {
 }
 
 const isChanged = computed(() => {
-  if (!adjustItem.value || !selectedItem.value) return false
+  if (!payload.value || !selectedItem.value) return false
   if (action.value === 'create') {
     return (
-      adjustItem.value.name !== null ||
-      adjustItem.value.description !== null ||
-      adjustItem.value.purchase_price !== 0 ||
-      adjustItem.value.unit !== null ||
-      adjustItem.value.threshold !== 0
+      payload.value.name !== null ||
+      payload.value.description !== null ||
+      payload.value.purchase_price !== 0 ||
+      payload.value.unit !== null ||
+      payload.value.threshold !== 0 ||
+      payload.value.category_id !== null
   )} else if (action.value === 'update') {
     return (
-      adjustItem.value.name !== selectedItem.value.name ||
-      adjustItem.value.description !== selectedItem.value.description ||
-      adjustItem.value.threshold !== selectedItem.value.threshold ||
-      adjustItem.value.purchase_price !== selectedItem.value.purchase_price ||
-      adjustItem.value.category?.id !== selectedItem.value.category?.id ||
-      adjustItem.value.expired_date !== selectedItem.value.expired_date ||
-      adjustItem.value.quantity !== selectedItem.value.quantity ||
-      adjustItem.value.unit !== selectedItem.value.unit
+      payload.value.name !== selectedItem.value.name ||
+      payload.value.description !== selectedItem.value.description ||
+      payload.value.threshold !== selectedItem.value.threshold ||
+      payload.value.purchase_price !== selectedItem.value.purchase_price ||
+      payload.value.unit !== selectedItem.value.unit ||
+      payload.value.category_id !== selectedItem.value.category?.id
     )
   }
 })
 
-const editableCategories = computed(() => [{ id: 'new', name: 'Baru' }, ...props.categories])
-const categories = computed(() => [{ id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' } , ...props.categories])
+const categories = computed(() => props.categories)
+const select_ctgs = computed(() => [{ id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' }, ...props.categories])
 
 const currentData = computed(() => {
   if (!props.data?.length || !selectedCtg.value) return []
   if (selectedCtg.value === 'all') return props.data
+  if (selectedCtg.value === 'new') return props.data.filter(item => item.is_new)
   return props.data.filter(item => item.category?.id === selectedCtg.value)
 })
 
-const dataItems = computed(() => {
-  if (!inventoryItem.value) return []
-  return inventoryItem.value
-})
-
-function processAdjustment() {
-  if (!adjustItem.value || !selectedItem.value) return
-
-  const payload: CreateInventoryItemPayload = {
-    name: adjustItem.value.name!,
-    description: adjustItem.value.description!,
-    category_id: adjustItem.value.category?.id!,
-    purchase_price: adjustItem.value.purchase_price!,
-    threshold: adjustItem.value.threshold!
-  }
-
+function processInventoryItem() {
+  if (!payload.value) return
+  console.log('action.value', action.value)
+  
   if (action.value === 'delete') {
     console.log('Menghapus item:', selectedItem.value)
-    emit('delete-item', selectedItem.value.id)
+    emit('delete-item', payload.value.id as string)
+  
   } else if (action.value === 'create') {
     console.log('Membuat item baru:', payload)
-    emit('create-item', payload)
-  } else if (action.value === 'update') {
-    const updatePayload: UpdateInventoryItemPayload = {
-      id: adjustItem.value.id!,
-      ...payload
+    const createPayload: CreateInventoryItemPayload = {
+      name: payload.value.name ?? '',
+      description: payload.value.description ?? '',
+      unit: payload.value.unit ?? '',
+      purchase_price: payload.value.purchase_price ?? 0,
+      threshold: payload.value.threshold ?? 0,
+      category_id: payload.value.category_id ?? '',
     }
-    console.log('Mengubah item:', updatePayload)
-    emit('update-item', updatePayload)
+    emit('create-item', createPayload as CreateInventoryItemPayload)
+  
+  } else if (action.value === 'update') {
+    console.log('Mengubah item:', payload.value)
+    emit('update-item', payload.value as UpdateInventoryItemPayload)
   }
   
   confirmCancel()
@@ -181,7 +181,8 @@ function processAdjustment() {
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    processAdjustment()
+    console.log('action.value', action.value)
+    processInventoryItem()
   })
 }
 
@@ -194,27 +195,25 @@ function confirmCancel() {
   clearPayload()
 }
 
-watch(
-  () => props.categories,
-  (newCategories) => {
-    if (newCategories?.length && !selectedCtg.value) {
-      selectedCtg.value = newCategories[0].id
-    }
-  },
-  { immediate: true }
-)
+// watch(
+//   () => props.categories,
+//   (newCategories) => {
+//     if (newCategories?.length && !selectedCtg.value) {
+//       selectedCtg.value = newCategories[0].id
+//     }
+//   },
+//   { immediate: true }
+// )
 
 watch(selectedItem, (val) => {
   if (val) {
-    adjustItem.value = {
+    payload.value = {
       ...val,
       name: val.name,
       description: val.description ?? null,
       purchase_price: val.purchase_price ?? null,
       threshold: val.threshold ?? 0,
-      category: val.category ?? null,
-      expired_date: val.expired_date ?? null,
-      quantity: val.quantity ?? null,
+      category_id: val.category.id ?? null,
       unit: val.unit ?? null
     }
     inputCurrency.value = formatRupiahInput(val.purchase_price.toString())
@@ -242,7 +241,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
 
 watch(() => inputCurrency.value, (val) => {
   const numeric = val.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
-  adjustItem.value.purchase_price = numeric ? Number(numeric) : 0
+  payload.value.purchase_price = numeric ? Number(numeric) : 0
 })
 </script>
 
@@ -250,28 +249,70 @@ watch(() => inputCurrency.value, (val) => {
   <v-card elevation="0">
     <v-card variant="outlined">
       <v-card-text>
-        <v-row>
+        <v-row align="center">
           <v-col cols="8">
-            <h4 class="text-h4 mt-1">Stok Gudang</h4>
+            <h4 class="text-h4 mt-1">{{action == 'category' ? 'Daftar Kategori' : 'Stok Gudang'}}</h4>
           </v-col>
-          <v-col cols="4" class="mt-auto text-right">
-            <v-btn
-              v-if="!loading"
-              color="primary"
-              @click="openAddNew"
-            >
-              Tambah
-            </v-btn>
+          <v-col cols="4" class="mt-auto">
+            <div class="d-flex justify-end align-center">
+              <v-btn
+                icon
+                variant="text"
+                class="mr-1"
+                size="small"
+                @click="action == 'category' ? action = null : action = 'category'"
+              >
+                <v-icon opacity="0.4" size="large">mdi-format-list-bulleted-type</v-icon>
+              </v-btn>
+
+              <!-- vertical divider -->
+              <v-divider vertical inset/>
+              
+              <span v-if="!loading">
+                <v-btn
+                  v-if="action === 'category'"
+                  class="ml-3"
+                  @click="
+                    openOverlay({
+                      component: DetailCategory,
+                      props: {
+                        is_create: true,
+                        confirmBeforeClose: true,
+                        isChanged,
+                        refresh: props.refresh
+                      }
+                    })
+                  "
+                >
+                  Tambah
+                </v-btn>
+                <v-btn
+                  v-else
+                  class="ml-3"
+                  color="primary"
+                  @click="openAddNew"
+                >
+                  Tambah
+                </v-btn>
+              </span>
+            </div>
           </v-col>
         </v-row>
-        <v-row>
+        
+        <!-- Menambahkan Skeleton Loader untuk menunggu data -->
+        <div v-if="props.loading">
+          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
+          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
+        </div>
+        
+        <v-row v-if="!props.loading && action !== 'category'">
           <v-col cols="12">
             <v-select
               color="primary"
               variant="outlined"
               hide-details
               v-model="selectedCtg"
-              :items="categories"
+              :items="select_ctgs"
               item-title="name"
               item-value="id"
               label="Pilih Kategori"
@@ -282,14 +323,8 @@ watch(() => inputCurrency.value, (val) => {
           </v-col>
         </v-row>
 
-        <!-- Menambahkan Skeleton Loader untuk menunggu data -->
-        <div v-if="props.loading">
-          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
-          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
-        </div>
-
-        <div class="mt-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '15rem' : '12rem'}">
+        <div class="mt-4" v-if="!props.loading && action !== 'category'">
+          <ScrollContainer :maxHeight="mdAndUp ? '20rem' : '15rem'">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
                 v-for="(item, i) in currentData"
@@ -300,32 +335,41 @@ watch(() => inputCurrency.value, (val) => {
                 @click="openDetail(item)"
               >
                 <span 
+                  v-if="!item?.is_new"
                   class="text-subtitle-2 text-disabled"
                   :class="{
-                    'text-error': getTimeDiff(item?.expired_date) === 'sekarang' || getTimeDiff(item?.expired_date).includes('lalu'),
-                    'text-warning': getTimeDiff(item?.expired_date) === '1 hari lagi'
+                    'text-error': (item?.expired_date && getTimeDiff(item?.expired_date) === 'sekarang') || (item?.expired_date && getTimeDiff(item?.expired_date).includes('lalu')),
+                    'text-warning': (item?.expired_date && getTimeDiff(item?.expired_date) === '1 hari lagi')
                   }"
                 >
-                  {{ getTimeDiff(item?.expired_date) === 'sekarang' || getTimeDiff(item?.expired_date).includes('lalu') ? 'Sudah expired' : 'Exp: ' + getTimeDiff(item?.expired_date) }}
+                  {{ (item?.expired_date && getTimeDiff(item?.expired_date) === 'sekarang') || (item?.expired_date && getTimeDiff(item?.expired_date).includes('lalu')) ? 'Sudah expired' : 'Exp: ' + (item?.expired_date && getTimeDiff(item?.expired_date)) }}
+                </span>
+                <span
+                  v-else
+                  class="text-subtitle-2 text-disabled text-success"
+                >
+                  Baru
                 </span>
                 <div 
                   class="d-flex justify-space-between align-start w-100">
                   <!-- Kolom kiri -->
                   <div class="pe-4" style="flex: 1">
                     <h6
-                      :class="{'text-disabled': getTimeDiff(item?.expired_date) === 'sekarang' || getTimeDiff(item?.expired_date).includes('lalu')}"
+                      :class="{'text-disabled': (!item?.expired_date || getTimeDiff(item?.expired_date) === 'sekarang') || item?.expired_date && getTimeDiff(item?.expired_date).includes('lalu')}"
                       class="text-h4 text-medium-emphasis font-weight-bold"
                       style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
                     >
                       {{ item?.name }}
                     </h6>
-                    <i class="text-subtitle-2 text-disabled">
-                      {{ item?.description }}
-                    </i>
+                    <div style="height: fit-content; max-height: 3rem; overflow: auto; scrollbar-width: none;" @wheel.stop @touchmove.stop @scroll.stop>
+                      <i class="text-subtitle-2 text-disabled">
+                        {{ item?.description || '-'}}
+                      </i>
+                    </div>
                   </div>
 
                   <!-- Kolom kanan -->
-                  <div class="text-right min-w-[120px]">
+                  <div class="text-right min-w-[120px]" v-if="!item.is_new">
                     <div class="d-flex justify-end">
                       <span
                         v-if="item?.quantity > item?.threshold"
@@ -358,7 +402,8 @@ watch(() => inputCurrency.value, (val) => {
                 <v-divider class="my-3" />
               </v-list-item>
             </v-list>
-          </perfect-scrollbar>
+            <div v-else class="text-subtitle-1 text-disabled text-center my-3">Data kosong</div>
+          </ScrollContainer>
 
           <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/inventory-items">
@@ -368,6 +413,44 @@ watch(() => inputCurrency.value, (val) => {
               </template>
             </v-btn>
           </div>
+        </div>
+        
+        <div class="mt-4" v-else>
+          <ScrollContainer :maxHeight="mdAndUp ? '20rem' : '15rem'">
+            <v-list>
+              <v-list-item
+                v-for="(data, i) in categories"
+                :key="i"
+                :value="data"
+                rounded="sm"
+                @click="
+                  openOverlay({
+                    component: DetailCategory,
+                    props: { 
+                      data: data,
+                      confirmBeforeClose: true,
+                      isChanged,
+                      refresh: props.refresh
+                    },
+                  })
+                "
+              >
+                <v-divider v-if="i > 0" class="mb-4 mt-2"></v-divider>
+                <div class="d-flex justify-space-between w-100">
+                  <div class="pe-4" style="flex: 1">
+                    <h6 class="text-h4 text-medium-emphasis font-weight-bold">
+                      {{ data?.name }}
+                    </h6>
+                    <div style="height: fit-content; max-height: 3rem; overflow: auto; scrollbar-width: none;" @wheel.stop @touchmove.stop @scroll.stop>
+                      <i class="text-subtitle-2 text-disabled">
+                        {{ data?.description || '-'}}
+                      </i>
+                    </div>
+                  </div>
+                </div>
+              </v-list-item>
+            </v-list>
+          </ScrollContainer>
         </div>
       </v-card-text>
     </v-card>
@@ -393,61 +476,104 @@ watch(() => inputCurrency.value, (val) => {
 
       <v-divider class="my-3" />
 
-      <v-form ref="formRef" v-model="isFormValid">
-        
+      <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="submitForm">
         <v-row class="justify-center">
+          <v-col :cols="action === 'create' ? 12 : 6">
+            <v-select
+              variant="underlined"
+              v-model="payload.category_id"
+              :loading="li"
+              :items="ctg"
+              item-title="name"
+              item-value="id"
+              label="Kategori"
+              prepend-icon="mdi-format-list-bulleted-type"
+              :rules="rules.required_text"
+              :return-object="false"
+            />
+          </v-col>
+          <!-- expired date -->
+          <v-col cols="6" v-if="action && action === 'update'">
+            <v-text-field
+              v-model="formattedDate"
+              label="Tanggal Expired"
+              prepend-icon="mdi-calendar"
+              readonly
+              :active="expModal"
+              :focused="expModal"
+              variant="underlined"
+              :rules="rules.required_text"
+            />
+            <v-dialog
+              v-model="expModal"
+              activator="parent"
+              transition="scale-transition"
+              offset-y
+              max-width="290"
+              min-width="290"
+            >
+              <v-date-picker
+                v-model="payload.expired_date"
+                @update:model-value="expModal = false"
+                no-title
+                scrollable
+              />
+            </v-dialog>
+          </v-col>
           <v-col cols="6">
             <v-text-field
               variant="underlined"
-              v-model="adjustItem.name"
+              v-model="payload.name"
               label="Nama Barang"
               :rules="rules.required_text"
               prepend-icon="mdi-form-textbox"
-              />
-            </v-col>  
-            <v-col cols="6">
-              <v-text-field
-                variant="underlined"
-                v-model="inputCurrency"
-                label="Harga Beli"
-                :min="0"
-                prefix="Rp"
-                :rules="rules.required_number"
-                prepend-icon="mdi-cash"
-                @input="inputCurrency = formatRupiahInput(inputCurrency)"
-              />
-            </v-col>
-          </v-row>
+            />
+          </v-col>  
+          <v-col cols="6">
+            <v-text-field
+              variant="underlined"
+              v-model="inputCurrency"
+              label="Harga Beli"
+              :min="0"
+              prefix="Rp"
+              :rules="rules.required_number"
+              prepend-icon="mdi-cash"
+              @input="inputCurrency = formatRupiahInput(inputCurrency)"
+            />
+          </v-col>
+        </v-row>
 
-          <v-row>
-            <v-col cols="6">
-              <v-combobox
-                variant="underlined"
-                v-model="adjustItem.unit"
-                :items="['pcs', 'kg', 'ltr', 'box']"
-                label="Satuan"
-                :rules="rules.required_text"
-                prepend-icon="mdi-scale-balance"
-              />
-            </v-col>
-            <v-col cols="6">
-              <v-number-input
-                control-variant="split"
-                inset
-                variant="plain"
-                v-model="adjustItem.threshold"
-                label="Threshold"
-                :min="0"
-                :rules="rules.required_number"
-                prepend-icon="mdi-alert"
-              />
-            </v-col>
-          </v-row>
+        <v-row>
+          <v-col cols="5">
+            <v-combobox
+              v-model="payload.unit"
+              variant="underlined"
+              :items="['pcs', 'kg', 'ltr', 'box']"
+              label="Satuan"
+              :rules="rules.required_text"
+              prepend-icon="mdi-scale-balance"
+            />
+          </v-col>
+          <v-col cols="7">
+            <v-number-input
+              v-model="payload.threshold"
+              control-variant="split"
+              variant="plain"
+              label="Threshold"
+              :min="0"
+              :rules="rules.required_number"
+              prepend-icon="mdi-alert"
+              inset
+            />
+          </v-col>
+        </v-row>
+
+        <!-- quantity -->
 
         <v-row class="text-caption text-medium-emphasis">
           <v-col>
             <v-textarea
-              v-model="adjustItem.description"
+              v-model="payload.description"
               label="Deskripsi Barang: "
               :rules="rules.desc && rules.required_text"
               variant="underlined"
@@ -466,7 +592,7 @@ watch(() => inputCurrency.value, (val) => {
           <div class="d-flex align-center justify-end mt-1">
             <!-- delete button -->
             <v-btn
-              v-if="action === 'update'"
+              v-if="action && action === 'update'"
               icon
               variant="text"
               class="mr-1 text-error"
@@ -477,14 +603,14 @@ watch(() => inputCurrency.value, (val) => {
             </v-btn>
 
             <!-- vertical divider -->
-            <v-divider v-if="action === 'update'" vertical inset/>
+            <v-divider v-if="action && action === 'update'" vertical inset/>
             
             <v-btn
               class="ms-2"
               color="primary"
               :disabled="!isFormValid"
               :loading="props.loading"
-              @click="submitForm"
+              type="submit"
             >
               Simpan
             </v-btn>
@@ -508,7 +634,7 @@ watch(() => inputCurrency.value, (val) => {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="showConfirmDialog = false, pendingOverlayClose = false, action = null">Kembali</v-btn>
-          <v-btn variant="elevated" color="error" @click="action = 'delete', processAdjustment">Ya, Hapus</v-btn>
+          <v-btn variant="elevated" color="error" @click="action = 'delete', processInventoryItem()">Ya, Hapus</v-btn>
         </v-card-actions>
     </v-card>
     
@@ -536,5 +662,11 @@ watch(() => inputCurrency.value, (val) => {
 .custom-select .v-field__input {
   font-size: 0.8rem !important;
 }
-
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
 </style>

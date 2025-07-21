@@ -5,19 +5,28 @@ import type { StockRequestSummary } from '@/types/inventory';
 
 const props = defineProps<{
   data: StockRequestSummary[];
-  branch: string;
+  branch: string | undefined;
   loading: boolean;
 }>();
 
-const stockRequest = computed(() => {
-  if (!props.data?.length) return undefined;
-  return props.data.filter(tx => tx.branch.id === props.branch)[0]
+const currentData = computed(() => {
+  if (!props.branch) {
+    return props.data[0]
+  }
+  return props.data.filter(
+    (tx) => tx.branch.id === props.branch
+  )[0]
+});
+
+watch(() => props.data, () => {
+  console.log('props.data', props.data)
+  console.log('stockRequest', currentData.value)
 });
 
 const tab = ref('1');
 
-const branchName = computed(() => stockRequest.value?.branch.name || '-');
-const currentRequest = computed(() => stockRequest.value?.summary.request || 0);
+const branchName = computed(() => currentData.value?.branch.name || '-');
+const currentRequest = computed(() => currentData.value?.summary.request || 0);
 
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
@@ -26,7 +35,7 @@ const currentSeries = computed(() => {
     series: [
       {
         name: 'series1',
-        data: stockRequest.value?.summary[range]
+        data: currentData.value?.summary[range]
       }
     ]
   };

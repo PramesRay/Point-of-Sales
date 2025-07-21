@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { computed, onMounted } from 'vue';
-import { hasRole } from '@/utils/helpers/user';
+import { computed, onMounted, ref } from 'vue';
+
+import { useUserStore } from '@/stores/authUser';
+const userStore = useUserStore();
 
 // imported components
-import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import CurrentOrder from './components/CurrentOrder.vue';
 import CurrentStockRequestList from './components/CurrentStockRequestList.vue';
 import CurrentOrderQue from './components/CurrentOrderQue.vue';
@@ -13,56 +13,37 @@ import CurrentOrderQue from './components/CurrentOrderQue.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useStockRequests } from "@/composables/useStockRequest";
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
-import { useUser } from '@/composables/useUser';
 
 // Data Loading
-const { data: me, loading: lu, fetchMe } = useUser();
-const { branches, loading: lb } = useBranchList();
-const { data: currentOrder, loading: lco, error, updateOrder } = useCurrentOrders();
-const { summary, list: stockRequestlist, loading: lsr, createRequest } = useStockRequests();
+const { data: branches, loading: lb } = useBranchList();
+const { load: loadCurrentOrder, data: currentOrder, loading: lco, error, update: updateOrder } = useCurrentOrders();
+const { load: loadStockRequests, summary, list: stockRequestlist, loading: lsr, create: createRequest } = useStockRequests();
 
 onMounted(() => {
-  fetchMe();
+  loadCurrentOrder()
+  loadStockRequests()
 })
+
 // Branch Selection
-const route = useRoute();
-const router = useRouter();
 const branchOptions = computed(() => [
   { id: 'all', name: 'Semua Cabang' },
   ...branches.value
 ]);
-const selectedBranch = computed({
-  get: () => String(route.query.branch || 'all'),
-  set: val => {
-    router.replace({ query: { ...route.query, branch: val } });
-  }
-});
+const selectedBranch = ref<string | undefined>(
+  userStore.hasRole(['Admin', 'Pemilik', 'Kasir']) 
+  ? undefined
+  : userStore.me?.activity?.branch?.id 
+    ? userStore.me.activity.branch.id 
+    : undefined
+);
+const selectedBranchObject = computed(() => {
+  return branchOptions.value
+  .find(branch => branch.id === selectedBranch.value
+  ) || undefined
+})
 </script>
 
 <template>
-  <BaseBreadcrumb
-    title="Kitchen"
-    :breadcrumbs="[
-      { title: 'Kitchen', href: '/page/kitchen' }
-    ]"
-  >
-    <template #last>
-      <div class="pb-3">
-        <v-select
-          class="ma-0 pa-0 align-center text-subtitle-1"
-          variant="plain"
-          v-model="selectedBranch"
-          :items="branchOptions"
-          item-title="name"
-          item-value="id"
-          :loading="lb"
-          hide-details
-          density="compact"
-        />
-      </div>
-    </template>
-  </BaseBreadcrumb>
-
   <v-row>
     <!-- -------------------------------------------------------------------- -->
     <!-- Current Order Card -->
@@ -70,7 +51,7 @@ const selectedBranch = computed({
     <v-col cols="12" md="4">
       <CurrentOrder 
         :data="currentOrder" 
-        :branch="selectedBranch"
+        :branch="selectedBranchObject"
         :loading="lco" 
         class="flex-grow-1" 
       />
@@ -79,14 +60,11 @@ const selectedBranch = computed({
     <!-- -------------------------------------------------------------------- -->
     <!-- Current Order Que -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+    <v-col cols="12" md="4" v-if="userStore.hasRole(['Admin', 'Dapur', 'Kasir'])">
       <CurrentOrderQue
-        :user="me"
         :data="currentOrder" 
-        :branch="selectedBranch"
-        :loading="lco" 
-        @proses-order="updateOrder"
-        @process-payment="updateOrder"
+        :branch="selectedBranchObject"
+        :loading="lco"
         class="flex-grow-1" 
       />
     </v-col>
@@ -94,11 +72,10 @@ const selectedBranch = computed({
     <!-- -------------------------------------------------------------------- -->
     <!-- Current Stock Request List -->
     <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="me">
+    <v-col cols="12" md="4">
       <CurrentStockRequestList 
-        :user="me"
         :data="stockRequestlist" 
-        :branch="selectedBranch"
+        :branch="selectedBranchObject"
         :loading="lsr" 
         @create-request="createRequest"
         class="flex-grow-1" 

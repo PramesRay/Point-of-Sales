@@ -1,28 +1,80 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Google from '@/assets/images/auth/social-google.svg';
-const checkbox = ref(false);
-const show1 = ref(false);
-const password = ref('');
-const email = ref('');
-const Regform = ref();
-const firstname = ref('');
-const lastname = ref('');
-const passwordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
-]);
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
+import { router } from '@/router';
 
-function validate() {
-  Regform.value.validate();
+import type { RegisterPayload } from '@/types/auth';
+import { useAuthStore } from '@/stores/auth';
+import { useAlertStore } from '@/stores/alert';
+
+const authStore = useAuthStore();
+const alert = useAlertStore();
+
+const show1 = ref(false);
+const confrim_password = ref('');
+const Regform = ref(); // <- ini wajib sekarang
+const isSubmitting = ref(false);
+
+const registerPayload = ref<RegisterPayload>({
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  password: ''
+});
+
+const rules = {
+  required: [(v: string) => !!v || 'Wajib diisi'],
+  min: [(v: string) => v.length >= 8 || 'Minimal 8 karakter'],
+  max: [(v: string) => v.length <= 16 || 'Maksimal 16 karakter'],
+  include_number: [(v: string) => /\d/.test(v) || 'Harus mengandung angka'],
+  include_caps: [(v: string) => /[A-Z]/.test(v) || 'Harus mengandung huruf besar'],
+  phone: [(v: string) => v.length <= 13 || 'Nomor maksimal 13 digit'],
+  email: [(v: string) => /^$|^[\w\.-]+@[\w\.-]+\.[\w]{2,}$/.test(v) || 'Email tidak valid'],
+  confrim_password: [(v: string) => v === registerPayload.value.password || 'Password tidak sama']
+};
+
+async function handleSubmit() {
+  const { valid } = await Regform.value.validate();
+  if (!valid) return;
+  
+  isSubmitting.value = true;
+
+  try {
+    if (localStorage.getItem('countdown')) {
+      const start = Number(localStorage.getItem('countdown')!);
+      const elapsed = Math.floor((Date.now() - start) / 1000);
+      if (elapsed > 60) {
+        const result = await authStore.register(registerPayload.value);
+        if (result.user.emailVerified){
+          router.push('/')
+        }
+        localStorage.setItem('email', registerPayload.value.email);
+      } else {
+        alert.showAlert(`Proses Reset Password sedang berlangsung, tunggu hingga selesai`, 'info');
+      }
+      router.push('/verify-email?mode=verify');
+    } else {
+      const result = await authStore.register(registerPayload.value);
+      if (result.user.emailVerified){
+        router.push('/')
+      }
+      localStorage.setItem('email', registerPayload.value.email);
+      router.push('/verify-email?mode=verify');
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
+
 
 <template>
   <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Sign up with Google</span></v-btn
+    <span class="ml-2">Daftar dengan Akun Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
@@ -31,74 +83,123 @@ function validate() {
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
-  <h5 class="text-h5 text-center my-4 mb-8">Sign up with Email address</h5>
-  <v-form ref="Regform" lazy-validation action="/dashboards/analytical" class="mt-7 loginForm">
+  <h5 class="text-h5 text-center my-4 mb-8">Daftar dengan Email</h5>
+  <v-form @submit.prevent="handleSubmit" ref="Regform" lazy-validation class="mt-4 loginForm">
     <v-row>
       <v-col cols="12" sm="6">
         <v-text-field
-          v-model="firstname"
-          density="comfortable"
-          hide-details="auto"
+          v-model="registerPayload.first_name"
+          :rules="rules.required"
+          label="Nama Awal"
           variant="outlined"
           color="primary"
-          label="Firstname"
-        ></v-text-field>
+          density="comfortable"
+          hide-details="auto"
+        />
       </v-col>
       <v-col cols="12" sm="6">
         <v-text-field
-          v-model="lastname"
-          density="comfortable"
-          hide-details="auto"
+          v-model="registerPayload.last_name"
+          label="Nama Akhir"
           variant="outlined"
           color="primary"
-          label="Lastname"
-        ></v-text-field>
+          density="comfortable"
+          hide-details="auto"
+        />
       </v-col>
     </v-row>
-    <v-text-field
-      v-model="email"
-      :rules="emailRules"
-      label="Email Address / Username"
-      class="mt-4 mb-4"
-      required
-      density="comfortable"
-      hide-details="auto"
-      variant="outlined"
-      color="primary"
-    ></v-text-field>
-    <v-text-field
-      v-model="password"
-      :rules="passwordRules"
-      label="Password"
-      required
-      density="comfortable"
-      variant="outlined"
-      color="primary"
-      hide-details="auto"
-      :append-icon="show1 ? '$eye' : '$eyeOff'"
-      :type="show1 ? 'text' : 'password'"
-      @click:append="show1 = !show1"
-      class="pwdInput"
-    ></v-text-field>
 
-    <div class="d-sm-inline-flex align-center mt-2 mb-7 mb-sm-0 font-weight-bold">
-      <v-checkbox
-        v-model="checkbox"
-        :rules="[(v: any) => !!v || 'You must agree to continue!']"
-        label="Agree with?"
-        required
-        color="primary"
-        class="ms-n2"
-        hide-details
-      ></v-checkbox>
-      <a href="#" class="ml-1 text-lightText">Terms and Condition</a>
-    </div>
-    <v-btn color="secondary" block class="mt-2" variant="flat" size="large" @click="validate()">Sign Up</v-btn>
+    <v-text-field
+      v-model="registerPayload.email"
+      :rules="[...rules.required, ...rules.email]"
+      label="Email"
+      class="mt-4 mb-4"
+      variant="outlined"
+      color="primary"
+      density="comfortable"
+      hide-details="auto"
+    />
+
+    <v-text-field
+      type="number"
+      hide-spin-buttons
+      v-model="registerPayload.phone"
+      :rules="[...rules.required, ...rules.phone]"
+      label="Nomor Telepon"
+      prefix="+62 |"
+      class="mt-4 mb-4"
+      variant="outlined"
+      color="primary"
+      density="comfortable"
+      hide-details="auto"
+    />
+
+    <v-text-field
+      v-model="registerPayload.password"
+      :rules="[...rules.required, ...rules.min, ...rules.max, ...rules.include_number, ...rules.include_caps]"
+      label="Kata Sandi"
+      :type="show1 ? 'text' : 'password'"
+      :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+      @click:append="show1 = !show1"
+      variant="outlined"
+      color="primary"
+      density="comfortable"
+      class="pwdInput"
+      hide-details
+    />
+
+    <!-- Password Guide -->
+    <v-fade-transition>
+      <div v-show="registerPayload.password.length > 0" class="ms-3">
+        <p class="text-disabled text-subtitle-2 mt-1">Password harus terdiri dari:</p>
+        <ul class="text-disabled text-subtitle-2 ms-4">
+          <li :class="{ 'text-error': registerPayload.password.length < 6 || registerPayload.password.length > 16, 'text-success': registerPayload.password.length >= 6 && registerPayload.password.length <= 16 }">
+            6-16 karakter
+            <v-icon v-if="registerPayload.password.length >= 8 && registerPayload.password.length <= 16" class="text-success" size="x-small">mdi-check</v-icon>
+          </li>
+          <li :class="{ 'text-error': !/[A-Z]/.test(registerPayload.password), 'text-success': /[A-Z]/.test(registerPayload.password) }">
+            1 huruf besar
+            <v-icon v-if="/[A-Z]/.test(registerPayload.password)" class="text-success" size="x-small">mdi-check</v-icon>
+          </li>
+          <li :class="{ 'text-error': !/\d/.test(registerPayload.password), 'text-success': /\d/.test(registerPayload.password) }">
+            1 angka
+            <v-icon v-if="/\d/.test(registerPayload.password)" class="text-success" size="x-small">mdi-check</v-icon>
+          </li>
+        </ul>
+      </div>
+    </v-fade-transition>
+
+    <v-text-field
+      v-model="confrim_password"
+      :rules="rules.confrim_password"
+      label="Konfirmasi Kata Sandi"
+      :type="show1 ? 'text' : 'password'"
+      variant="outlined"
+      color="primary"
+      density="comfortable"
+      hide-details="auto"
+      class="pwdInput mt-4"
+    />
+
+    <v-btn
+      :loading="isSubmitting"
+      :disabled="isSubmitting"
+      block
+      color="secondary"
+      class="mt-4"
+      variant="flat"
+      size="large"
+      type="submit"
+    >
+      Daftar
+    </v-btn>
   </v-form>
   <div class="mt-5 text-right">
     <v-divider />
-    <v-btn variant="plain" to="/login1" class="mt-2 text-capitalize mr-n2">Already have an account?</v-btn>
+    <v-btn variant="plain" to="/login" class="mt-2 text-capitalize mr-n2">Sudah punya akun?</v-btn>
   </div>
+
+  <div id="recaptcha-container"></div>
 </template>
 <style lang="scss">
 .custom-devider {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { cloneDeep } from 'lodash';
 import { useDisplay } from 'vuetify';
 const { mdAndUp, smAndDown } = useDisplay()
@@ -7,30 +7,43 @@ const { mdAndUp, smAndDown } = useDisplay()
 import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
 import { getTimeDiff } from "@/utils/helpers/time";
-import { hasRole } from '@/utils/helpers/user';
 
-import type { Order, OrderItem } from '@/types/order';
-import type { Employee } from '@/types/employee';
+import type { Order, OrderItem, UpdateOrderPayload } from '@/types/order';
 
-const emit = defineEmits<{
-  (e: 'proses-order', payload: { id: string; status: string }): Order
-  (e: 'process-payment', payload: { id: string; payment_method: string }): Order
-}>();
+import { useUserStore } from '@/stores/authUser';
+import type { IdName } from '@/types/common';
+import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
+
+import DetailOrder from '../../cashier/components/sub-components/DetailOrder.vue';
+import { useMenuItems } from '@/composables/useMenuItems';
+import Blank from '@/components/shared/Blank.vue';
+import { updateOrderData } from '@/services/totalOrder/currentOrderService';
+import Payment from '../../cashier/components/sub-components/Payment.vue';
+import { useCurrentOrders } from '@/composables/useCurrentOrder';
+
+const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { update, loading: lo } = useCurrentOrders()
+const { openOverlay } = useOverlayManager()
+const userStore = useUserStore();
+
+onMounted(() => {
+  loadItemSales()
+})
 
 const props = defineProps<{
-  user: Employee;
   data: Order[];
-  branch: string;
-  loading?: boolean;
+  branch: IdName | undefined;
+  loading: boolean;
+  refresh: () => void
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (props.branch === 'all') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx?.branch?.id === props.branch
+    (tx) => tx?.branch?.id === props.branch?.id
   );
 });
 
@@ -41,6 +54,18 @@ const latestOrderQue = computed(() => filteredData?.value[0] || null);
 const listOrderQue = computed(() => filteredData?.value?.slice(1) || []);
 
 const selectedOrder = ref<Order | null>(null)
+const itemInSelectedOrder = ref<(OrderItem & { name: string; description: string; price: number })[]>(
+  selectedOrder.value?.items.map((item) => {
+    const menu = menuSales.value.find((menu) => menu.id === item.id)
+    return {
+      ...item,
+      name: menu?.name || '',
+      description: menu?.description || '',
+      price: menu?.price || 0
+    }
+  }) || []
+)
+
 const showOverlay = ref(false)
 const showConfirmDialog = ref(false)
 const pendingOverlayClose = ref(false)
@@ -89,33 +114,33 @@ function confirmCancel() {
 
 // fungsi simulasi kirim data ke backend
 function processOrder(status: "Pending" | "Diproses" | "Selesai" | "Batal") {
-  if (selectedOrder.value) {
-    selectedOrder.value.status = status
-  }
+  // if (selectedOrder.value) {
+  //   selectedOrder.value.status = status
+  // }
   
-  emit('proses-order', {
-    id: selectedOrder.value?.id ?? '',
-    status: status,
-  })
+  // emit('proses-order', {
+  //   id: selectedOrder.value?.id ?? '',
+  //   status: status,
+  // })
   
-  if (selectedOrder.value?.status === 'Selesai' || selectedOrder.value?.status === 'Batal') {
-    isManuallySaving.value = true
-    confirmCancel()
-  }
+  // if (selectedOrder.value?.status === 'Selesai' || selectedOrder.value?.status === 'Batal') {
+  //   isManuallySaving.value = true
+  //   confirmCancel()
+  // }
 }
 
 function processPayment(paymentMethod: string) {
-  if (selectedOrder.value) {
-    selectedOrder.value.payment_status = 'Selesai'
-  }
+  // if (selectedOrder.value) {
+  //   selectedOrder.value.payment_status = 'Selesai'
+  // }
   
-  emit('process-payment', {
-    id: selectedOrder.value?.id ?? '',
-    payment_method: paymentMethod
-  })
+  // emit('process-payment', {
+  //   id: selectedOrder.value?.id ?? '',
+  //   payment_method: paymentMethod
+  // })
   
-  isManuallySaving.value = true
-  confirmCancel()
+  // isManuallySaving.value = true
+  // confirmCancel()
 }
 
 watch(showOverlay, (isOpen, wasOpen) => {
@@ -148,12 +173,12 @@ watch(() => cashInput.value, (val) => {
         <div>
           <div class="d-flex align-center">
             <h4 class="text-h4 mt-1">Antrian Pesanan</h4>
-            <div v-if="props.branch !== 'all'" class="ml-auto">
-              <span class="text-subtitle-2 text-medium-emphasis">{{ latestOrderQue?.branch?.name }}</span>
-            </div>
+          </div>
+          <div v-if="props.branch?.id != 'all'" class="ml-auto">
+            <span class="text-subtitle-2 text-medium-emphasis">{{ props.branch?.name }}</span>
           </div>
 
-          <div v-if="!props.loading || !loading">
+          <div v-if="!props.loading">
             <v-card class="bg-lightsecondary mt-5"
               @click="openDetail(latestOrderQue)"
             >
@@ -255,7 +280,7 @@ watch(() => cashInput.value, (val) => {
             <!-- Skeleton Loading -->
             <v-skeleton-loader
               type="list-item-two-line"
-              :loading="!props.loading || !loading"
+              :loading="props.loading"
             ></v-skeleton-loader>
           </div>
         </div>
@@ -289,183 +314,361 @@ watch(() => cashInput.value, (val) => {
       <i class="text-subtitle-2 text-disabled">Order Id: {{ selectedOrder?.id }}</i>
       <v-divider class="my-2"></v-divider>
 
-      <v-row>
-        <v-col cols="12">
-          <v-row>
-            <v-col cols="12">
-              <span class="font-weight-medium">
-                <span v-if="props.branch === 'all'">{{ selectedOrder?.branch.name }} </span> 
-                <span v-if="!selectedOrder?.is_take_away" class="text-caption">: Meja {{ selectedOrder?.table_number }} </span>
-              </span>
-              <div class="text-subtitle-2 text-medium-emphasis">
-                <i >{{ selectedOrder?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }}</i>
-              </div>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="7">
-              <h4 class="text-secondary text-h4 font-weight-bold">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="x-small"
-                >
-                  <v-icon size="x-large">mdi-account</v-icon>: 
-                </v-btn>
-                {{ selectedOrder?.customer.name }}
-              </h4>
-              <div class="text-subtitle-2 text-medium-emphasis" >
-                <v-btn
-                  icon
-                  variant="text"
-                  size="x-small"
-                  :href="`https://wa.me/${selectedOrder?.customer.phone}`"
-                >
-                  <v-icon size="x-large">mdi-phone</v-icon>: 
-                </v-btn>
-                {{ selectedOrder?.customer.phone }}
-                <v-btn
-                  icon
-                  variant="text"
-                  size="x-small"
-                  @click="copyToClipboard(selectedOrder?.customer.phone ?? '')"
-                >
-                  <v-icon>{{ copied ? 'mdi-clipboard-check-multiple-outline' : 'mdi-clipboard-multiple-outline'}}</v-icon>
-                </v-btn>
-              </div>
-              <div class="text-subtitle-2 text-medium-emphasis">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="x-small"
-                >
-                  <v-icon size="x-large">mdi-food</v-icon>: 
-                </v-btn>
-                {{ selectedOrder?.items.length }} item
-              </div>
-            </v-col>
-            <v-col cols="5">  
-              <div class="text-right">
-                <div 
-                class="text-subtitle-2 text-medium-emphasis"
-                :class="{
-                  'text-success': selectedOrder?.status === 'Selesai',
-                  'text-error': selectedOrder?.status === 'Batal',
-                  'text-warning': selectedOrder?.status === 'Pending',
-                  'text-primary': selectedOrder?.status === 'Diproses'
-                }"
-              >{{ selectedOrder?.status }}</div>
-              <h4 v-if="selectedOrder?.meta.created_at" class="text-h4">{{ getTimeDiff(selectedOrder?.meta.created_at) }}</h4>
-              <i v-if="selectedOrder?.meta.updated_at" class="text-subtitle-2 text-disabled">
-                Diubah {{ getTimeDiff(selectedOrder?.meta.updated_at) }}
-              </i>
-            </div>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <div class="text-subtitle-2 text-disabled text-right">
-                <span
-                  class="text-h5 text-high-emphasis ml-1"
-                  :class="{
-                    'text-success': selectedOrder?.payment_status === 'Selesai',
-                    'text-error': selectedOrder?.payment_status === 'Gagal',
-                    'text-warning': selectedOrder?.payment_status === 'Pending',
-                  }"
-                > Pembayaran {{ selectedOrder?.payment_status }}
+      <div v-if="props.loading" class="text-center my-4">
+        <v-progress-circular indeterminate color="primary" height="1"></v-progress-circular>
+      </div>
+      <div v-else>
+        <v-row>
+          <v-col cols="12">
+            <v-row>
+              <v-col cols="12">
+                <span class="font-weight-medium">
+                  <span v-if="props.branch?.id != 'all'">{{ selectedOrder?.branch.name }} </span> 
+                  <span v-if="!selectedOrder?.is_take_away" class="text-caption"> Meja {{ selectedOrder?.table_number }} </span>
                 </span>
-                <div>
-                  Total Harga: <span class="text-h4 text-high-emphasis ml-1">{{ formatRupiah(selectedOrder?.amount ?? 0) }}</span>
+                <div class="text-subtitle-2 text-medium-emphasis">
+                  <i >{{ selectedOrder?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }}</i>
                 </div>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="7">
+                <h4 class="text-secondary text-h4 font-weight-bold">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                  >
+                    <v-icon size="x-large">mdi-account</v-icon>: 
+                  </v-btn>
+                  {{ selectedOrder?.customer.name }}
+                </h4>
+                <div class="text-subtitle-2 text-medium-emphasis" >
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    :href="`https://wa.me/${selectedOrder?.customer.phone}`"
+                  >
+                    <v-icon size="x-large">mdi-phone</v-icon>: 
+                  </v-btn>
+                  {{ selectedOrder?.customer.phone }}
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                    @click="copyToClipboard(selectedOrder?.customer.phone ?? '')"
+                  >
+                    <v-icon>{{ copied ? 'mdi-clipboard-check-multiple-outline' : 'mdi-clipboard-multiple-outline'}}</v-icon>
+                  </v-btn>
+                </div>
+                <div class="text-subtitle-2 text-medium-emphasis">
+                  <v-btn
+                    icon
+                    variant="text"
+                    size="x-small"
+                  >
+                    <v-icon size="x-large">mdi-food</v-icon>: 
+                  </v-btn>
+                  {{ selectedOrder?.items.length }} item
+                </div>
+              </v-col>
+              <v-col cols="5">  
+                <div class="text-right">
+                  <div 
+                  class="text-subtitle-2 text-medium-emphasis"
+                  :class="{
+                    'text-success': selectedOrder?.status === 'Selesai',
+                    'text-error': selectedOrder?.status === 'Batal',
+                    'text-warning': selectedOrder?.status === 'Pending',
+                    'text-primary': selectedOrder?.status === 'Diproses'
+                  }"
+                >{{ selectedOrder?.status }}</div>
+                <h4 v-if="selectedOrder?.meta.created_at" class="text-h4">{{ getTimeDiff(selectedOrder?.meta.created_at) }}</h4>
+                <i v-if="selectedOrder?.meta.updated_at" class="text-subtitle-2 text-disabled">
+                  Diubah {{ getTimeDiff(selectedOrder?.meta.updated_at) }}
+                </i>
               </div>
-            </v-col>
-          </v-row>
-        </v-col>
-      </v-row>
-      
-      <!-- Daftar Item -->
-      <h4 class="text-subtitle-1 my-2">Daftar Item:</h4>
-      <perfect-scrollbar class="scrollable" style="max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
-        <v-list-item v-for="(item, index) in selectedOrder?.items" :key="index" class="px-1">
-          <v-divider v-if="index > 0"></v-divider>
-          <v-row align="center" class="py-1">
-            <v-col cols="7">
-              <div class="text-medium-emphasis">
-                <span>{{ item.name }}</span>
-                <span class="text-caption"> x{{ item.quantity }}</span>
-              </div>
-              <div>
-                <span class="text-subtitle-2 text-medium-emphasis">
-                  catatan: {{ item.note !== '' ? item.note : '-' }}
-                </span>
-              </div>
-            </v-col>
-            <v-col cols="5" class="text-right">
-              <div class="text-subtitle-2 text-medium-emphasis">
-                {{ formatRupiah(item.price) }}
-              </div>
-            </v-col>
-          </v-row>
-        </v-list-item>
-      </perfect-scrollbar>
-
-      <!-- <v-divider class="my-3"></v-divider> -->
-
-      <!-- Tombol proses -->
-      <v-row v-if="(props.user.role ?? hasRole(props.user.role, ['admin', 'kitchen'])) && selectedOrder?.payment_status === 'Pending'">
-        <v-col cols="12" v-if="selectedOrder.status === 'Pending'">
-          <v-btn 
-            color="warning" 
-            block
-            @click="processOrder('Diproses')"
-            :disabled="props.loading"
-            :variant="props.loading? 'outlined' : 'elevated'"
-            :loading="props.loading"
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <div class="text-subtitle-2 text-disabled text-right">
+                  <span
+                    class="text-h5 text-high-emphasis ml-1"
+                    :class="{
+                      'text-success': selectedOrder?.payment_status === 'Selesai',
+                      'text-error': selectedOrder?.payment_status === 'Gagal',
+                      'text-warning': selectedOrder?.payment_status === 'Pending',
+                    }"
+                  > Pembayaran {{ selectedOrder?.payment_status }}
+                  </span>
+                  <div>
+                    Total Harga: <span class="text-h4 text-high-emphasis ml-1">{{ formatRupiah(selectedOrder?.amount ?? 0) }}</span>
+                  </div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-col>
+        </v-row>
+        
+        <!-- Daftar Item -->
+        <div class="d-flex align-center justify-space-between mt-4 mb-2">
+          <h4 class="text-subtitle-1">Daftar Item:</h4>
+          <!-- Add Item Button -->
+          <span class="text-subtitle-2 text-medium-emphasis">
+            <v-btn
+              append-icon="mdi-pencil"
+              color="warning"
+              variant="text"
+              size="small"
+              @click="
+                openOverlay({
+                  component: DetailOrder,
+                  props: {
+                    data_order: selectedOrder,
+                    data_menu: menuSales,
+                    categories: categories,
+                    refresh: () => props.refresh()
+                  },
+                })
+              "
+            >
+              Ubah Item
+            </v-btn>
+          </span>
+        </div>
+        <perfect-scrollbar class="scrollable" style="max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
+          <v-list-item
+            v-for="(item, index) in selectedOrder?.items" 
+            :key="index" 
+            class="px-1"
           >
-            Proses Pesanan
-          </v-btn>
-        </v-col>
-        <v-col cols="12" v-if="selectedOrder.status === 'Diproses'">
-          <v-btn 
-            color="primary"
-            block
-            @click="processOrder('Selesai')"
-            :disabled="props.loading"
-            :variant="props.loading? 'outlined' : 'elevated'"
-            :loading="props.loading"
-          >
-            Siap Saji
-          </v-btn>
-        </v-col>
-      </v-row>
-      
-      <!-- Tombol untuk Role Kasir -->
-      <v-row v-if="(props.user.role ?? hasRole(props.user.role, ['admin', 'cashier'])) && selectedOrder?.payment_status === 'Pending'">
-        <v-col cols="6">
-          <v-btn 
-            color="error"
-            block
-            @click="showConfirmDialog = true"
-            :disabled="props.loading"
-            variant="outlined"
-            :loading="props.loading"
-          >
-            Batalkan Pesanan
-          </v-btn>
-        </v-col>
-        <v-col cols="6">
-          <v-btn 
-            color="success"
-            block
-            @click="inPayment = true"
-            :disabled="props.loading"
-            :variant="props.loading? 'outlined' : 'elevated'"
-            :loading="props.loading"
-          >
-            Pembayaran
-          </v-btn>
-        </v-col>
-      </v-row>
+            <v-divider v-if="index > 0"></v-divider>
+            <v-row align="center" class="py-1">
+              <v-col cols="7">
+                <div class="text-medium-emphasis">
+                  <span>{{ item.name }}</span>
+                  <span class="text-caption"> x{{ item.quantity }}</span>
+                </div>
+                <div>
+                  <span class="text-subtitle-2 text-medium-emphasis">
+                    catatan: {{ item.note !== '' ? item.note : '-' }}
+                  </span>
+                </div>
+              </v-col>
+              <v-col cols="5" class="text-right">
+                <div 
+                  v-if="selectedOrder?.payment_status === 'Selesai'"
+                  class="text-subtitle-2 text-medium-emphasis"
+                >
+                  <div class="text-error" v-if="item.status === 'Refund'" >
+                    Refund
+                  </div>
+                  <div v-if="(userStore.hasRole(['Admin', 'Pemilik', 'Kasir']))">
+                    <v-btn
+                      class="px-0"
+                      append-icon="mdi-refresh"
+                      density="compact"
+                      color="error"
+                      variant="plain"
+                      size="small"
+                      @click="
+                      // nanti ganti jadi komponen khusus refund
+                        openOverlay({
+                          component: Blank,
+                          props: {
+                            confirmToContinue: true,
+                            confirmMessage: 'Apakah anda yakin ingin refund item ini?',
+                            onConfirm: () => {
+                              props.refresh()
+                            }
+                          },
+                        })
+                      "
+                    >
+                      Refund
+                    </v-btn>
+                    {{ formatRupiah(item.price) }}
+                  </div>
+                </div>
+                <div v-else class="text-subtitle-2 text-medium-emphasis">
+                  <div class="text-error" v-if="item.status === 'Pending'">
+                    <v-btn 
+                      color="warning" 
+                      variant="plain"
+                      size="small"
+                      class="px-0"
+                      density="compact"
+                      :disabled="props.loading"
+                      :loading="props.loading"
+                      @click="
+                        openOverlay({
+                          component: Blank,
+                          props: {
+                            confirmToContinue: true,
+                            confirmMessage: 'Apakah anda yakin ingin memproses pesanan ini?',
+                            onConfirm: () => {
+                              updateOrderData({
+                                id: selectedOrder?.id!,
+                                status: 'Diproses',
+                              }),
+                              props.refresh()
+                            }
+                          },
+                        })
+                      "
+                    >
+                      Proses Menu
+                    </v-btn>
+                  </div>
+                  <div v-if="item.status === 'Diproses'">
+                    <v-btn 
+                      color="primary"
+                      variant="plain"
+                      size="small"
+                      class="px-0"
+                      density="compact"
+                      :disabled="props.loading"
+                      :loading="props.loading"
+                      @click="
+                        openOverlay({
+                          component: Blank,
+                          props: {
+                            confirmToContinue: true,
+                            confirmMessage: 'Apakah anda yakin ingin pesanan ini siap saji?',
+                            onConfirm: () => {
+                              updateOrderData({
+                                id: selectedOrder?.id!,
+                                status: 'Selesai',
+                              }),
+                              props.refresh()
+                            }
+                          },
+                        })
+                      "
+                    >
+                      Siap Saji
+                    </v-btn>
+                  </div>
+                  <div>
+                    {{ formatRupiah(item.price) }}
+                  </div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-list-item>
+        </perfect-scrollbar>
+        
+        <!-- Tombol proses -->
+        <!-- <v-row v-if="(userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])) && selectedOrder?.payment_status === 'Pending'">
+          <v-col cols="12" v-if="selectedOrder.status === 'Pending'">
+            <v-btn 
+              color="warning" 
+              block
+              :disabled="props.loading"
+              :loading="props.loading"
+              @click="
+                openOverlay({
+                  component: Blank,
+                  props: {
+                    confirmToContinue: true,
+                    confirmMessage: 'Apakah anda yakin ingin memproses pesanan ini?',
+                    onConfirm: () => {
+                      updateOrderData({
+                        id: selectedOrder?.id!,
+                        status: 'Diproses',
+                      }),
+                      props.refresh()
+                    }
+                  },
+                })
+              "
+            >
+              Proses Pesanan
+            </v-btn>
+          </v-col>
+          <v-col cols="12" v-if="selectedOrder.status === 'Diproses'">
+            <v-btn 
+              color="primary"
+              block
+              :disabled="props.loading"
+              :loading="props.loading"
+              @click="
+                openOverlay({
+                  component: Blank,
+                  props: {
+                    confirmToContinue: true,
+                    confirmMessage: 'Apakah anda yakin ingin pesanan ini siap saji?',
+                    onConfirm: () => {
+                      updateOrderData({
+                        id: selectedOrder?.id!,
+                        status: 'Selesai',
+                      }),
+                      props.refresh()
+                    }
+                  },
+                })
+              "
+            >
+              Siap Saji
+            </v-btn>
+          </v-col>
+        </v-row> -->
+        
+        <!-- Tombol untuk Role Kasir -->
+        <div v-if="(userStore.hasRole(['Admin', 'Kasir'])) && selectedOrder?.payment_status === 'Pending'">
+          <v-divider class="my-3"></v-divider>
+          <div class="d-flex justify-space-between align-center">
+            <v-btn 
+              color="error"
+              variant="plain"
+              prepend-icon="mdi-delete"
+              size="small"
+              :disabled="props.loading"
+              :loading="props.loading"
+              @click="
+                openOverlay({
+                  component: Blank,
+                  props: {
+                    confirmToContinue: true,
+                    confirmMessage: 'Apakah anda yakin ingin membatalkan pesanan ini?',
+                    onConfirm: () => {
+                      updateOrderData({
+                        id: selectedOrder?.id!,
+                        status: 'Batal',
+                      }),
+                      props.refresh()
+                      showOverlay = false
+                    }
+                  },
+              })"
+            >
+              Batalkan
+            </v-btn>
+  
+            <v-btn 
+              color="success"
+              :disabled="props.loading"
+              :loading="props.loading"
+              @click="
+                openOverlay({
+                  component: Payment,
+                  props: {
+                    data: selectedOrder,
+                    item_in_chart: itemInSelectedOrder,
+                    paymentSucceded: () => {
+                      props.refresh()
+                    }
+                  },
+                })
+              "
+            >
+              Pembayaran
+            </v-btn>
+          </div>
+      </div>
+    </div>
     </v-card>
   </v-overlay>
   

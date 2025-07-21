@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
-import { hasRole } from '@/utils/helpers/user';
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay();
+
+import { useUserStore } from '@/stores/authUser';
+const userStore = useUserStore();
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -16,71 +20,105 @@ import { useStockRequests } from "@/composables/useStockRequest";
 import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
-const { data: me, loading: lu, fetchMe } = useUser();
-const { branches, loading: lb } = useBranchList();
-const { summary, list: stockRequestlist, loading: lsr, updateRequest } = useStockRequests();
+const { data: branches, loading: lb } = useBranchList();
+const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr, update: updateRequest } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm, create: createStockMovement, update: updateStockMovement } = useStockMovements();
 const { requests, loading: lfr, create: createFundRequest, update: updateFundRequest } = useFundRequests();
 
 onMounted(() => {
-  fetchMe();
   initItems();
   initStockMovement();
+  loadStockRequest(selectedBranch.value ?? '');
 });
 
 // Branch Selection
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useStockMovements } from '@/composables/useStockMovement';
 import { useFundRequests } from '@/composables/useFundRequest';
-import { useUser } from '@/composables/useUser';
 
-const route = useRoute();
-const router = useRouter();
-const branchOptions = computed(() => [
-  { id: 'all', name: 'Semua Cabang' },
-  ...branches.value
-]);
-const selectedBranch = computed({
-  get: () => String(route.query.branch || 'all'),
-  set: val => {
-    router.replace({ query: { ...route.query, branch: val } });
-  }
-});
+const branchOptions = computed(() => branches.value);
+const selectedBranch = ref<string | undefined>(
+  userStore.hasRole(['Admin', 'Pemilik']) 
+  ? undefined
+  : userStore.me?.activity?.branch?.id 
+    ? userStore.me.activity.branch.id 
+    : undefined
+);
 const selectedBranchObject = computed(() => {
-  return branchOptions.value.find(branch => branch.id === selectedBranch.value) || { id: 'all', name: 'Semua Cabang' }
+  return branchOptions.value
+  .find(branch => branch.id === selectedBranch.value
+  ) || (userStore.me?.activity?.branch)
 })
+console.log('me', userStore.me)
+// watcher perubahan selectedBranch yang memicu fetching stock request
+watch(selectedBranch, () => {
+  loadStockRequest(selectedBranch.value)
+  console.log('selectedBranch', selectedBranch.value)
+});
+
+const pinBranch = ref(false)
 </script>
 
 <template>
-  <BaseBreadcrumb
-    title="Inventory"
-    :breadcrumbs="[
-      { title: 'Inventory', href: '/page/inventory' }
-    ]"
-  >
-    <template #last>
-      <div class="pb-3">
-        <v-select
-          class="ma-0 pa-0 align-center text-subtitle-1"
-          variant="plain"
-          v-model="selectedBranch"
-          :items="branchOptions"
-          item-title="name"
-          item-value="id"
-          :loading="lb"
-          hide-details
-          density="compact"
-        />
-      </div>
-    </template>
-  </BaseBreadcrumb>
+    <BaseBreadcrumb
+      v-if="mdAndUp && userStore.hasRole(['Admin'])"
+      title="Halaman Gudang"
+      :breadcrumbs="[
+        { title: 'Halaman Gudang', href: '/page/inventory' }
+      ]"
+    >
+      <template #last>
+        <div style="background-color: transparent;">
+          <v-select
+            class="ma-0 pa-0 align-center text-subtitle-1"
+            style="max-width: fit-content; min-width: 8rem;"
+            variant="plain"
+            v-model="selectedBranch"
+            placeholder="Pilih Cabang"
+            persistent-placeholder
+            :items="branchOptions"
+            item-title="name"
+            item-value="id"
+            :loading="lb"
+            hide-details
+            density="compact"
+            clearable
+          />
+        </div>
+      </template>
+    </BaseBreadcrumb>
+
+    <!-- sticky branch selector button -->
+    <div
+      v-else-if="!mdAndUp && userStore.hasRole(['Admin'])"
+      class="d-flex align-center justify-end mb-4"
+      :style="pinBranch ? 'position: sticky;' : ''"
+      style="top: 90px; z-index: 1; background-color: transparent;"
+    >
+      <v-icon size="x-small" opacity="0.5" @click="pinBranch = !pinBranch" class="me-1">{{ pinBranch ? 'mdi-pin-outline' : 'mdi-pin'}}</v-icon>
+
+      <v-select
+        class="pe-2 pl-3 pb-2 rounded-pill bg-white bg-opacity-75 backdrop-blur-lg elevation-1 "
+        style="max-width: fit-content; min-width: 8rem; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(1px);"
+        variant="plain"
+        v-model="selectedBranch"
+        placeholder="Pilih Cabang"
+        :items="branchOptions"
+        item-title="name"
+        item-value="id"
+        :loading="lb"
+        hide-details
+        density="compact"
+        clearable
+      />
+    </div>
 
   <v-row>
     <!-- Kolom Kiri: Current Order + Current Transaction -->
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
           <CurrentStockRequestSummary 
             :data="summary" 
             :branch="selectedBranch"
@@ -104,7 +142,7 @@ const selectedBranchObject = computed(() => {
     <!-- Kolom Kanan: Create Order + Current Order Que -->
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
           <InventoryItems 
             :data="dataInventory"
             :categories="categories"
@@ -115,7 +153,7 @@ const selectedBranchObject = computed(() => {
           />
         </v-col>
 
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
           <StockMovement
             :data="dataStockMovement"
             :categories="categories"
@@ -130,12 +168,12 @@ const selectedBranchObject = computed(() => {
     </v-col>
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.me && userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
           <CurrentFundRequest
-            :user="me"
+            :user="userStore.me"
             :data="requests"
             :inv_items="dataInventory"
-            :branch="selectedBranchObject"
+            :branch="selectedBranchObject!"
             :loading="lfr"
             class="flex-grow-1"
             @create-fr="createFundRequest"

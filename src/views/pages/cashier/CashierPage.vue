@@ -1,82 +1,74 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { computed, onMounted } from 'vue';
-import { hasRole } from '@/utils/helpers/user';
+import { computed, onMounted, ref } from 'vue';
 import { useDisplay } from 'vuetify';
 const { mdAndUp, smAndDown } = useDisplay()
 
+import { useUserStore } from '@/stores/authUser';
+import { useAlertStore } from '@/stores/alert';
+const userStore = useUserStore();
+const alertStore = useAlertStore();
+
 // imported components
-import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import CurrentOrder from '../kitchen/components/CurrentOrder.vue';
 import CreateOrder from './components/CreateOrder.vue';
 import CurrentOrderQue from '../kitchen/components/CurrentOrderQue.vue';
-import CurrentTransaction from '@/views/dashboards/default/components/CurrentTransaction.vue';
+import CurrentTransaction from '@/views/dashboards/finance/components/CurrentTransaction.vue';
 
 // imported composables
 import { useBranchList } from '@/composables/useBranchList';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useTransactions } from '@/composables/useTransactionList';
-import { useUser } from '@/composables/useUser';
 import { useMenuItems } from '@/composables/useMenuItems';
 
 // Data Loading
-const { data: me, loading: lu, fetchMe } = useUser();
-const { branches, loading: lb } = useBranchList();
-const { data: currentOrder, loading: lco, error, updateOrder, createOrder, processDirectPayment } = useCurrentOrders();
-const { transactions, loading: ltx } = useTransactions();
-const { init, data: menuItems, categories, loadingData, loadingBranches } = useMenuItems();
+const { data: branches, loading: lb } = useBranchList();
+const { load: loadCurrentOrder, data: currentOrder, loading: lco, update: updateOrder, create: createOrder } = useCurrentOrders();
+const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
+const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 
 onMounted(() => {
-  fetchMe();
+  if (!userStore.me?.activity?.is_active) { 
+    alertStore.showAlert('Anda belum memulai shift!', 'warning');
+    return
+  }
+
+  loadCurrentOrder(userStore.me?.activity?.branch?.id);
+  loadItemSales(userStore.me?.activity?.branch?.id);
+  loadTransactions(userStore.me?.activity?.branch?.id);
 })
 
-// Branch Selection
-const route = useRoute();
-const router = useRouter();
 const branchOptions = computed(() => [
   { id: 'all', name: 'Semua Cabang' },
   ...branches.value
 ]);
-const selectedBranch = computed({
-  get: () => String(route.query.branch || 'all'),
-  set: val => {
-    router.replace({ query: { ...route.query, branch: val } });
-  }
-});
+const selectedBranch = ref<string | undefined>(
+  userStore.hasRole(['Admin', 'Pemilik', 'Kasir']) 
+  ? undefined
+  : userStore.me?.activity?.branch?.id 
+    ? userStore.me.activity.branch.id 
+    : undefined
+);
+const selectedBranchObject = computed(() => {
+  return branchOptions.value
+  .find(branch => branch.id === selectedBranch.value
+  ) || undefined
+})
 </script>
 
 <template>
-  <BaseBreadcrumb
-    title="Kasir"
-    :breadcrumbs="[
-      { title: 'Kasir', href: '/page/cashier' }
-    ]"
-  >
-    <template #last>
-      <div class="pb-3">
-        <v-select
-          class="ma-0 pa-0 align-center text-subtitle-1"
-          variant="plain"
-          v-model="selectedBranch"
-          :items="branchOptions"
-          item-title="name"
-          item-value="id"
-          :loading="lb"
-          hide-details
-          density="compact"
-        />
-      </div>
-    </template>
-  </BaseBreadcrumb>
-
   <v-row>
+    <!-- Text jika belum mulai shift -->
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
+      <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
+    </v-col>
+
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="6">
+    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Dapur', 'Kasir'])) || mdAndUp">
       <v-row>
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Dapur', 'Kasir'])">
           <CurrentOrder 
             :data="currentOrder" 
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="lco" 
             class="flex-grow-1" 
           />
@@ -85,7 +77,7 @@ const selectedBranch = computed({
         <v-col cols="12" v-if="mdAndUp">
           <CurrentTransaction
             :data="transactions"
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="ltx"
             class="flex-grow-1"
           />
@@ -96,27 +88,23 @@ const selectedBranch = computed({
     <!-- Kolom Kanan: Create Order + Current Order Que -->
     <v-col cols="12" md="6">
       <v-row>
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Dapur', 'Kasir'])">
           <CreateOrder 
-            :user="me"
-            :data="menuItems"
+            :data_menu="menuSales"
             :categories="categories"
-            :branch="selectedBranch"
-            :loading="lco" 
-            @create-order="createOrder"
-            @process-direct-payment="processDirectPayment"
+            :branch="selectedBranchObject"
+            :refresh="loadCurrentOrder"
             class="flex-grow-1" 
           />
         </v-col>
 
-        <v-col cols="12" v-if="me && hasRole(me, ['admin', 'kitchen', 'cashier'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Dapur', 'Kasir'])">
           <CurrentOrderQue
-            :user="me"
+            :user="userStore.me"
             :data="currentOrder" 
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="lco" 
-            @proses-order="updateOrder"
-            @process-payment="updateOrder"
+            :refresh="loadCurrentOrder"
             class="flex-grow-1" 
           />
         </v-col>
@@ -124,7 +112,7 @@ const selectedBranch = computed({
         <v-col cols="12" v-if="smAndDown">
           <CurrentTransaction
             :data="transactions"
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="ltx"
             class="flex-grow-1"
           />

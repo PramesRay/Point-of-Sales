@@ -7,9 +7,12 @@ import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency'
 import { formatDate } from "@/utils/helpers/format-date";
 import type { Employee } from '@/types/employee';
 import { cloneDeep } from 'lodash';
-import { hasRole } from '@/utils/helpers/user';
+
+import { useUserStore } from '@/stores/authUser';
 import { useAlertStore } from '@/stores/alert';
+
 const alertStore = useAlertStore();
+const userStore = useUserStore();
 
 import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
 import type { InventoryItem } from '@/types/inventory';
@@ -25,17 +28,17 @@ const props = defineProps<{
   user: Employee;
   data: FundRequest[];
   inv_items: InventoryItem[];
-  branch: IdName;
+  branch: IdName | undefined;
   loading?: boolean;
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (props.branch.id === 'all') {
+  if (!props.branch) {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch.id
+    (tx) => tx.branch.id === props.branch?.id
   );
 });
 
@@ -78,10 +81,7 @@ const fundRequestPayload = ref<{
       id: string | null, 
       name: string | null, 
       purchase_price: number | null
-      unit: {
-        default: string | null
-        options: string[]
-      }
+      unit: string | null
     }; 
     quantity: number | null 
   }[],
@@ -98,10 +98,7 @@ const fundRequestPayload = ref<{
       id: null, 
       name: null, 
       purchase_price: null,
-      unit: {
-        default: null,
-        options: []
-      }
+      unit: null
     }, 
     quantity: null, 
   }],
@@ -169,10 +166,7 @@ function clearPayload() {
           id: null, 
           name: null, 
           purchase_price: null, 
-          unit: { 
-            default: null, 
-            options: [] 
-          }
+          unit: null
         }, 
         quantity: null
       }]
@@ -192,11 +186,8 @@ function clearPayload() {
         item: {
           id: item.item.id ?? null, 
           name: item.item.name ?? null, 
-          purchase_price: item.item.purchase_price?.[item.item.unit?.default ?? 0] ?? null,
-          unit: {
-            default: item.item.unit?.default ?? null,
-            options: item.item.unit?.options ?? []
-          }
+          purchase_price: item.item.purchase_price ?? null,
+          unit: item.item.unit ?? null
         },
         quantity: item.quantity,
        })),
@@ -234,10 +225,7 @@ function addItem() {
       id: null, 
       name: null, 
       purchase_price: null,
-      unit: {
-        default: null,
-        options: []
-      }
+      unit: null
     }, 
     quantity: null })
 }
@@ -248,15 +236,14 @@ function itemKey(index: number, item: typeof fundRequestPayload.value.items[0]) 
 }
 
 function onItemIdChange(selectedId: string, index: number) {
-  
   const selectedItem = filteredInventoryItems.value.find(item => item.id === selectedId);
   if (selectedItem) {
     fundRequestPayload.value.items[index] = {
       item :{
         id: selectedItem.id,
         name: selectedItem.name,
-        purchase_price: selectedItem.purchase_price?.[selectedItem.unit?.default ?? 0] ?? null,
-        unit: selectedItem.unit!
+        purchase_price: selectedItem.purchase_price,
+        unit: selectedItem.unit
       },
       quantity: 1
     }
@@ -265,21 +252,6 @@ function onItemIdChange(selectedId: string, index: number) {
   if (found) {
     fundRequestPayload.value.items[index].item.id = null
     alertStore.showAlert(`Item sudah ada di daftar!`, 'warning');
-  }
-}
-
-function onUnitChanged(unit: string, index: number) {
-  const selectedItem = filteredInventoryItems.value.find(item => item.id === fundRequestPayload.value.items[index].item.id);
-  if (selectedItem) {
-    fundRequestPayload.value.items[index] = {
-      item :{
-        id: selectedItem.id,
-        name: selectedItem.name,
-        purchase_price: selectedItem.purchase_price?.[unit] ?? null,
-        unit: selectedItem.unit!
-      },
-      quantity: 1
-    }
   }
 }
 
@@ -306,11 +278,11 @@ const isChanged = computed(() => {
       fundRequestPayload.value.branchId !== selectedRequest.value?.branch.id ||
       JSON.stringify(fundRequestPayload.value.items.map(item => ({
         id: item.item.id,
-        unit: item.item.unit?.default,
+        unit: item.item.unit,
         quantity: item.quantity
       }))) !== JSON.stringify(selectedRequest.value?.items.map(item => ({
         id: item.item.id,
-        unit: item.item.unit?.default,
+        unit: item.item.unit,
         quantity: item.quantity
       }))) ||
       fundRequestPayload.value.status !== selectedRequest.value?.status
@@ -320,7 +292,6 @@ const isChanged = computed(() => {
 })
 
 watch(() => fundRequestPayload.value.items, (val) => {
-  
     const totalAmount = val.reduce((acc, item) => acc + (item.item.purchase_price ?? 0) * (item.quantity!), 0);
     fundRequestPayload.value.amount = totalAmount;
     fundRequestPayload.value.amountRaw = formatRupiahInput(totalAmount.toString());
@@ -338,15 +309,12 @@ watch(selectedRequest, (val) => {
       status: val.status,
       items: val.items.map((item) => ({
         item: {
-          id: item.item.id ?? null,
-          name: item.item.name ?? null,
-          purchase_price: item.item.purchase_price?.[item.item.unit?.default ?? 0] ?? null,
-          unit: {
-            default: item.item.unit?.default ?? null,
-            options: item.item.unit?.options ?? []
-          }
+          id: item.item.id,
+          name: item.item.name,
+          purchase_price: item.item.purchase_price,
+          unit: item.item.unit
         },
-        quantity: item.quantity ?? null
+        quantity: item.quantity
       })),
       amountRaw: formatRupiahInput(val.amount.toString())
     }
@@ -382,8 +350,8 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
             <div class="d-flex align-center">
               <h4 class="text-h4 mt-1">Permintaan Dana Terkini</h4>
             </div>
-            <div v-if="props.branch.id !== 'all'">
-              <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
+            <div v-if="props.branch?.id !== 'all' && !props.loading" class="text-subtitle-2 text-medium-emphasis"
+            >{{ latestRequest?.branch.name }}
             </div> 
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
@@ -398,12 +366,12 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
         </v-row>
           
         <div v-if="!props.loading">
-          <v-card class="bg-lightsecondary mt-5" @click="openDetail(latestRequest)">
+          <v-card class="bg-lightsecondary mt-4" @click="openDetail(latestRequest)">
             <div v-if="latestRequest" class="pa-5">
               <span class="text-subtitle-2 text-disabled">
                 <span 
                   class="text-medium-emphasis" 
-                  v-if="props.branch.id === 'all'"
+                  v-if="props.branch?.id === 'all'"
                 >{{ latestRequest?.branch.name }}: </span>
                 {{ latestRequest.meta?.updated_at ? `${formatDate(latestRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(latestRequest.meta?.updated_at).slice(-5)}` : '' }}
               </span>
@@ -439,7 +407,7 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
                   <span class="text-subtitle-2 text-disabled">
                     <span
                       class="text-medium-emphasis"
-                      v-if="props.branch.id === 'all'"
+                      v-if="props.branch?.id === 'all'"
                     >{{ listRequest?.branch.name }}: </span>
                     {{ listRequest.meta?.updated_at ? `${formatDate(listRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(listRequest.meta?.updated_at).slice(-5)}` : '' }}
                   </span>
@@ -508,7 +476,7 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
         <div class="d-flex align-center">
           <h4 class="text-h4 mt-1 mr-2">{{ isNewRequest ? 'Buat Permintaan Dana' : 'Detail Permintaan Dana' }}</h4>
 
-          <span v-if="hasRole(props.user, ['admin', 'finance', 'owner']) && !isNewRequest">
+          <span v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Bendahara']) && !isNewRequest">
             <v-btn
               icon  
               variant="text"
@@ -546,19 +514,6 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
               clear-icon="mdi-close"
               clearable
               counter
-            />
-          </v-col>
-          <v-col cols="12" v-if="props.user.assigned_branch.length > 1">
-            <v-select
-              variant="underlined"
-              v-model="fundRequestPayload.branchId"
-              label="Cabang"
-              :items="props.user.assigned_branch"
-              item-title="name"
-              item-value="id"
-              :rules="requieredRules"
-              prepend-icon="mdi-home"
-              hide-details
             />
           </v-col>
         </v-row>
@@ -634,14 +589,13 @@ watch(() => fundRequestPayload.value.amountRaw, (val) => {
                     />
                   </v-col>
                   <v-col cols="3" class="ps-3">
-                    <v-select
-                      v-model="item.item.unit.default"
+                    <v-text-field
+                      v-model="item.item.unit"
                       class="small-placeholder"
-                      @update:model-value="(val: string) => onUnitChanged(val, index)"
                       variant="underlined"
-                      :items="item.item.unit.options"
                       placeholder="Satuan"
                       :rules="[v => !!v || 'Satuan wajib diisi']"
+                      :disabled="!isNewRequest"
                       hide-details
                     />
                   </v-col>

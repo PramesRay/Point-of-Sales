@@ -13,13 +13,14 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   data: StockRequestList[];
-  branch: string;
+  branch: string | undefined;
   loading?: boolean;
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (props.branch === 'all') {
+  console.log('props.data', props.data)
+  if (!props.branch) {
     return props.data;
   }
   return props.data.filter(
@@ -144,7 +145,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
         <div>
           <div class="d-flex align-center">
             <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
-            <div v-if="props.branch !== 'all'" class="ml-auto">
+            <div v-if="props.branch" class="ml-auto">
               <span class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</span>
             </div>
           </div>
@@ -155,7 +156,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
             >
               <div v-if="latestRequest" class="pa-5">
                 <span class="text-subtitle-2 text-disabled">
-                  <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
+                  <span class="text-medium-emphasis" v-if="!props.branch">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
                 </span>
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
@@ -185,7 +186,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <span class="text-subtitle-2 text-disabled">
-                      <span class="text-medium-emphasis" v-if="props.branch === 'all'">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
+                      <span class="text-medium-emphasis" v-if="!props.branch">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
                     </span>
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
@@ -262,7 +263,7 @@ watch(showOverlay, (isOpen, wasOpen) => {
       <v-form ref="formRef" v-model="isFormValid">
         <div class="py-5">
           <span class="text-subtitle-2 text-medium-emphasis">
-            <span v-if="props.branch === 'all'">{{ selectedRequest?.branch.name }}</span>
+            <span v-if="!props.branch">{{ selectedRequest?.branch.name }}</span>
           </span>
           <div class="d-inline-flex align-center justify-space-between w-100">
             <div>

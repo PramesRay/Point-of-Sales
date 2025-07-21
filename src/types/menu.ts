@@ -7,8 +7,21 @@ export interface Menu {
   name: string
   description: string
   price: number
-  quantity: number
   category: Category
-  branch: Branch
+  available_in_branch: Branch[]
   meta: Meta
+}
+
+export interface MenuSale extends Menu {
+  quantity: number
+} 
+
+export type CreateMenuPayload = Omit<Menu, "id" | "category" | "available_in_branch" | "meta"> & {
+  category_id: string
+  available_in_branch_id: string[]
+}
+
+export type UpdateMenuPayload = Omit<Menu, "category" | "available_in_branch" | "meta"> & {
+  category_id: string
+  available_in_branch_id: string[]
 }

@@ -1,3 +1,4 @@
+import type { AccessKey, UserRole } from '@/types/employee';
 import {
   CircleIcon,
   WindmillIcon,
@@ -29,48 +30,347 @@ export interface menu {
   disabled?: boolean;
   type?: string;
   subCaption?: string;
+  requiredRoles?: UserRole[]; 
+  requiredAccess?: AccessKey[];
 }
 
 const sidebarItem: menu[] = [
-  { header: 'Dashboard' },
+  { header: 'Halaman' },
   {
-    title: 'Finance',
+    title: 'Bendahara',
     icon: ZoomMoneyIcon,
-    to: '/dashboard/default'
+    to: '/dashboard/bendahara',
+    requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
+    requiredAccess: [ 'all',
+      'r:total-all-income',
+      'r:total-income',
+      'r:total-order',
+      'r:total-expense',
+      'c:transaction',
+      'r:transaction',
+      'u:transaction',
+      'd:transaction',
+      'c:fund-request',
+      'r:fund-request',
+      'u:fund-request',
+      'd:fund-request',
+    ],
+    children: [
+      {
+        title: 'Rekapitulasi Keuangan',
+        icon: CircleIcon,
+        to: '/dashboard/bendahara/rekapitulasi-keuangan',
+        requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
+        requiredAccess: [ 'all',
+          'r:total-all-income',
+          'r:total-income',
+          'r:total-order',
+          'r:total-expense'
+        ]
+      },
+      {
+        title: 'Permintaan Dana',
+        icon: CircleIcon,
+        to: '/dashboard/bendahara/permintaan-dana',
+        requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
+        requiredAccess: [ 'all',
+          'c:fund-request',
+          'r:fund-request',
+          'u:fund-request',
+          'd:fund-request',
+        ]
+      },
+      {
+        title: 'Transaksi',
+        icon: CircleIcon,
+        to: '/dashboard/bendahara/transaksi',
+        requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
+        requiredAccess: [ 'all',
+          'c:transaction',
+          'r:transaction',
+          'u:transaction',
+          'd:transaction',
+        ]
+      }
+    ]
   },
   {
-    title: 'Owner',
+    title: 'Pemilik',
     icon: DashboardIcon,
-    to: '/dashboard/owner'
+    to: '/dashboard/pemilik',
+    requiredRoles: ['Admin', 'Pemilik'],
+    requiredAccess: [ 'all',
+      'r:active-employee',
+      'r:timesheet',
+      'u:timesheet',
+      'c:reservation',
+      'r:reservation',
+      'u:reservation',
+      'd:reservation',
+      'c:branch',
+      'r:branch',
+      'u:branch',
+      'd:branch',
+      'c:employee',
+      'r:employee',
+      'u:employee',
+      'd:employee'
+    ],
+    children: [
+      {
+        title: 'Aktifitas Karyawan',
+        icon: CircleIcon,
+        to: '/dashboard/pemilik/aktifitas-karyawan',
+        requiredRoles: ['Admin', 'Pemilik'],
+        requiredAccess: [ 'all',
+          'r:active-employee',
+          'r:timesheet',
+          'u:timesheet',
+        ]
+      },
+      {
+        title: 'Pengaturan',
+        icon: CircleIcon,
+        to: '/dashboard/pemilik/pengaturan',
+        requiredRoles: ['Admin', 'Pemilik'],
+        requiredAccess: [ 'all',
+          'c:branch',
+          'r:branch',
+          'u:branch',
+          'd:branch',
+          'c:employee',
+          'r:employee',
+          'u:employee',
+          'd:employee'
+        ]
+      },
+      {
+        title: 'Reservasi',
+        icon: CircleIcon,
+        to: '/dashboard/pemilik/reservasi',
+        requiredRoles: ['Admin', 'Pemilik'],
+        requiredAccess: [ 'all',
+          'c:reservation',
+          'r:reservation',
+          'u:reservation',
+          'd:reservation',
+        ]
+      }
+    ]
   },
-  { divider: true },
-  { header: 'Pages' },
   {
-    title: 'Cashier',
+    title: 'Kasir',
     icon: ReportMoneyIcon,
-    to: '/page/cashier'
+    to: '/halaman/kasir',
+    requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
+    requiredAccess: [ 'all',
+      'r:active-order',
+      'c:order',
+      'u:order',
+      'd:order',
+      'r:order-que',
+      'r:order-history',
+      'u:order-history',
+      'd:order-history',
+    ],
+    children: [
+      {
+        title: 'Rekapitulasi Pesanan',
+        icon: CircleIcon,
+        to: '/halaman/kasir/rekapitulasi-pesanan',
+        requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
+        requiredAccess: [ 'all',
+          'r:active-order',
+        ]
+      },
+      {
+        title: 'Pesanan',
+        icon: CircleIcon,
+        to: '/halaman/kasir/pesanan',
+        requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
+        requiredAccess: [ 'all',
+          'c:order',
+          'u:order',
+          'd:order',
+          'r:order-que',
+          'r:order-history',
+          'u:order-history',
+          'd:order-history',
+        ]
+      }
+    ]
   },
   {
-    title: 'Inventory',
+    title: 'Gudang',
     icon: BuildingWarehouseIcon,
-    to: '/page/inventory'
+    to: '/halaman/gudang',
+    requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+    requiredAccess: [ 'all',
+      'r:active-stock-request',
+      'c:stock-request',
+      'r:stock-request',
+      'u:stock-request',
+      'd:stock-request',
+      'c:stock',
+      'r:stock',
+      'u:stock',
+      'd:stock',
+      'c:stock-category',
+      'r:stock-category',
+      'u:stock-category',
+      'd:stock-category',
+      'c:stock-movement',
+      'r:stock-movement',
+      'u:stock-movement',
+      'd:stock-movement',
+      'c:fund-request',
+      'r:fund-request'
+    ],
+    children: [
+      {
+        title: 'Rekapitulasi Gudang',
+        icon: CircleIcon,
+        to: '/halaman/gudang/rekapitulasi-gudang',
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+        requiredAccess: [ 'all',
+          'r:active-stock-request',
+        ]
+      },
+      {
+        title: 'Permintaan Persediaan',
+        icon: CircleIcon,
+        to: '/halaman/gudang/permintaan-persediaan',
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+        requiredAccess: [ 'all',
+          'r:active-stock-request',
+          'c:stock-request',
+          'r:stock-request',
+          'u:stock-request',
+          'd:stock-request',
+        ]
+      },
+      {
+        title: 'Persediaan',
+        icon: CircleIcon,
+        to: '/halaman/gudang/persediaan',
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+        requiredAccess: [ 'all',
+          'c:stock',
+          'r:stock',
+          'u:stock',
+          'd:stock',
+          'c:stock-category',
+          'r:stock-category',
+          'u:stock-category',
+          'd:stock-category',
+        ]
+      },
+      {
+        title: 'Mutasi Persediaan',
+        icon: CircleIcon,
+        to: '/halaman/gudang/mutasi-persediaan',
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+        requiredAccess: [ 'all',
+          'c:stock-movement',
+          'r:stock-movement',
+          'u:stock-movement',
+          'd:stock-movement',
+        ]
+      },
+      {
+        title: 'Permintaan Dana',
+        icon: CircleIcon,
+        to: '/halaman/gudang/permintaan-dana',
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
+        requiredAccess: [ 'all',
+          'c:fund-request',
+          'r:fund-request',
+        ]
+      }
+    ]
   },
   {
-    title: 'Kitchen',
+    title: 'Dapur',
     icon: ToolsKitchenIcon,
-    to: '/page/kitchen'
+    to: '/halaman/dapur',
+    requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
+    requiredAccess: [ 'all',
+      'r:active-order',
+      'c:order',
+      'u:order',
+      'd:order',
+      'r:order-que',
+      'r:order-history',
+      'u:order-history',
+      'd:order-history',
+      'c:menu',
+      'r:menu',
+      'u:menu',
+      'd:menu',
+      'c:menu-category',
+      'r:menu-category',
+      'u:menu-category',
+      'd:menu-category',
+      'c:stock-request',
+      'r:stock-request'
+    ],
+    children: [
+      {
+        title: 'Menu',
+        icon: CircleIcon,
+        to: '/halaman/dapur/menu',
+        requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
+        requiredAccess: [ 'all',
+          'c:menu',
+          'r:menu',
+          'u:menu',
+          'd:menu',
+          'c:menu-category',
+          'r:menu-category',
+          'u:menu-category',
+          'd:menu-category',
+          'c:stock-request',
+          'r:stock-request'
+        ]
+      },
+      {
+        title: 'Pesanan',
+        icon: CircleIcon,
+        to: '/halaman/dapur/pesanan',
+        requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
+        requiredAccess: [ 'all',
+          'c:order',
+          'u:order',
+          'd:order',
+          'r:order-que',
+          'r:order-history',
+          'u:order-history',
+          'd:order-history',
+        ]
+      },
+      {
+        title: 'Permintaan Persediaan',
+        icon: CircleIcon,
+        to: '/halaman/dapur/permintaan-persediaan',
+        requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
+        requiredAccess: [ 'all',
+          'c:stock-request',
+          'r:stock-request',
+        ]
+      }
+    ]
   },
   { divider: true },
-  { header: 'Other Pages' },
+  { header: 'Lainnya' },
   {
-    title: 'Authentication',
+    title: 'Autentikasi',
     icon: KeyIcon,
     to: '/auth',
     children: [
       {
         title: 'Login',
         icon: CircleIcon,
-        to: '/login1'
+        to: '/login'
       },
       {
         title: 'Register',
@@ -79,54 +379,22 @@ const sidebarItem: menu[] = [
       }
     ]
   },
+  { divider: true },
+  { header: 'Perawatan' },
   {
     title: 'Error 404',
     icon: BugIcon,
     to: '/error'
   },
-  // { divider: true },
-  // { header: 'Utilities' },
-  // {
-  //   title: 'Typography',
-  //   icon: TypographyIcon,
-  //   to: '/utils/typography'
-  // },
-  // {
-  //   title: 'Shadows',
-  //   icon: ShadowIcon,
-  //   to: '/utils/shadows'
-  // },
-  // {
-  //   title: 'Colors',
-  //   icon: PaletteIcon,
-  //   to: '/utils/colors'
-  // },
-
-  // {
-  //   title: 'Icons',
-  //   icon: WindmillIcon,
-  //   to: '/forms/radio',
-  //   children: [
-  //     {
-  //       title: 'Tabler Icons',
-  //       icon: CircleIcon,
-  //       to: '/icons/tabler'
-  //     },
-  //     {
-  //       title: 'Material Icons',
-  //       icon: CircleIcon,
-  //       to: '/icons/material'
-  //     }
-  //   ]
-  // },
+  
   { divider: true },
   {
-    title: 'Sample Page',
+    title: 'Halaman Contoh',
     icon: BrandChromeIcon,
     to: '/starter'
   },
   {
-    title: 'Documentation',
+    title: 'Dokumentasi',
     icon: HelpIcon,
     to: 'https://codedthemes.gitbook.io/berry-vuetify/',
     type: 'external'

@@ -1,32 +1,102 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import Google from '@/assets/images/auth/social-google.svg';
-import { useAuthStore } from '@/stores/auth';
-import { Form } from 'vee-validate';
+import { router } from '@/router';
+import { auth} from '@/plugins/firebase';
 
-const checkbox = ref(false);
-const valid = ref(false);
+import { useAuthStore } from '@/stores/auth';
+import { useAlertStore } from '@/stores/alert';
+import type { LoginPayload } from '@/types/auth';
+
+const authStore = useAuthStore();
+const alert = useAlertStore();
 const show1 = ref(false);
-//const logform = ref();
-const password = ref('admin123');
-const username = ref('info@codedthemes.com');
-const passwordRules = ref([
-  (v: string) => !!v || 'Password is required',
-  (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
-]);
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
+const loginForm = ref();
+const isSubmitting = ref(false);
+const isForgetPassword = ref(false);
+
+const loginPayload = ref<LoginPayload>({
+  email: '',
+  password: ''
+})
+
+function clearPayload() {
+  loginPayload.value = {
+    email: '',
+    password: ''
+  }
+}
+
+const rules = {
+  required: [(v: string) => !!v || 'Wajib diisi'],
+  email: [(v: string) => /^$|^[\w\.-]+@[\w\.-]+\.[\w]{2,}$/.test(v) || 'Email tidak valid'],
+  password: [(v: string) => v.length >= 6 || 'Password minimal 6 karakter', (v: string) => v.length <= 16 || 'Password maksimal 16 karakter']
+}
+
+async function handleLoginWithGoogle() {
+  try {
+    isSubmitting.value = true;
+    await authStore.loginWithGoogle();
+  } catch (err: any) {
+    console.error(err);
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function validate(values: any, { setErrors }: any) {
-  const authStore = useAuthStore();
-  return authStore.login(username.value, password.value).catch((error) => setErrors({ apiError: error }));
+async function handleSubmit() {
+  const {valid} = await loginForm.value.validate();
+  if (!valid) return;
+  isSubmitting.value = true;
+
+  try {
+    if (isForgetPassword.value) {
+      try {
+        if (localStorage.getItem('countdown')) {
+          const start = Number(localStorage.getItem('countdown')!);
+          const elapsed = Math.floor((Date.now() - start) / 1000);
+          if (elapsed > 60) {
+            await authStore.requestResetPassword(loginPayload.value.email);
+            localStorage.setItem('email', loginPayload.value.email);
+          } else {
+            alert.showAlert(`Proses Reset Password sedang berlangsung, tunggu hingga selesai`, 'info');
+          }
+          router.push('/verify-email?mode=reset');
+        } else {
+          await authStore.requestResetPassword(loginPayload.value.email);
+          localStorage.setItem('email', loginPayload.value.email);
+          router.push('/verify-email?mode=reset');
+        }
+      } catch (err: any) {
+        throw new Error(err);
+      }
+    } else {
+      try {
+        const result = await authStore.login(loginPayload.value);
+        router.push('/');
+        clearPayload();
+      } catch (err: any) {
+        if (err.message === 'Email belum diverifikasi') {
+          localStorage.setItem('email', loginPayload.value.email);
+          router.push('/verify-email?mode=verify');
+        } else {
+          alert.showAlert(err.message || 'Login gagal', 'error');
+        }
+      }
+    }
+  } catch (err: any) {
+    throw new Error(err);
+  } finally {
+    isSubmitting.value = false;
+  }
 }
 </script>
 
 <template>
-  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
+  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn" @click="handleLoginWithGoogle">
     <img :src="Google" alt="google" />
-    <span class="ml-2">Sign in with Google</span></v-btn
+    <span class="ml-2">Masuk dengan Akun Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
@@ -35,12 +105,12 @@ function validate(values: any, { setErrors }: any) {
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
-  <h5 class="text-h5 text-center my-4 mb-8">Sign in with Email address</h5>
-  <Form @submit="validate" class="mt-7 loginForm" v-slot="{ errors, isSubmitting }">
+  <h5 class="text-h5 text-center my-4 mb-8">Masuk dengan Email</h5>
+  <v-form @submit.prevent="handleSubmit" ref="loginForm" class="mt-4 loginForm" lazy-validation>
     <v-text-field
-      v-model="username"
-      :rules="emailRules"
-      label="Email Address / Username"
+      v-model="loginPayload.email"
+      :rules="[...rules.required, ...rules.email]"
+      label="Email Address"
       class="mt-4 mb-8"
       required
       density="comfortable"
@@ -49,46 +119,37 @@ function validate(values: any, { setErrors }: any) {
       color="primary"
     ></v-text-field>
     <v-text-field
-      v-model="password"
-      :rules="passwordRules"
+      v-if="!isForgetPassword"
+      v-model="loginPayload.password"
+      :rules="rules.password"
       label="Password"
       required
       density="comfortable"
       variant="outlined"
       color="primary"
       hide-details="auto"
-      :append-icon="show1 ? '$eye' : '$eyeOff'"
+      :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
       :type="show1 ? 'text' : 'password'"
       @click:append="show1 = !show1"
       class="pwdInput"
     ></v-text-field>
 
     <div class="d-sm-flex align-center mt-2 mb-7 mb-sm-0">
-      <v-checkbox
-        v-model="checkbox"
-        :rules="[(v: any) => !!v || 'You must agree to continue!']"
-        label="Remember me?"
-        required
-        color="primary"
-        class="ms-n2"
-        hide-details
-      ></v-checkbox>
       <div class="ml-auto">
-        <a href="javascript:void(0)" class="text-primary text-decoration-none">Forgot password?</a>
+        <a @click="isForgetPassword = !isForgetPassword" class="text-primary text-decoration-none">{{ isForgetPassword ? 'Kembali' : 'Lupa Password?'}}</a>
       </div>
     </div>
-    <v-btn color="secondary" :loading="isSubmitting" block class="mt-2" variant="flat" size="large" :disabled="valid" type="submit">
-      Sign In</v-btn
-    >
-    <div v-if="errors.apiError" class="mt-2">
-      <v-alert color="error">{{ errors.apiError }}</v-alert>
-    </div>
-  </Form>
+    <v-btn color="secondary" :loading="isSubmitting" block class="mt-4" variant="flat" size="large" type="submit">
+      {{ isForgetPassword ? 'Kirim Link Reset' : 'Masuk'}}
+    </v-btn>
+  </v-form>
+
   <div class="mt-5 text-right">
     <v-divider />
-    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">Don't Have an account?</v-btn>
+    <v-btn variant="plain" to="/register" class="mt-2 text-capitalize mr-n2">Belum punya akun?</v-btn>
   </div>
 </template>
+
 <style lang="scss">
 .custom-devider {
   border-color: rgba(0, 0, 0, 0.08) !important;

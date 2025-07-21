@@ -1,5 +1,5 @@
 import { ref, watchEffect } from 'vue'
-import { fetchBranchList } from '@/services/common/branch/branchService'
+import { fetchBranches } from '@/services/common/branch/branchService'
 import { fetchTotalOrder } from '@/services/totalOrder/totalOrderService'
 import type { Branch } from '@/types/branch'
 import type { TotalOrder } from '@/types/order'
@@ -12,7 +12,7 @@ const loadingData = ref(true);
 
 async function init() {
   loadingBranches.value = true;
-  branches.value = await fetchBranchList();
+  branches.value = (await fetchBranches()).data;
   loadingBranches.value = false;
 
   if (branches.value.length > 0) {

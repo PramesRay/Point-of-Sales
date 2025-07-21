@@ -1,21 +1,18 @@
 import { ref, watchEffect } from 'vue'
 import { fetchCurrentOrder, updateOrderData, createOrderData, processDirectPaymentOrder } from '@/services/totalOrder/currentOrderService'
-import type { CreateOrderPayload, Order } from '@/types/order'
-import { useRoute } from 'vue-router'
-import { create } from 'lodash';
+import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 
 export function useCurrentOrders() {
-  const route     = useRoute();
-  const branchId  = ref<string>(String(route.query.branch || 'all'));
   const data      = ref<Order[]>([]);
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
 
-  async function load(id: string) {
+  async function load(id?: string) {
     loading.value = true;
     error.value   = null;
     try {
-      data.value = await fetchCurrentOrder(id);
+      data.value = (await fetchCurrentOrder(id)).data;
+      console.log(data.value);
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -23,11 +20,11 @@ export function useCurrentOrders() {
     }
   }
 
-  async function updateOrder(payload: {[key: string]: any }) {
+  async function update(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload) {
+    loading.value = true;
     try {
-      loading.value = true;
       await updateOrderData(payload);
-      await load(branchId.value);
+      await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
     } finally {
@@ -35,23 +32,23 @@ export function useCurrentOrders() {
     }
   }
 
-  async function createOrder(payload: CreateOrderPayload) {
+  async function create(payload: CreateOrderPayload) {
+    loading.value = true;
     try {
-      loading.value = true;
       await createOrderData(payload);
-      await load(branchId.value);
+      await load();
     } catch (e) {
       console.error("Gagal membuat order:", e);
     } finally {
       loading.value = false;
     }
-  } 
+  }
 
-  async function processDirectPayment(payload: {order: CreateOrderPayload, payment_method: string}) {
+  async function createDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload) {
+    loading.value = true;
     try {
-      loading.value = true;
       await processDirectPaymentOrder(payload);
-      await load(branchId.value);
+      // await load(branchId.value);
     } catch (error) {
       console.error('Error creating direct payment order:', error);
       console.log('Payload:', payload);
@@ -61,12 +58,13 @@ export function useCurrentOrders() {
     }
   }
 
-
-  watchEffect(() => {
-    const id = String(route.query.branch || 'all');
-    branchId.value = id;
-    load(id);
-  });
-
-  return { load, updateOrder, createOrder, processDirectPayment, data, loading, error };
+  return {
+    load,
+    update,
+    create,
+    createDirectPaymentOrder,
+    data,
+    loading,
+    error
+  };
 }

@@ -27,13 +27,23 @@ export interface ExpenseSummary {
 }
 
 export interface Transaction {
-  name: string,
-  type: 'income' | 'expense',
+  id: string,
   subject: string,
-  price: number,
+  notes: string,
+  is_income: boolean,
+  employee: IdName,
+  amount: number,
   date: Date,
-  branchId: string,
-  branchName: string
+  branch: IdName
+  meta: Meta
+}
+
+export type CreateTransactionPayload = Omit<Transaction, 'id' | 'branch' | 'employee' | 'meta'> & {
+  branch_id: string
+}
+
+export type UpdateTransactionPayload = Omit<Transaction, 'branch' | 'employee' | 'meta'> & {
+  branch_id: string
 }
 
 export interface FundRequest {

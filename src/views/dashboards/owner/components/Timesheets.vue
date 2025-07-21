@@ -8,22 +8,78 @@ const { mdAndUp } = useDisplay()
 
 const props = defineProps<{
   data: TimesheetData[];
-  branch: IdName;
+  branch: IdName | undefined;
   loading: boolean;
 }>();
 
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
-  if (props.branch.id === 'all') {
+  if (!props.branch || props.branch.id === '') {
+    console.log('props.data', props.data)
     return props.data;
-  }
-  return props.data.filter(
-    (tx) => tx.branch.id === props.branch.id
-  );
+  } else {
+    return props.data.filter(
+      (tx) => tx.branch.id === props.branch?.id
+    );
+}
 })
 
-const longestEmployee = computed(() => currentData.value[0].employee[0])
-const listEmployee = computed(() => currentData.value[0].employee.slice(1))
+const employeeData = computed(() => {
+  return currentData.value.flatMap(tx => tx.employee);
+});
+
+const sortedEmployee = computed(() => {
+  // Pisahkan pegawai yang aktif dan tidak aktif
+  const activeEmployees = employeeData.value.filter(emp =>emp.activity && emp.activity.is_active)  // Pastikan activity ada sebelum mengakses is_active
+  
+
+  const inactiveEmployees = employeeData.value.filter(emp => emp.activity &&!emp.activity.is_active)  // Pastikan activity ada sebelum mengakses is_active
+
+
+  // Urutkan pegawai yang aktif berdasarkan durasi aktivitas paling lama
+  activeEmployees.sort((a, b) => {
+    const lastActiveA = a.activity?.last_active ? new Date(a.activity.last_active).getTime() : 0;
+    const lastActiveB = b.activity?.last_active ? new Date(b.activity.last_active).getTime() : 0;
+
+    const diffA = Date.now() - lastActiveA;  // Durasi aktif
+    const diffB = Date.now() - lastActiveB;  // Durasi aktif
+
+    return diffB - diffA;  // Urutkan berdasarkan durasi aktif yang paling lama
+  });
+
+  // Urutkan pegawai yang tidak aktif berdasarkan durasi ketidakaktifan paling lama
+  inactiveEmployees.sort((a, b) => {
+    const lastActiveA = a.activity?.last_active ? new Date(a.activity.last_active).getTime() : 0;
+    const lastActiveB = b.activity?.last_active ? new Date(b.activity.last_active).getTime() : 0;
+
+    const diffA = Date.now() - lastActiveA;  // Durasi tidak aktif
+    const diffB = Date.now() - lastActiveB;  // Durasi tidak aktif
+
+    return diffB - diffA;  // Urutkan berdasarkan durasi tidak aktif yang paling lama
+  });
+
+  // Gabungkan pegawai yang aktif terlebih dahulu, diikuti dengan yang tidak aktif
+  return [...activeEmployees, ...inactiveEmployees];
+});
+
+const longestEmployee = computed(() => sortedEmployee.value[0] || null);  // Pegawai pertama setelah diurutkan, atau null jika tidak ada data
+const listEmployee = computed(() => sortedEmployee.value.slice(1));  // Pegawai lainnya setelah diurutkan, pastikan tidak kosong
+
+
+
+// watcher untuk logging currentData
+watch(currentData, () => {
+  console.log('currentData', currentData.value)
+})
+
+watch(employeeData, () => {
+  console.log('employeeData', employeeData.value)
+})
+
+watch(() => props.loading, () => {
+  console.log('props.loading', props.loading)
+})
+
 </script>
 
 <template>
@@ -32,37 +88,33 @@ const listEmployee = computed(() => currentData.value[0].employee.slice(1))
       <v-card-text>
         <v-row>
           <v-col cols="12">
-            <h4 class="text-h4 mt-1">Kehadiran Pegawai
-              <span 
-                class="text-subtitle-2 text-medium-emphasis ml-1" 
-                v-if="props.branch.id !== 'all'"
-              >
-              {{ props.branch.name }}</span>
-            </h4>
+            <div class="d-flex align-center">
+              <h4 class="text-h4">Kehadiran Pegawai</h4>
+            </div>
+            <div v-if="props.branch?.id !== 'all'" class="text-subtitle-2 text-medium-emphasis">{{ props.branch?.name }} <span v-if="!props.loading && !currentData[0]?.branch.operational.activity.is_open" class="text-disabled">(Tutup)</span>
+            </div> 
           </v-col>
         </v-row>
 
         <!-- Menambahkan Skeleton Loader untuk menunggu data -->
         <div v-if="props.loading">
-          <!-- <v-skeleton-loader type="paragraph"></v-skeleton-loader> -->
-          <!-- <v-skeleton-loader type="paragraph"></v-skeleton-loader> -->
+          <v-skeleton-loader type="paragraph"></v-skeleton-loader>
         </div>
-        
-        <p v-if="!props.loading" class="text-subtitle-2 text-medium-emphasis mt-2 text-right">
-          Restoran telah buka selama
-          <b class="text-h4">{{ currentData[0]?.open_hour }} Jam</b>
+        <p v-if="!props.loading && props.branch?.id !== 'all' && currentData[0]?.branch.operational.activity.is_open" class="text-subtitle-2 text-medium-emphasis text-right mt-4">
+            Restoran telah buka selama
+            <b class="text-h4">{{ getTimeDiff(currentData[0]?.branch.operational.activity.opened_at!).slice(0, -5) }}</b>
         </p>
 
-        <v-card class="bg-lightsecondary " v-if="!props.loading">
+        <v-card class="bg-lightsecondary" :class="{ 'mt-4': !currentData[0]?.branch.operational.activity.is_open || props.branch?.id === 'all' }" v-if="!props.loading">
           <div class="pa-5">
             <div class="d-inline-flex align-center justify-space-between w-100">
               <div>
                 <span class="text-subtitle-2 text-success text-medium-emphasis">{{ longestEmployee?.activity.is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
                 <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ longestEmployee?.name }}</h6>
-                <span class="text-subtitle-2 text-medium-emphasis">{{ longestEmployee?.role[0] }}</span>
+                <span class="text-subtitle-2 text-medium-emphasis">{{ longestEmployee?.role }}</span>
               </div>
               <div v-if="!longestEmployee.activity.is_active" class="text-right">
-                <span class="text-subtitle-2 text-medium-emphasis">Aktif</span>
+                <span class="text-subtitle-2 text-medium-emphasis">Terakhir Aktif</span>
                 <h4 class="text-h4">{{ getTimeDiff(longestEmployee?.activity.last_active!)}}</h4>
               </div>
               <div v-else class="text-right">
@@ -73,7 +125,7 @@ const listEmployee = computed(() => currentData.value[0].employee.slice(1))
         </v-card>
 
         <div class="mt-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '25rem' : '12rem'}">
+          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '25rem' : '15rem'}">
             <v-list lines="two" class="py-0">
               <v-list-item
                 v-for="(list, i) in listEmployee"
@@ -94,10 +146,10 @@ const listEmployee = computed(() => currentData.value[0].employee.slice(1))
                     >
                       {{ list.name }}
                     </h6>
-                    <span class="text-subtitle-2 text-medium-emphasis">{{ list.role[0] }}</span>
+                    <span class="text-subtitle-2 text-medium-emphasis">{{ list.role }}</span>
                   </div>
                   <div v-if="!list.activity.is_active" class="text-right">
-                    <span class="text-subtitle-2 text-medium-emphasis">Aktif</span>
+                    <span class="text-subtitle-2 text-medium-emphasis">Terakhir Aktif</span>
                     <h4 class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ getTimeDiff(list?.activity.last_active!)}}</h4>
                   </div>
                   <div v-else class="text-right">

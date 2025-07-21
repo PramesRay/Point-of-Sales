@@ -1,6 +1,6 @@
 import api from "../api";
 import { dummyInventoryItems } from "./dummyInventoryItems";
-import type { Category, CreateStockMovementPayload, InventoryItem, StockMovement, UpdateStockMovementPayload } from "@/types/inventory";
+import type { Category, CreateCategoryPayload, CreateStockMovementPayload, InventoryItem, StockMovement, UpdateCategoryPayload, UpdateStockMovementPayload } from "@/types/inventory";
 import { dummyInventoryItemsCategories } from "./dummyInventoryItemsCategory";
 import { dummyStockMovements } from "./dummyStockMovements";
 import type { CreateInventoryItemPayload, UpdateInventoryItemPayload } from "@/types/inventory";
@@ -16,16 +16,6 @@ export async function fetchInventoryItem(): Promise<InventoryItem[]> {
     console.warn(`Fetch Inventory Item failed, using dummy.`, error);
     return dummyInventoryItems
   }  
-}
-
-export async function fetchCategoryInventoryItems(): Promise<Category[]> {
-  try {
-    const res = await api.get<Category[]>(`/inventory/category`);
-    return res.data;
-  } catch (error) {
-    console.warn(`Fetch Inventory Item's Category failed, using dummy.`, error);
-    return dummyInventoryItemsCategories
-  } 
 }
 
 export async function fetchStockMovements(): Promise<StockMovement[]> {
@@ -93,6 +83,51 @@ export async function deleteItem(id: string): Promise<void> {
   } catch (error) {
     alertStore.showAlert('Item gagal dihapus!', 'error');
     console.warn(`Delete item failed, using dummy.`, error);
+    throw error
+  }  
+}
+
+export async function fetchCategoryInvItem(): Promise<Category[]> {
+  try {
+    const res = await api.get<Category[]>(`/inventory/category`);
+    return res.data;
+  } catch (error) {
+    console.warn(`Fetch Inventory Item's Category failed, using dummy.`, error);
+    return dummyInventoryItemsCategories
+  } 
+}
+
+export async function createCategoryInvItem(payload: CreateCategoryPayload): Promise<Category> {
+  try {
+    const res = await api.post<Category>(`/inventory/category`, payload);
+    alertStore.showAlert('Category berhasil dibuat!', 'success');
+    return res.data;
+  } catch (error) {
+    alertStore.showAlert('Category gagal dibuat!', 'error');
+    console.warn(`Create category failed, using dummy.`, error);
+    throw error
+  }  
+}
+
+export async function updateCategoryInvItem(payload: UpdateCategoryPayload): Promise<Category> {
+  try {
+    const res = await api.put<Category>(`/inventory/category`, payload);
+    alertStore.showAlert('Category berhasil diubah!', 'success');
+    return res.data;
+  } catch (error) {
+    alertStore.showAlert('Category gagal diubah!', 'error');
+    console.warn(`Update category failed, using dummy.`, error);
+    throw error
+  }  
+}
+
+export async function deleteCategoryInvItem(id: string): Promise<void> {
+  try {
+    await api.delete(`/inventory/category/${id}`);
+    alertStore.showAlert('Category berhasil dihapus!', 'success');
+  } catch (error) {
+    alertStore.showAlert('Category gagal dihapus!', 'error');
+    console.warn(`Delete category failed, using dummy.`, error);
     throw error
   }  
 }

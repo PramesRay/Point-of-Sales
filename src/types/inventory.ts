@@ -5,7 +5,7 @@ import type { Meta } from "./meta";
 import { omit } from "vuetify/lib/util";
 
 export interface StockRequestSummary {
-  branch: Branch;
+  branch: IdName;
   summary: {
     request: number
     week: number[]
@@ -15,7 +15,7 @@ export interface StockRequestSummary {
 
 export interface StockRequestList {
   id: string;
-  branch: Branch;
+  branch: IdName;
   employee: Employee;
   items: {
     item: InventoryItem
@@ -29,9 +29,12 @@ export interface StockRequestList {
 export interface Category {
   id: string
   name: string
-  description?: string
+  description: string
   meta?: Meta
 }
+
+export type CreateCategoryPayload = Omit<Category, 'id' | 'meta'>
+export type UpdateCategoryPayload = Omit<Category, 'meta'>
 
 export interface InventoryItem {
   id: string
@@ -40,19 +43,18 @@ export interface InventoryItem {
   unit: string
   purchase_price: number
   category: IdName
-  quantity: number
   threshold: number
-  expired_date: Date
+  quantity: number
+  expired_date: Date | null
+  is_new: boolean
   meta: Meta
 }
 
-export type CreateInventoryItemPayload = Pick<InventoryItem, 'name' | 'description' | 'purchase_price' | 'threshold'> & {
+export type UpdateInventoryItemPayload = Omit<InventoryItem, 'category' | 'quantity' | 'is_new' | 'meta'> & {
   category_id: string
 }
+export type CreateInventoryItemPayload = Omit<UpdateInventoryItemPayload, 'id' | 'quantity' | 'is_new' | 'expired_date'>
 
-export type UpdateInventoryItemPayload = Omit<CreateInventoryItemPayload, 'category_id'> & {
-  id: string
-}
 
 export interface StockMovement { 
   id: string
@@ -64,14 +66,17 @@ export interface StockMovement {
   meta: Meta
 }
 
-export type CreateStockMovementPayload = Omit<StockMovement, 'id' | 'meta' | 'category' | 'branch'> & {
-  category_id: string 
+export type CreateStockMovementPayload = Omit<StockMovement, 'id' | 'meta' | 'branch' | 'item'> & {
   branch_id: string
+  item: {
+    id: string
+    quantity: number
+    category_id: string
+  }
 }
 
-export type UpdateStockMovementPayload = Omit<StockMovement, 'meta' | 'category' | 'branch'> & {
-  category_id: string 
-  branch_id: string
+export type UpdateStockMovementPayload = CreateStockMovementPayload & {
+  id: string
 }
 
 

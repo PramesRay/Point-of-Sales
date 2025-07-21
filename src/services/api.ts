@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import { useAlertStore } from '@/stores/alert';
+import { auth } from '@/plugins/firebase';
+
 import { useRouter } from 'vue-router';
 
 const router = useRouter(); // Gunakan Vue Router
@@ -15,10 +17,16 @@ const api = axios.create({
 
 // Request Interceptor: Menambahkan Token ke Setiap Request
 api.interceptors.request.use(
-  (config) => {
-    const authStore = useAuthStore();
-    if (authStore.user?.token) {
-      config.headers.Authorization = `Bearer ${authStore.user.token}`;
+  async (config) => {
+    // const authStore = useAuthStore();
+    // if (authStore.accessToken) {
+    //   config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+    // }
+
+    const user = auth.currentUser;
+    if (user) {
+      const idToken = await user.getIdToken(); // Ambil token terbaru
+      config.headers.Authorization = `Bearer ${idToken}`;
     }
     return config;
   },

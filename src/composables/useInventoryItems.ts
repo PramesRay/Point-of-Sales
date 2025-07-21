@@ -1,6 +1,6 @@
 import { ref } from 'vue';
-import { fetchCategoryInventoryItems, fetchInventoryItem, createItem as createInventoryItem, updateItem as updateInventoryItem, deleteItem as deleteInventoryItem } from '@/services/inventory/inventoryItemService';
-import type { Category, CreateInventoryItemPayload, InventoryItem, UpdateInventoryItemPayload } from '@/types/inventory';
+import { fetchCategoryInvItem, fetchInventoryItem, createItem as createInventoryItem, updateItem as updateInventoryItem, deleteItem as deleteInventoryItem, createCategoryInvItem, updateCategoryInvItem, deleteCategoryInvItem } from '@/services/inventory/inventoryItemService';
+import type { Category, CreateCategoryPayload, CreateInventoryItemPayload, InventoryItem, UpdateCategoryPayload, UpdateInventoryItemPayload } from '@/types/inventory';
 
 export function useInventoryItems() {
   const data      = ref<InventoryItem[]>([]);
@@ -13,7 +13,7 @@ export function useInventoryItems() {
     error.value   = null;
     try {
       data.value = await fetchInventoryItem();
-      categories.value = await fetchCategoryInventoryItems()
+      categories.value = await fetchCategoryInvItem()
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -25,7 +25,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await createInventoryItem(payload);
-      await init();
+      // await init();
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -37,7 +37,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await updateInventoryItem(payload);
-      await init();
+      // await init();
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -49,7 +49,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await deleteInventoryItem(id);
-      await init();
+      // await init();
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -57,5 +57,66 @@ export function useInventoryItems() {
     }
   }
 
-  return { init, data, categories, loading, error, createItem, updateItem, deleteItem };
+  async function loadCategory() {
+    loading.value = true;
+    error.value   = null;
+    try {
+      categories.value = await fetchCategoryInvItem()
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function createCategory(payload: CreateCategoryPayload) {
+    try {
+      loading.value = true;
+      await createCategoryInvItem(payload);
+      // await loadCategory();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateCategory(payload: UpdateCategoryPayload) {
+    try {
+      loading.value = true;
+      await updateCategoryInvItem(payload);
+      // await loadCategory();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function deleteCategory(id: string) {
+    try {
+      loading.value = true;
+      await deleteCategoryInvItem(id);
+      // await loadCategory();
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    init,
+    loadCategory,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    createItem,
+    updateItem,
+    deleteItem,
+    data,
+    categories,
+    loading,
+    error,
+  };
 }

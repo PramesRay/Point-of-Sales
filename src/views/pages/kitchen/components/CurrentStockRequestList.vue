@@ -3,13 +3,15 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useDisplay } from 'vuetify';
 const { mdAndUp, smAndDown } = useDisplay()
 
+import { useUserStore } from '@/stores/authUser';
+const userStore = useUserStore();
+
 import { getTimeDiff } from "@/utils/helpers/time";
 
 import type { CreateStockRequestPayload, StockRequestList } from '@/types/inventory';
-import type { Branch } from '@/types/branch';
 
 import { useInventoryItems } from "@/composables/useInventoryItems";
-import type { Employee } from '@/types/employee';
+import type { IdName } from '@/types/common';
 const { init: initItems, data: inventoryItem, categories, loading: li } = useInventoryItems();
 
 onMounted(() => {
@@ -21,19 +23,18 @@ const emit = defineEmits<{
 }>();
 
 const props = defineProps<{
-  user: Employee;
   data: StockRequestList[];
-  branch: string;
+  branch: IdName | undefined;
   loading?: boolean;
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (props.branch === 'all') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch
+    (tx) => tx.branch.id === props.branch?.id
   );
 });
 
@@ -67,7 +68,7 @@ const approvalNote = ref('')
 const noteRules = [(v: string) => v.length <= 100 || 'Maks 100 karakter']
 
 const newRequest = ref<CreateStockRequestPayload>({
-  branch_id: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1',
+  branch_id: userStore.me?.assigned_branch?.length === 1 ? userStore.me.assigned_branch[0].id : 'branch-1',
   items: [],
   note: '',
 })
@@ -76,7 +77,7 @@ function openAddRequest() {
   showAddOverlay.value = true
   // Inisialisasi data form kosong/standar
   newRequest.value = {
-    branch_id: props.user?.assigned_branch?.length === 1 ? props.user.assigned_branch[0].id : 'branch-1', // ambil dari storage
+    branch_id: userStore.me?.assigned_branch?.length === 1 ? userStore.me.assigned_branch[0].id : 'branch-1', // ambil dari storage
     items: [],
     note: '',
   }
@@ -102,7 +103,7 @@ const isChanged = computed(() => {
   if (!newRequest.value) return false
 
   return (
-    newRequest.value.branch_id !== props.user.assigned_branch[0].id ||
+    newRequest.value.branch_id !== userStore.me?.assigned_branch![0].id ||
     newRequest.value.items.length > 0
   )
 })
@@ -201,8 +202,10 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
               <div class="d-flex align-center">
                 <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
               </div>
-              <div v-if="props.branch !== 'all'">
-                <i class="text-subtitle-2 text-medium-emphasis">{{ latestRequest?.branch.name }}</i>
+              <div 
+                v-if="!props.branch || props.branch?.id !== 'all'" 
+                class="text-subtitle-2 text-medium-emphasis"
+              >{{ props.branch?.name }}
               </div> 
             </v-col>
             <v-col cols="4" sm="3" class="mt-auto">
@@ -222,7 +225,7 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
             >
               <div v-if="latestRequest" class="pa-5">
                 <span class="text-subtitle-2 text-medium-emphasis">
-                  <span v-if="props.branch === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
+                  <span v-if="!props.branch || props.branch?.id === 'all'">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
                 </span>
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
@@ -252,7 +255,7 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <span class="text-subtitle-2 text-medium-emphasis">
-                      <span v-if="props.branch === 'all'">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
+                      <span v-if="!props.branch || props.branch?.id === 'all'">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
                     </span>
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
@@ -328,7 +331,7 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
       </div>
         <div class="py-5">
           <span class="text-subtitle-2 text-medium-emphasis">
-            <span v-if="props.branch === 'all'">{{ selectedRequest?.branch.name }}</span>
+            <span v-if="!props.branch || props.branch?.id === 'all'">{{ selectedRequest?.branch.name }}</span>
           </span>
           <div class="d-inline-flex align-center justify-space-between w-100">
             <div>
@@ -416,11 +419,11 @@ watch(showAddOverlay, (isOpen, wasOpen) => {
           <v-col cols="12" class="py-0">
             <v-select
               v-model="newRequest.branch_id"
-              :items="props.user.assigned_branch"
+              :items="userStore.me?.assigned_branch!"
               label="Cabang"
               item-title="name"
               item-value="id"
-              :disabled="props.user.assigned_branch.length === 1"
+              :disabled="userStore.me?.assigned_branch!.length === 1"
               :rules="[v => !!v || 'Cabang wajib diisi']"
               prepend-inner-icon="mdi-home"
             ></v-select>

@@ -1,7 +1,7 @@
-import type { Branch } from "./branch"
+import type { IdName } from "./common"
 
 export type EmployeeActive = {
-  branch: Branch
+  branch: IdName
   active: number
   week: number[]
   month: number[]

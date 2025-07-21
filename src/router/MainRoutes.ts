@@ -1,3 +1,5 @@
+import { useUserStore } from '@/stores/authUser';
+
 const MainRoutes = {
   path: '/main',
   meta: {
@@ -9,31 +11,66 @@ const MainRoutes = {
     {
       name: 'LandingPage',
       path: '/',
-      component: () => import('@/views/dashboards/default/FinanceDashboard.vue') //sementara seperti ini, perlu diganti agar yang di render page sesuai role mereka.
+      component: () => import('@/views/dashboards/default/LandingPage.vue'), //sementara seperti ini, perlu diganti agar yang di render page sesuai role mereka.
+      beforeEnter: async (to, from, next) => {
+        const userStore = useUserStore();
+        
+        // Periksa apakah data pengguna sudah ada (mencegah akses sebelum fetching selesai)
+        if (!userStore.me) {
+          // Redirect ke login jika pengguna tidak ditemukan
+          await userStore.fetchMe();
+          console.log('Fetching pengguna di router.');
+        }
+
+        if (!userStore.me) {
+          // Redirect ke login jika pengguna tidak ditemukan
+          next('/login');
+          console.log('Pengguna tidak ditemukan, arahkan ke halaman login.');
+        } else {
+          // Berdasarkan role, arahkan pengguna ke halaman yang sesuai
+          if (userStore.hasRole('Admin')) {
+            next({name:'Pemilik'});
+          } else if (userStore.hasRole('Kasir')) {
+            next({name:'Kasir'});
+          } else if (userStore.hasRole('Gudang')) {
+            next({name:'Gudang'});
+          } else if (userStore.hasRole('Dapur')) {
+            next({name:'Dapur'});
+          } else {
+            next({name:'Starter'});  // Default halaman jika role tidak ditemukan
+          }
+        }
+      }
     },
     {
-      name: 'Default',
-      path: '/dashboard/default',
-      component: () => import('@/views/dashboards/default/FinanceDashboard.vue')
+      name: 'Bendahara',
+      path: '/dashboard/bendahara',
+      component: () => import('@/views/dashboards/finance/FinanceDashboard.vue')
     },
     {
-      name: 'Owner',
-      path: '/dashboard/owner',
+      name: 'Transaksi',
+      path: '/dashboard/bendahara/transaksi',
+      component: () => import('@/views/dashboards/finance/components/sub-component/TableTransaction.vue')
+    },
+
+    {
+      name: 'Pemilik',
+      path: '/dashboard/pemilik',
       component: () => import('@/views/dashboards/owner/OwnerDashboard.vue')
     },
     {
-      name: 'Cashier',
-      path: '/page/cashier',
+      name: 'Kasir',
+      path: '/halaman/kasir',
       component: () => import('@/views/pages/cashier/CashierPage.vue')
     },
     {
-      name: 'Inventory',
-      path: '/page/inventory',
+      name: 'Gudang',
+      path: '/halaman/gudang',
       component: () => import('@/views/pages/inventory/InventoryPage.vue')
     },
     {
-      name: 'Kitchen',
-      path: '/page/kitchen',
+      name: 'Dapur',
+      path: '/halaman/dapur',
       component: () => import('@/views/pages/kitchen/KitchenPage.vue')
     },
     {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { computed, shallowRef } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 import sidebarItems from './sidebarItem';
 
@@ -8,8 +8,34 @@ import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
 import Logo from '../logo/LogoMain.vue';
 
+import { useAuthStore } from '@/stores/auth';
+import { useUserStore } from '@/stores/authUser';
+
+const authStore = useAuthStore();
+const userStore = useUserStore();
+
+// Pastikan data pengguna sudah tersedia (fetch data jika perlu)
+if (authStore.isAuthenticated && !userStore.me) {
+  userStore.fetchMe();  // Ambil data pengguna jika belum ada
+}
+
+const user = computed(() => userStore.me);
+
+// Filter sidebar items berdasarkan role dan access pengguna
+const sidebarMenu = computed(() => {
+  return sidebarItems.filter(item => {
+    // Periksa apakah pengguna memiliki akses yang diperlukan
+    const hasRequiredAccess = item.requiredAccess ? userStore.hasAccess(item.requiredAccess) : true;
+
+    // Periksa apakah pengguna memiliki role yang diperlukan
+    const hasRequiredRole = item.requiredRoles ? (user.value?.role ? item.requiredRoles.includes(user.value?.role) : false) : true;
+
+    // Tampilkan item jika pengguna memiliki akses atau role yang diperlukan
+    return hasRequiredAccess || hasRequiredRole;
+  });
+});
+
 const customizer = useCustomizerStore();
-const sidebarMenu = shallowRef(sidebarItems);
 </script>
 
 <template>
@@ -48,7 +74,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         </template>
       </v-list>
       <div class="pa-4 text-center">
-        <v-chip color="inputBorder" size="small"> v1.3.0 </v-chip>
+        <v-chip color="inputBorder" size="small"> v1.0.0 </v-chip>
       </div>
     </perfect-scrollbar>
   </v-navigation-drawer>

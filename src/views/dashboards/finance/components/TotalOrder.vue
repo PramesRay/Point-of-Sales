@@ -6,14 +6,14 @@ import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: FinanceSummary[];
-  branch: IdName;
+  branch: IdName | undefined;
   loading: boolean;
 }>();
 
 const orderData = computed(() => {
   if (!props.data?.length) return undefined;
   return props.data
-    .filter(tx => tx.branchId === props.branch.id)
+    .filter(tx => tx.branchId === (props.branch?.id || 'all'))
     .map(item => ({order: item.order}))[0]
 });
 
@@ -101,7 +101,7 @@ const chartOptions = computed(() => {
               single-line
             >
           </v-select> -->
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch.name }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-primary">
