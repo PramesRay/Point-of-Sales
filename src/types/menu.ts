@@ -14,6 +14,7 @@ export interface Menu {
 
 export interface MenuSale extends Menu {
   quantity: number
+  threshold: number
 } 
 
 export type CreateMenuPayload = Omit<Menu, "id" | "category" | "available_in_branch" | "meta"> & {

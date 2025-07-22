@@ -19,6 +19,23 @@ const dummyEmployee: Employee[] = [
       updated_at: new Date('2025-05-01T09:30:00Z'),
     }
   },
+  {
+    id: 'emp-001',
+    name: 'Hermanu',
+    role: 'Gudang',
+    access: ['all'],
+    email: 'hermanu.admin@example.com',
+    assigned_branch: dummyBranchList,
+    activity: {
+      is_active: true,
+      branch: dummyBranchList[0],
+      last_active: new Date('2025-05-01T09:30:00Z'),
+    },
+    meta: {
+      created_at: new Date('2024-10-01T08:00:00Z'),
+      updated_at: new Date('2025-05-01T09:30:00Z'),
+    }
+  },
   { 
   id: 'emp-002',
   name: 'Aldi', 
@@ -74,6 +91,23 @@ const dummyEmployee: Employee[] = [
   id: 'emp-005',
   name: 'Siti', 
   role: 'Admin', 
+  access: ['all'],
+  email: 'siti.kitchen@example.com',
+  assigned_branch: dummyBranchList,
+  activity: {
+    last_active: new Date('2025-05-27T16:00:00'), 
+    is_active: false,  
+    branch: null
+  },
+  meta: {
+    created_at: new Date('2024-10-01T08:00:00Z'),
+    updated_at: new Date('2025-05-01T09:30:00Z'),
+  }
+},
+{ 
+  id: 'emp-005',
+  name: 'Siti', 
+  role: 'Gudang', 
   access: ['all'],
   email: 'siti.kitchen@example.com',
   assigned_branch: dummyBranchList,
@@ -173,6 +207,23 @@ const dummyEmployee: Employee[] = [
   }
 },
 { 
+  id: 'emp-010',
+  name: 'Ayu', 
+  role: 'Gudang', 
+  access: ['all'],
+  email: 'ayu.kitchen@example.com',
+  assigned_branch: [dummyBranchList[1]],
+  activity: {
+    last_active: new Date('2025-05-27T16:00:00'), 
+    is_active: true,  
+    branch: dummyBranchList[1]
+  },
+  meta: {
+    created_at: new Date('2024-10-01T08:00:00Z'),
+    updated_at: new Date('2025-05-01T09:30:00Z'),
+  }
+},
+{ 
   id: 'emp-011',
   name: 'Bagas', 
   role: 'Pemilik', 
@@ -258,6 +309,23 @@ const dummyEmployee: Employee[] = [
   }
 },
 { 
+  id: 'emp-015',
+  name: 'Sari', 
+  role: 'Gudang', 
+  access: ['all'],
+  email: 'sari.kitchen@example.com',
+  assigned_branch: [dummyBranchList[2]],
+  activity: {
+    last_active: new Date('2025-05-27T16:00:00'), 
+    is_active: false,  
+    branch: null
+  },
+  meta: {
+    created_at: new Date('2024-10-01T08:00:00Z'),
+    updated_at: new Date('2025-05-01T09:30:00Z'),
+  }
+},
+{ 
   id: 'emp-016',
   name: 'Hadi', 
   role: 'Pemilik', 
@@ -329,6 +397,23 @@ const dummyEmployee: Employee[] = [
   id: 'emp-020',
   name: 'Eko', 
   role: 'Admin', 
+  access: ['all'],
+  email: 'eko.kitchen@example.com',
+  assigned_branch: [dummyBranchList[3]],
+  activity: {
+    last_active: new Date('2025-05-27T16:00:00'), 
+    is_active: false,  
+    branch: null
+  },
+  meta: {
+    created_at: new Date('2024-10-01T08:00:00Z'),
+    updated_at: new Date('2025-05-01T09:30:00Z'),
+  }
+},
+{ 
+  id: 'emp-020',
+  name: 'Eko', 
+  role: 'Gudang', 
   access: ['all'],
   email: 'eko.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],

@@ -1,14 +1,15 @@
+import { extend } from "lodash";
 import type { IdName } from "./common";
-import type { Meta } from "./meta";
+import type { Meta, MetaDetail } from "./meta";
 
 export interface Shift {
   id: string;
-  employee: IdName;
+  // employee: IdName;
   branch: IdName;
   start: Date;
   end: Date | null;
   notes: string | null;
-  meta: Pick<Meta, 'updated_at'>;
+  meta: MetaDetail;
 }
 
 export interface ShiftCashier extends Shift {
@@ -28,6 +29,9 @@ export interface ShiftCashier extends Shift {
 
   digital_payment_refund: number;
   cash_payment_refund: number;
+
+  total_order: number;
+  canceled_order: number;
   
   total_expense: number;
   income: number; // otomatis dari total cash_payment dan digital_payment
@@ -36,14 +40,26 @@ export interface ShiftCashier extends Shift {
 }
 
 export interface ShiftKitchen extends Shift {
-  initial_menu: {
+  menu: {
     id: string;
+    name: string;
     quantity: number;
   }[]
-  final_menu: {
-    id: string;
-    quantity: number;
-  }[]
+
+  restock_request: number;
+
+  total_order: number;
+  canceled_order: number;
+}
+
+export type ShiftWarehouse = Omit<Shift, 'branch'> & {
+  total_restock_request: number;
+  request_approved: number;
+  request_rejected: number;
+
+  total_stock_movement: number;
+  stock_movement_in: number;
+  stock_movement_out: number;
 }
 
 export interface StartShiftCashierPayload {

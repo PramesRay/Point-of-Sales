@@ -6,7 +6,10 @@ import {
   fetchShiftKitchen, startShiftKitchen, updateShiftKitchen, endShiftKitchen,
   startShiftEmployee,
   endShiftEmployee,
-  fetchShiftEmployee
+  fetchShiftEmployee,
+  fetchShiftWarehouse,
+  startShiftWarehouse,
+  endShiftWarehouse
 } from '@/services/shift/shiftService'
 import {
   type StartShiftCashierPayload,
@@ -15,7 +18,8 @@ import {
   type UpdateShiftKitchenPayload,
   type ShiftCashier,
   type ShiftKitchen,
-  type Shift
+  type Shift,
+  type ShiftWarehouse
 } from '@/types/shift'
 
 const alert = useAlertStore()
@@ -23,20 +27,22 @@ const userStore = useUserStore()
 
 export function useShift() {
   const loading = ref(false)
-  const shiftBranch = ref<{ data: (ShiftCashier | ShiftKitchen)[]; total: number; }>({ data: [], total: 0 });
-  const shiftEmployee = ref<Shift[] | null>(null)
+  const shiftCashier = ref<{ data: ShiftCashier[]; total: number; }>({ data: [], total: 0 });
+  const shiftKitchen = ref<{ data: ShiftKitchen[]; total: number; }>({ data: [], total: 0 });
+  const shiftWarehouse = ref<{ data: ShiftWarehouse[]; total: number; }>({ data: [], total: 0 });
+  const shiftEmployee = ref<{ data: Shift[]; total: number; }>({ data: [], total: 0 });
 
   async function loadShiftbyRole(branch_id?: string) {
     try {
       loading.value = true
       if (userStore.hasRole('Kasir')) {
-        shiftBranch.value = await fetchShiftCashier(branch_id)
+        shiftCashier.value = await fetchShiftCashier(branch_id)
       } else if (userStore.hasRole('Dapur')) {
-        shiftBranch.value = await fetchShiftKitchen(branch_id)
+        shiftKitchen.value = await fetchShiftKitchen(branch_id)
       } else if (userStore.hasRole(['Admin', 'Pemilik'])) {
-        const kitchenShift = await fetchShiftKitchen(branch_id)
-        const cashierShift = await fetchShiftCashier(branch_id)
-        shiftBranch.value = { data: [...kitchenShift.data, ...cashierShift.data], total: kitchenShift.total + cashierShift.total }
+        shiftCashier.value = await fetchShiftCashier(branch_id)
+        shiftKitchen.value = await fetchShiftKitchen(branch_id)
+        shiftWarehouse.value = await fetchShiftWarehouse()
       }
     } catch (err) {
       throw err
@@ -70,7 +76,7 @@ export function useShift() {
         sortBy,
         sortDesc
       )
-      shiftEmployee.value = data
+      shiftEmployee.value = { data, total }
       return { data, total }
     } catch (err) {
       throw err
@@ -105,7 +111,7 @@ export function useShift() {
         return res
       }
 
-      if (shiftBranch.value.data.length > 0 && shiftEmployee.data.length == 1) {
+      if ((shiftKitchen.value.data.length > 0 || shiftCashier.value.data.length > 0) && shiftEmployee.data.length === 1) {
         return alert.showAlert('Restoran perlu ditutup terlebih dahulu.', 'warning')
       }
       const res = await endShiftEmployee(branch_id)
@@ -113,6 +119,77 @@ export function useShift() {
       return res
     } catch (err) {
       alert.showAlert('Gagal mengakhiri shift pegawai.', 'error')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadWarehouse({
+    page,
+    itemsPerPage,
+    search,
+    sortBy,
+    sortDesc,
+  }: {
+    page?: number
+    itemsPerPage?: number
+    search?: string
+    sortBy?: string
+    sortDesc?: boolean
+  } = {}) {
+    try {
+      loading.value = true
+      const { data, total } = await fetchShiftWarehouse(
+        page,
+        itemsPerPage,
+        search,
+        sortBy,
+        sortDesc
+      )
+      shiftWarehouse.value = { data, total }
+      return { data, total }
+    } catch (err) {
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  async function startWarehouse() {
+    try {
+      loading.value = true
+      const res = await startShiftWarehouse()
+      alert.showAlert('Shift gudang dimulai.', 'success')
+      return res
+    } catch (err) {
+      alert.showAlert('Gagal memulai shift gudang.', 'error')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+  
+  async function endWarehouse(id: string) {
+    try {
+      loading.value = true
+
+      const shiftWarehouse = await fetchShiftWarehouse()
+
+      if (userStore.hasRole('Admin')) {
+        const res = await endShiftWarehouse(id)
+        alert.showAlert('Shift pegawai berakhir.', 'success')
+        return res
+      }
+
+      if ((shiftEmployee.value?.total === 1) && shiftWarehouse.data.length > 0) {
+        return alert.showAlert('Shift gudang perlu ditutup terlebih dahulu.', 'warning')
+      }
+      const res = await endShiftWarehouse(id)
+      alert.showAlert('Shift gudang berakhir.', 'success')
+      return res
+    } catch (err) {
+      alert.showAlert('Gagal mengakhiri shift gudang.', 'error')
       throw err
     } finally {
       loading.value = false
@@ -144,6 +221,7 @@ export function useShift() {
         sortBy,
         sortDesc
       )
+      shiftCashier.value = { data, total }
       return { data, total }
     } catch (err) {
       throw err
@@ -219,6 +297,7 @@ export function useShift() {
         sortBy,
         sortDesc
       )
+      shiftKitchen.value = { data, total }
       return { data, total }
     } catch (err) {
       throw err
@@ -271,16 +350,26 @@ export function useShift() {
 
   return {
     loading,
-    shiftBranch,
+    
     loadShiftbyRole,
+
+    shiftWarehouse,
+    loadWarehouse,
+    startWarehouse,
+    endWarehouse,
+
     shiftEmployee,
     loadEmployee,
     startEmployee,
     endEmployee,
+
+    shiftCashier,
     loadCashier,
     startCashier,
     updateCashier,
     endCashier,
+
+    shiftKitchen,
     loadKitchen,
     startKitchen,
     updateKitchen,

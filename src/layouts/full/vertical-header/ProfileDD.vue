@@ -159,6 +159,7 @@ onMounted(() => {
         <v-progress-circular v-if="loading" indeterminate color="warning" height="1"/>
         <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir']) && !loading">
           <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
+            <!-- Mekanisme kondisional rendering perlu ditingkatkan? -->
             <v-btn 
               v-if="shiftBranch?.total == 0 || (shiftBranch?.data[1]?.end || shiftBranch?.data[0]?.end)"
               elevation="1"
@@ -193,7 +194,7 @@ onMounted(() => {
 
           <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])">
             <v-btn 
-              v-if="shiftBranch?.total == 0 || shiftBranch?.data[0]?.end"
+              v-if="shiftBranch?.total <= 1 || shiftBranch?.data[0]?.end"
               elevation="1"
               append-icon="mdi-stove"
               @click="openOverlay({
