@@ -15,16 +15,17 @@ import UpdateShiftCashier from '@/views/pages/cashier/components/UpdateShift.vue
 
 import StartShiftKitchen from '@/views/pages/kitchen/components/StartShift.vue';
 import UpdateShiftKitchen from '@/views/pages/kitchen/components/UpdateShift.vue';
+import UpdateShiftWarehouse from '@/views/pages/inventory/components/UpdateShift.vue';
 
 import Blank from '@/components/shared/Blank.vue';
 import Start from '@/views/pages/shift/Start.vue';
 import { useShift } from '@/composables/useShift';
-import type { ShiftCashier, ShiftKitchen } from '@/types/shift';
+import type { ShiftCashier, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
-const { endEmployee, loadShiftbyRole, shiftBranch, loading } = useShift()
+const { endEmployee, loadShiftbyRole, startWarehouse, shiftCashier, shiftKitchen, shiftEmployee, shiftWarehouse, loading } = useShift()
 
 const isChanged = ref(false)
 const hover = ref(false)
@@ -52,7 +53,6 @@ onMounted(() => {
 
   if (userStore.me?.activity?.is_active) {
     loadShiftbyRole(userStore.me.activity.branch?.id)
-    console.log('shiftBranch', shiftBranch)
   }
 })
 </script>
@@ -72,7 +72,7 @@ onMounted(() => {
     </v-text-field> -->
 
     <v-divider></v-divider>
-    <perfect-scrollbar style="height: calc(100vh - 300px); max-height: 300px">
+    <perfect-scrollbar style="height: auto; max-height: 80dvh">
       <div v-if="!userStore.me?.activity?.is_active" class="rounded-md pa-5 my-3 circle sm-circle lg-circle bg-containerBg">
         <h4>Tidak Aktif</h4>
         <h6 class="text-subtitle-2 text-disabled mr-11 pr-11 mt-2">
@@ -118,7 +118,7 @@ onMounted(() => {
             <v-divider class="mx-1" vertical/>
             <span class="text-subtitle-2 text-disabled">
               <v-icon size="x-small">mdi-store</v-icon>
-              {{ userStore.me?.activity.branch?.name }}
+              {{ userStore.hasRole('Gudang') ? 'Gudang' : userStore.me?.activity.branch?.name }}
             </span>
           </div>
         </h4>
@@ -126,7 +126,7 @@ onMounted(() => {
           Dimulai pada:
         </h6>
         <h5 class="text-h5 font-weight-medium text-medium-emphasis mb-2">{{ formatDate(userStore.me?.activity.last_active || new Date()).replace(' pukul', ': ') }}</h5>
-        <span class="mr-2">
+        <div class="mr-2">
           <v-btn
             :ripple="false"
             :loading="loading"
@@ -155,13 +155,13 @@ onMounted(() => {
           <span v-show="hover" class="text-subtitle-2">
             Akhiri Shift
           </span>
-        </span>
+        </div>
         <v-progress-circular v-if="loading" indeterminate color="warning" height="1"/>
-        <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir']) && !loading">
-          <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
+        <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir']) && !loading">
+          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
             <!-- Mekanisme kondisional rendering perlu ditingkatkan? -->
             <v-btn 
-              v-if="shiftBranch?.total == 0 || (shiftBranch?.data[1]?.end || shiftBranch?.data[0]?.end)"
+              v-if="shiftCashier?.total == 0"
               elevation="1"
               append-icon="mdi-cash-register"
               @click="openOverlay({
@@ -176,13 +176,14 @@ onMounted(() => {
             </v-btn>
             <v-btn 
               v-else
-              color="warning"
+              class="mt-2"
+              color="success"
               elevation="1"
-              append-icon="mdi-cog-refresh"
+              append-icon="mdi-cash-register"
               @click="openOverlay({
                 component: UpdateShiftCashier,
                 props: {
-                  data: shiftBranch.data[1] as ShiftCashier || shiftBranch.data[0] as ShiftCashier,
+                  data: shiftCashier.data[0] as ShiftCashier,
                   confirmBeforeClose: true,
                   isChanged: isChanged
                 }
@@ -190,11 +191,11 @@ onMounted(() => {
             > 
               Kas
             </v-btn>
-          </span>
+          </div>
 
-          <span v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])">
+          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])">
             <v-btn 
-              v-if="shiftBranch?.total <= 1 || shiftBranch?.data[0]?.end"
+              v-if="shiftKitchen?.total == 0"
               elevation="1"
               append-icon="mdi-stove"
               @click="openOverlay({
@@ -209,13 +210,14 @@ onMounted(() => {
             </v-btn>
             <v-btn 
               v-else
+              class="mt-2"
               color="warning"
               elevation="1"
-              append-icon="mdi-cog-refresh"
+              append-icon="mdi-stove"
               @click="openOverlay({
                 component: UpdateShiftKitchen,
                 props: {
-                  data: shiftBranch.data[0] as ShiftKitchen,
+                  data: shiftKitchen.data[0] as ShiftKitchen,
                   confirmBeforeClose: true,
                   isChanged: isChanged
                 }
@@ -224,9 +226,47 @@ onMounted(() => {
             > 
               Stok
             </v-btn>
-          </span>
-        </span>
-
+          </div>
+          <!-- shift warehouse -->
+          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Gudang'])">
+            <v-btn 
+              v-if="shiftWarehouse?.total == 0"
+              elevation="1"
+              append-icon="mdi-warehouse"
+              @click="openOverlay({
+                component: Blank,
+                props: {
+                  confirmToContinue: true,
+                  confirmMessage: 'Apakah anda yakin ingin memulai shift gudang?',
+                  loading,
+                  onConfirm: () => {
+                    startWarehouse()
+                  }
+                }
+              })"
+            > 
+              Inisiasi Gudang
+            </v-btn>
+            <v-btn 
+              v-else
+              class="mt-2"
+              color="primary"
+              elevation="1"
+              append-icon="mdi-warehouse"
+              @click="openOverlay({
+                component: UpdateShiftWarehouse,
+                props: {
+                  data: shiftWarehouse.data[0] as ShiftWarehouse,
+                  confirmBeforeClose: true,
+                  isChanged: isChanged
+                }
+              })
+              "
+            > 
+              Gudang
+            </v-btn>
+          </div>
+        </div>
       </div>
       <!-- 
       <v-divider></v-divider>

@@ -9,7 +9,8 @@ import {
   fetchShiftEmployee,
   fetchShiftWarehouse,
   startShiftWarehouse,
-  endShiftWarehouse
+  endShiftWarehouse,
+  updateShiftWarehouse
 } from '@/services/shift/shiftService'
 import {
   type StartShiftCashierPayload,
@@ -19,7 +20,8 @@ import {
   type ShiftCashier,
   type ShiftKitchen,
   type Shift,
-  type ShiftWarehouse
+  type ShiftWarehouse,
+  type UpdateShiftWarehousePayload
 } from '@/types/shift'
 
 const alert = useAlertStore()
@@ -99,14 +101,14 @@ export function useShift() {
     }
   }
   
-  async function endEmployee(branch_id: string) {
+  async function endEmployee(id: string) {
     try {
       loading.value = true
 
-      const shiftEmployee = await fetchShiftEmployee(branch_id)
+      const shiftEmployee = await fetchShiftEmployee(id)
 
       if (userStore.hasRole('Admin')) {
-        const res = await endShiftEmployee(branch_id)
+        const res = await endShiftEmployee(id)
         alert.showAlert('Shift pegawai berakhir.', 'success')
         return res
       }
@@ -114,7 +116,7 @@ export function useShift() {
       if ((shiftKitchen.value.data.length > 0 || shiftCashier.value.data.length > 0) && shiftEmployee.data.length === 1) {
         return alert.showAlert('Restoran perlu ditutup terlebih dahulu.', 'warning')
       }
-      const res = await endShiftEmployee(branch_id)
+      const res = await endShiftEmployee(id)
       alert.showAlert('Shift pegawai berakhir.', 'success')
       return res
     } catch (err) {
@@ -160,6 +162,20 @@ export function useShift() {
     try {
       loading.value = true
       const res = await startShiftWarehouse()
+      alert.showAlert('Shift gudang dimulai.', 'success')
+      return res
+    } catch (err) {
+      alert.showAlert('Gagal memulai shift gudang.', 'error')
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function updateWarehouse(payload: UpdateShiftWarehousePayload) {
+    try {
+      loading.value = true
+      const res = await updateShiftWarehouse(payload)
       alert.showAlert('Shift gudang dimulai.', 'success')
       return res
     } catch (err) {
@@ -356,6 +372,7 @@ export function useShift() {
     shiftWarehouse,
     loadWarehouse,
     startWarehouse,
+    updateWarehouse,
     endWarehouse,
 
     shiftEmployee,

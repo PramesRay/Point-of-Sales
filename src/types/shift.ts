@@ -31,6 +31,7 @@ export interface ShiftCashier extends Shift {
   cash_payment_refund: number;
 
   total_order: number;
+  completed_order: number;
   canceled_order: number;
   
   total_expense: number;
@@ -40,15 +41,19 @@ export interface ShiftCashier extends Shift {
 }
 
 export interface ShiftKitchen extends Shift {
-  menu: {
+  quantity_menu: {
     id: string;
     name: string;
-    quantity: number;
+    initial: number;
+    final: number;
   }[]
 
-  restock_request: number;
+  total_restock_request: number;
+  request_approved: number;
+  request_rejected: number;
 
   total_order: number;
+  completed_order: number;
   canceled_order: number;
 }
 
@@ -60,6 +65,11 @@ export type ShiftWarehouse = Omit<Shift, 'branch'> & {
   total_stock_movement: number;
   stock_movement_in: number;
   stock_movement_out: number;
+}
+
+export interface UpdateShiftWarehousePayload {
+  id: string;
+  notes: string | null;
 }
 
 export interface StartShiftCashierPayload {
@@ -91,7 +101,7 @@ export interface StartShiftKitchenPayload {
   }[]
 }
 
-export type UpdateShiftKitchenPayload = Omit<StartShiftKitchenPayload, 'branch_id'> & {
+export type UpdateShiftKitchenPayload = {
   id: string;
   final_menu: {
     id: string;

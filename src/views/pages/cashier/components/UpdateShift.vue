@@ -12,6 +12,7 @@ import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import InputCashFlow from './sub-components/InputCashFlow.vue'
 import Blank from '@/components/shared/Blank.vue'
 import { cloneDeep } from 'lodash'
+import EndShift from './sub-components/EndShift.vue'
 
 const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
@@ -30,11 +31,11 @@ const currentData = ref(cloneDeep(props.data))
 
 const payload = ref<UpdateShiftCashierPayload>({
   id: currentData.value.id,
-  cash: currentData.value.initial_cash ?? 0,
+  cash: currentData.value.initial_cash,
   cash_in: [...currentData.value.cash_in],
   cash_out: [...currentData.value.cash_out],
   notes: null,
-  actual_cash: currentData.value.actual_cash
+  actual_cash: currentData.value.actual_cash ?? 0
 })
 
 const formRef = ref()
@@ -138,18 +139,6 @@ async function processSubmit() {
   }
 }
 
-async function handleEndShift() {
-  try {
-    await endCashier(payload.value.id)
-    clearPayload()
-  } catch (error) {
-    if (typeof props.onIsChangedUpdate === 'function') {
-      props.onIsChangedUpdate(false)
-    }
-    emit('close')
-  }
-}
-
 function openInputOverlay(isCashIn: boolean) {
   openOverlay({
     component: InputCashFlow,
@@ -181,7 +170,7 @@ function openInputOverlay(isCashIn: boolean) {
           emit('close')
         "
       >
-        ×
+        <v-icon>mdi-close</v-icon>
       </div>
 
       <div>
@@ -198,224 +187,261 @@ function openInputOverlay(isCashIn: boolean) {
         v-model="isFormValid"
         lazy-validation
         @submit.prevent="submitForm"
-        style="max-height: 60dvh; overflow-y: auto; scrollbar-width: none;"
       >
-        <v-list class="ma-0 pa-0">
-          <div class="d-flex align-center justify-space-between font-weight-bold">
-            <v-list-subheader class="text-subtitle-1 font-weight-bold">
-              Arus Kas
-            </v-list-subheader>
-            {{ formatRupiah(amountCash) }}
-          </div>
+        <div class="text-center my-4" v-if="loading">
+          <v-progress-circular indeterminate color="warning" height="1"/>
+        </div>
 
-          <v-list-item class="pa-0">
-            <v-expansion-panels multiple variant="accordion" elevation="0">
-              <!-- Kas awal -->
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Kas Awal
-                  </div>
-                  <template v-slot:actions>
+        <ScrollContainer style="max-height: 50dvh; overflow-x: hidden" v-else>
+          <v-list class="ma-0 pa-0">
+            <div class="d-flex align-center justify-space-between font-weight-bold">
+              <v-list-subheader class="text-subtitle-1 font-weight-bold">
+                Pesanan
+              </v-list-subheader>
+              {{ currentData.total_order }}
+            </div>
+            <v-list-item class="px-0 mx-2">
+              <v-expansion-panels multiple variant="accordion" elevation="0">  
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
                     <div class="text-caption text-disabled">
-                      {{ formatRupiah(payload.cash) }}
+                      Pesanan Selesai
                     </div>
-                  </template>
-                </v-expansion-panel-title>
-              </v-expansion-panel>
-              <!-- Kas Masuk Expansion Panel -->
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Kas Masuk
-                  </div>
-                  <template v-slot:actions>
-                    <div class="text-caption text-disabled text-success">
-                      {{ formatRupiah(amountCashIn) }}
-                    </div>
-                  </template>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <div class="text-right">
-                    <v-btn
-                      block
-                      color="success"
-                      @click="openInputOverlay(true)" 
-                    >
-                      Tambah
-                    </v-btn>
-                  </div>
-                  <ScrollContainer :maxHeight="mdAndUp ? '15rem' : '12rem'">
-                    <v-list>
-                      <v-list-item v-for="(item, index) in payload.cash_in" :key="index">
-                        <v-divider v-if="index > 0"></v-divider>
-                        <v-row no-gutters class="py-2 align-center">
-                          <v-col cols="7">
-                            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
-                              <v-btn
-                                icon="mdi-delete"
-                                color="error"
-                                size="small"
-                                density="compact"
-                                variant="text"
-                                class="mb-1"
-                                @click="
-                                  payload.cash_in.splice(index, 1)
-                                "
-                              ></v-btn>
-                              {{ item.subject }}
-                            </div>
-                          </v-col>
-                          <v-col cols="5">
-                            <div class="text-subtitle-2 font-weight-medium text-right">
-                              {{ formatRupiah(item.amount) }}
-                            </div>
-                          </v-col>
-                        </v-row>
-                      </v-list-item>
-                      <div v-if="!payload.cash_in.length" class="text-center text-subtitle-2 text-disabled my-4">Belum ada Kas Masuk</div>
-                    </v-list>
-                  </ScrollContainer>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
+                    <template v-slot:actions>
+                      <div class="text-caption text-medium-emphasis font-weight-bold text-success">
+                        {{ currentData.completed_order }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
     
-              <!-- Kas Keluar Expansion Panel -->
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Kas Keluar
-                  </div>
-                  <!-- <v-spacer></v-spacer>
-                  <div class="text-caption text-disabled text-error">
-                    {{ formatRupiah(amountCashOut) }}
-                  </div> -->
-                  <template v-slot:actions>
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="text-caption text-disabled">
+                      Pesanan Dibatalkan
+                    </div>
+                    <template v-slot:actions>
+                      <div class="text-caption text-medium-emphasis font-weight-bold text-error">
+                        {{ currentData.canceled_order }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </v-list-item>
+            
+            <div class="d-flex align-center justify-space-between font-weight-bold">
+              <v-list-subheader class="text-subtitle-1 font-weight-bold">
+                Arus Kas
+              </v-list-subheader>
+              {{ formatRupiah(amountCash) }}
+            </div>
+
+            <v-list-item class="pa-0 mx-2">
+              <v-expansion-panels multiple variant="accordion" elevation="0">
+                <!-- Kas awal -->
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Kas Awal
+                    </div>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled">
+                        {{ formatRupiah(payload.cash) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
+                <!-- Kas Masuk Expansion Panel -->
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Kas Masuk
+                    </div>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled text-success">
+                        {{ formatRupiah(amountCashIn) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <div class="text-right">
+                      <v-btn
+                        block
+                        color="success"
+                        @click="openInputOverlay(true)" 
+                      >
+                        Tambah
+                      </v-btn>
+                    </div>
+                      <v-list>
+                        <v-list-item v-for="(item, index) in payload.cash_in" :key="index">
+                          <v-divider v-if="index > 0"></v-divider>
+                          <v-row no-gutters class="py-2 align-center">
+                            <v-col cols="7">
+                              <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
+                                <v-btn
+                                  icon="mdi-delete"
+                                  color="error"
+                                  size="small"
+                                  density="compact"
+                                  variant="text"
+                                  class="mb-1"
+                                  @click="
+                                    payload.cash_in.splice(index, 1)
+                                  "
+                                ></v-btn>
+                                {{ item.subject }}
+                              </div>
+                            </v-col>
+                            <v-col cols="5">
+                              <div class="text-subtitle-2 font-weight-medium text-right">
+                                {{ formatRupiah(item.amount) }}
+                              </div>
+                            </v-col>
+                          </v-row>
+                        </v-list-item>
+                        <div v-if="!payload.cash_in.length" class="text-center text-subtitle-2 text-disabled my-4">Belum ada Kas Masuk</div>
+                      </v-list>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+      
+                <!-- Kas Keluar Expansion Panel -->
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Kas Keluar
+                    </div>
+                    <!-- <v-spacer></v-spacer>
                     <div class="text-caption text-disabled text-error">
                       {{ formatRupiah(amountCashOut) }}
+                    </div> -->
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled text-error">
+                        {{ formatRupiah(amountCashOut) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <div class="text-right">
+                      <v-btn
+                        block
+                        color="error"
+                        @click="openInputOverlay(false)"
+                      >
+                        Tambah
+                      </v-btn>
                     </div>
-                  </template>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <div class="text-right">
-                    <v-btn
-                      block
-                      color="error"
-                      @click="openInputOverlay(false)"
-                    >
-                      Tambah
-                    </v-btn>
-                  </div>
-                  <ScrollContainer :maxHeight="mdAndUp ? '15rem' : '12rem'">
-                    <v-list>
-                      <v-list-item v-for="(item, index) in payload.cash_out" :key="index">
-                        <v-row no-gutters class="py-2 align-center">
-                          <v-col cols="7">
-                            <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
-                              <v-btn
-                                icon="mdi-delete"
-                                color="error"
-                                size="small"
-                                density="compact"
-                                variant="text"
-                                class="mb-1"
-                                @click="
-                                  payload.cash_out.splice(index, 1),
-                                  amountCashOut -= item.quantity * item.unit_price
-                                "
-                              ></v-btn>
-                              {{ item.subject }}
-                            </div>
-                            <div class="text-subtitle-2 text-disabled">
-                              {{ item.quantity }} {{ item.unit + ' | @' + formatRupiah(item.unit_price) }}
-                            </div>
-                          </v-col>
-                          <v-col cols="5">
-                            <div class="text-subtitle-2 font-weight-medium text-right">
-                              {{ formatRupiah(item.quantity * item.unit_price) }}
-                            </div>
-                          </v-col>
-                        </v-row>
-                      </v-list-item>
-                      <div v-if="!payload.cash_out.length" class="text-center text-subtitle-2 text-disabled py-4">Belum ada Kas Keluar</div>
-                    </v-list>
-                  </ScrollContainer>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-              
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Pembayaran Tunai
-                  </div>
-                  <template v-slot:actions>
-                    <div class="text-caption text-disabled">
-                      {{ formatRupiah(currentData.cash_payment) }}
+                      <v-list>
+                        <v-list-item v-for="(item, index) in payload.cash_out" :key="index">
+                          <v-row no-gutters class="py-2 align-center">
+                            <v-col cols="7">
+                              <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
+                                <v-btn
+                                  icon="mdi-delete"
+                                  color="error"
+                                  size="small"
+                                  density="compact"
+                                  variant="text"
+                                  class="mb-1"
+                                  @click="
+                                    payload.cash_out.splice(index, 1),
+                                    amountCashOut -= item.quantity * item.unit_price
+                                  "
+                                ></v-btn>
+                                {{ item.subject }}
+                              </div>
+                              <div class="text-subtitle-2 text-disabled">
+                                {{ item.quantity }} {{ item.unit + ' | @' + formatRupiah(item.unit_price) }}
+                              </div>
+                            </v-col>
+                            <v-col cols="5">
+                              <div class="text-subtitle-2 font-weight-medium text-right">
+                                {{ formatRupiah(item.quantity * item.unit_price) }}
+                              </div>
+                            </v-col>
+                          </v-row>
+                        </v-list-item>
+                        <div v-if="!payload.cash_out.length" class="text-center text-subtitle-2 text-disabled py-4">Belum ada Kas Keluar</div>
+                      </v-list>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+                
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Pembayaran Tunai
                     </div>
-                  </template>
-                </v-expansion-panel-title>
-              </v-expansion-panel>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled">
+                        {{ formatRupiah(currentData.cash_payment) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
 
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Refund Tunai
-                  </div>
-                  <template v-slot:actions>
-                    <div class="text-caption text-disabled">
-                      {{ formatRupiah(currentData.cash_payment_refund) }}
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Refund Tunai
                     </div>
-                  </template>
-                </v-expansion-panel-title>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </v-list-item>
-          
-          <div class="d-flex align-center justify-space-between font-weight-bold">
-            <v-list-subheader class="text-subtitle-1 font-weight-bold">
-              Arus Digital
-            </v-list-subheader>
-            {{ formatRupiah(amountDigital) }}
-          </div>
-          <v-list-item class="pa-0">
-            <v-expansion-panels multiple variant="accordion" elevation="0">
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Pembayaran Digital
-                  </div>
-                  <template v-slot:actions>
-                    <div class="text-caption text-disabled">
-                      {{ formatRupiah(currentData.digital_payment) }}
-                    </div>
-                  </template>
-                </v-expansion-panel-title>
-              </v-expansion-panel>
-    
-              <v-expansion-panel>
-                <v-expansion-panel-title class="pe-0">
-                  <div class="d-flex align-center text-caption text-disabled">
-                    Refund Digital
-                  </div>
-                  <template v-slot:actions>
-                    <div class="text-caption text-disabled">
-                      {{ formatRupiah(currentData.digital_payment_refund) }}
-                    </div>
-                  </template>
-                </v-expansion-panel-title>
-              </v-expansion-panel>
-
-            </v-expansion-panels>
-          </v-list-item>
-
-          <div 
-            class="d-flex align-center justify-space-between font-weight-bold text-medium-emphasis mt-4 ms-2"
-          >
-            Total Diharapkan
-            <span>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled">
+                        {{ formatRupiah(currentData.cash_payment_refund) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </v-list-item>
+            
+            <div class="d-flex align-center justify-space-between font-weight-bold">
+              <v-list-subheader class="text-subtitle-1 font-weight-bold">
+                Arus Digital
+              </v-list-subheader>
               {{ formatRupiah(amountDigital) }}
-            </span>
-          </div>
-        </v-list>
+            </div>
+            <v-list-item class="pa-0 mx-2">
+              <v-expansion-panels multiple variant="accordion" elevation="0">
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Pembayaran Digital
+                    </div>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled">
+                        {{ formatRupiah(currentData.digital_payment) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
+      
+                <v-expansion-panel>
+                  <v-expansion-panel-title class="px-2">
+                    <div class="d-flex align-center text-caption text-disabled">
+                      Refund Digital
+                    </div>
+                    <template v-slot:actions>
+                      <div class="text-caption text-disabled">
+                        {{ formatRupiah(currentData.digital_payment_refund) }}
+                      </div>
+                    </template>
+                  </v-expansion-panel-title>
+                </v-expansion-panel>
+
+              </v-expansion-panels>
+            </v-list-item>
+
+            <div 
+              class="d-flex align-center justify-space-between font-weight-bold text-medium-emphasis mt-4 ms-2"
+            >
+              Total Diharapkan
+              <span>
+                {{ formatRupiah(amountDigital) }}
+              </span>
+            </div>
+          </v-list>
+        </ScrollContainer>
 
         <v-row>
           <v-col cols="12">
@@ -445,13 +471,11 @@ function openInputOverlay(isCashIn: boolean) {
               variant="text"
               @click="
               openOverlay({
-                component: Blank,
+                component: EndShift,
                 props: {
-                  confirmToContinue: true,
-                  confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
-                  loading,
-                  onConfirm: () => {
-                    handleEndShift()
+                  payload: payload,
+                  close: () => {
+                    emit('close')
                   }
                 }
               })

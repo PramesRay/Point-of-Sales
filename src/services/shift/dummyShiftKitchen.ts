@@ -9,13 +9,17 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     branch: dummyBranchList[0],
     start: new Date('2025-07-03T16:00:00.000Z'),
     end: null,
-    menu: dummyMenuSale.map(item => ({
+    quantity_menu: dummyMenuSale.map(item => ({
       id: item.id,
       name: item.name,
-      quantity: 100
+      initial: 100,
+      final: item.threshold
     })),
-    restock_request: 0,  // Contoh restock request
+    total_restock_request: 0,  // Contoh restock request
+    request_approved: 0,
+    request_rejected: 0,
     total_order: 100,  // Total order
+    completed_order: 90,
     canceled_order: 10,  // Canceled order
     notes: "test",
     meta: {
@@ -36,13 +40,17 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     branch: dummyBranchList[1],
     start: new Date('2025-07-03T16:00:00.000Z'),
     end: new Date('2025-07-04T00:00:00.000Z'),
-    menu: dummyMenuSale.map(item => ({
+    quantity_menu: dummyMenuSale.map(item => ({
       id: item.id,
       name: item.name,
-      quantity: 0
+      initial: 100,
+      final: item.threshold
     })),
-    restock_request: 3,  // Contoh restock request
+    total_restock_request: 3,  // Contoh restock request
+    request_approved: 3,
+    request_rejected: 0,
     total_order: 150,  // Total order
+    completed_order: 135,
     canceled_order: 15,  // Canceled order
     notes: null,
     meta: {
@@ -63,13 +71,17 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     branch: dummyBranchList[2],
     start: new Date('2025-07-03T16:00:00.000Z'),
     end: null,
-    menu: dummyMenuSale.map(item => ({
+    quantity_menu: dummyMenuSale.map(item => ({
       id: item.id,
       name: item.name,
-      quantity: 100
+      initial: 100,
+      final: item.threshold
     })),
-    restock_request: 2,  // Contoh restock request
+    total_restock_request: 2,  // Contoh restock request
+    request_approved: 1,
+    request_rejected: 1,
     total_order: 120,  // Total order
+    completed_order: 115,
     canceled_order: 5,  // Canceled order
     notes: null,
     meta: {
@@ -90,13 +102,17 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     branch: dummyBranchList[3],
     start: new Date('2025-07-03T16:00:00.000Z'),
     end: new Date('2025-07-04T00:00:00.000Z'),
-    menu: dummyMenuSale.map(item => ({
+    quantity_menu: dummyMenuSale.map(item => ({
       id: item.id,
       name: item.name,
-      quantity: 0
+      initial: 100,
+      final: item.threshold
     })),
-    restock_request: 0,  // Contoh restock request
+    total_restock_request: 0,  // Contoh restock request
+    request_approved: 0,
+    request_rejected: 0,
     total_order: 80,  // Total order
+    completed_order: 72,
     canceled_order: 8,  // Canceled order
     notes: null,
     meta: {

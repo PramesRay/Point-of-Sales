@@ -32,8 +32,9 @@ export const dummyShiftCashier: ShiftCashier[] = [
     income: 500000,
     net_income: 470000,
     actual_cash: 100000 + 500000 - 30000,
-    total_order: 50,  // Total order
-    canceled_order: 5,  // Canceled order
+    total_order: 100,  // Total order
+    completed_order: 90,
+    canceled_order: 10,  // Canceled order
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
@@ -82,8 +83,9 @@ export const dummyShiftCashier: ShiftCashier[] = [
     income: 2000000,
     net_income: 1866000,
     actual_cash: 100000 + 2000000 - 134000,
-    total_order: 100,  // Total order
-    canceled_order: 8,  // Canceled order
+    total_order: 150,  // Total order
+    completed_order: 135,
+    canceled_order: 15,  // Canceled order
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
@@ -120,7 +122,8 @@ export const dummyShiftCashier: ShiftCashier[] = [
     net_income: 2000000,
     actual_cash: 100000 + 2000000,
     total_order: 120,  // Total order
-    canceled_order: 10,  // Canceled order
+    completed_order: 115,
+    canceled_order: 5,  // Canceled order
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
@@ -163,8 +166,9 @@ export const dummyShiftCashier: ShiftCashier[] = [
     income: 500000,
     net_income: 470000,
     actual_cash: 100000 + 500000 - 30000,
-    total_order: 30,  // Total order
-    canceled_order: 3,  // Canceled order
+    total_order: 80,  // Total order
+    completed_order: 72,
+    canceled_order: 8,  // Canceled order
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
