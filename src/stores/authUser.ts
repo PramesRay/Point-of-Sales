@@ -24,7 +24,7 @@ export const useUserStore = defineStore({
         
         await user.getIdToken(true);
 
-        // const response = await api.get('/employees/me');
+        // const response = await api.get('/employee/me');
         // this.me = response.data;
         this.me = dummyUser // hapus nanti
       } catch (error: any) {
@@ -37,12 +37,12 @@ export const useUserStore = defineStore({
     async fetchShift() {
       this.loading = true;
       try {
-        const response = await api.get('/shifts/current');
+        const response = await api.get('/shifts/me');
         this.shift = response.data;
       } catch (error: any) {
         console.error("Failed to fetch shift data:", error);
         // using dummy data for temporary solution
-        this.shift = dummyShiftEmployee.find(shift => shift.employee.id === this.me?.id) ?? null
+        this.shift = dummyShiftEmployee.find(shift => shift.meta.created_by.id === this.me?.id) ?? null
         console.log('shift', this.shift)
       } finally {
         this.loading = false;

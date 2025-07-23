@@ -34,17 +34,90 @@ export function useShift() {
   const shiftWarehouse = ref<{ data: ShiftWarehouse[]; total: number; }>({ data: [], total: 0 });
   const shiftEmployee = ref<{ data: Shift[]; total: number; }>({ data: [], total: 0 });
 
-  async function loadShiftbyRole(branch_id?: string) {
+  async function loadShiftbyRole({
+    page,
+    limit,
+    search,
+    sortBy,
+    sortDesc,
+    filter
+  }: {
+    page?: number
+    limit?: number
+    search?: string
+    sortBy?: string
+    sortDesc?: boolean
+    filter?: Record<string, any>
+  } = {}) {
     try {
       loading.value = true
+      const branchId = userStore.me?.activity?.branch?.id;
       if (userStore.hasRole('Kasir')) {
-        shiftCashier.value = await fetchShiftCashier(branch_id)
+        const { data, total } = await fetchShiftCashier({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter:{
+            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+          }
+        });
+        shiftCashier.value = { data, total };
       } else if (userStore.hasRole('Dapur')) {
-        shiftKitchen.value = await fetchShiftKitchen(branch_id)
+        const { data, total } = await fetchShiftKitchen({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter:{
+            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+          }
+        });
+        shiftKitchen.value = { data, total };
+      } else if (userStore.hasRole('Gudang')) {
+        const { data, total } = await fetchShiftWarehouse({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter
+        });
+        shiftWarehouse.value = { data, total };
       } else if (userStore.hasRole(['Admin', 'Pemilik'])) {
-        shiftCashier.value = await fetchShiftCashier(branch_id)
-        shiftKitchen.value = await fetchShiftKitchen(branch_id)
-        shiftWarehouse.value = await fetchShiftWarehouse()
+        const cashier = await fetchShiftCashier({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter:{
+            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+          }
+        });
+        const kitchen = await fetchShiftKitchen({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter:{
+            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+          }
+        });
+        const warehouse = await fetchShiftWarehouse({
+          page,
+          limit,
+          search,
+          sortBy,
+          sortDesc,
+          filter
+        });
+        shiftCashier.value = { data: cashier.data, total: cashier.total };
+        shiftKitchen.value = { data: kitchen.data, total: kitchen.total };
+        shiftWarehouse.value = { data: warehouse.data, total: warehouse.total };
       }
     } catch (err) {
       throw err
@@ -54,30 +127,33 @@ export function useShift() {
   }
 
   async function loadEmployee({
+    branchId,
     page,
-    itemsPerPage,
+    limit,
     search,
     sortBy,
     sortDesc,
-    branchId,
+    filter
   }: {
+    branchId?: string
     page?: number
-    itemsPerPage?: number
+    limit?: number
     search?: string
     sortBy?: string
     sortDesc?: boolean
-    branchId?: string
+    filter?: Record<string, any>
   } = {}) {
     try {
       loading.value = true
-      const { data, total } = await fetchShiftEmployee(
+      const { data, total } = await fetchShiftEmployee({
         branchId,
         page,
-        itemsPerPage,
+        limit,
         search,
         sortBy,
-        sortDesc
-      )
+        sortDesc,
+        filter
+      })
       shiftEmployee.value = { data, total }
       return { data, total }
     } catch (err) {
@@ -105,7 +181,14 @@ export function useShift() {
     try {
       loading.value = true
 
-      const shiftEmployee = await fetchShiftEmployee(id)
+      const shiftEmployee = await fetchShiftEmployee({
+        filter: { 
+          branch_id: userStore.me?.activity?.branch?.id,
+          end: null
+        },
+        sortBy: 'created_at',
+        sortDesc: true
+      })
 
       if (userStore.hasRole('Admin')) {
         const res = await endShiftEmployee(id)
@@ -129,26 +212,29 @@ export function useShift() {
 
   async function loadWarehouse({
     page,
-    itemsPerPage,
+    limit,
     search,
     sortBy,
     sortDesc,
+    filter
   }: {
     page?: number
-    itemsPerPage?: number
+    limit?: number
     search?: string
     sortBy?: string
     sortDesc?: boolean
+    filter?: Record<string, any>
   } = {}) {
     try {
       loading.value = true
-      const { data, total } = await fetchShiftWarehouse(
+      const { data, total } = await fetchShiftWarehouse({
         page,
-        itemsPerPage,
+        limit,
         search,
         sortBy,
-        sortDesc
-      )
+        sortDesc,
+        filter
+      })
       shiftWarehouse.value = { data, total }
       return { data, total }
     } catch (err) {
@@ -214,29 +300,29 @@ export function useShift() {
   
   async function loadCashier({
     page,
-    itemsPerPage,
+    limit,
     search,
     sortBy,
     sortDesc,
-    branchId,
+    filter,
   }: {
     page?: number
-    itemsPerPage?: number
+    limit?: number
     search?: string
     sortBy?: string
     sortDesc?: boolean
-    branchId?: string
+    filter?: Record<string, any>
   } = {}) {
     try {
       loading.value = true
-      const { data, total } = await fetchShiftCashier(
-        branchId,
+      const { data, total } = await fetchShiftCashier({
         page,
-        itemsPerPage,
+        limit,
         search,
         sortBy,
-        sortDesc
-      )
+        sortDesc,
+        filter
+      })
       shiftCashier.value = { data, total }
       return { data, total }
     } catch (err) {
@@ -274,10 +360,10 @@ export function useShift() {
     }
   }
 
-  async function endCashier(id: string) {
+  async function endCashier(payload: UpdateShiftCashierPayload) {
     try {
       loading.value = true
-      const res = await endShiftCashier(id)
+      const res = await endShiftCashier(payload)
       alert.showAlert('Shift kasir berhasil diakhiri.', 'success')
       return res
     } catch (err) {
@@ -290,29 +376,29 @@ export function useShift() {
 
   async function loadKitchen({
     page,
-    itemsPerPage,
+    limit,
     search,
     sortBy,
     sortDesc,
-    branchId,
+    filter,
   }: {
     page?: number
-    itemsPerPage?: number
+    limit?: number
     search?: string
     sortBy?: string
     sortDesc?: boolean
-    branchId?: string
+    filter?: Record<string, any>
   } = {}) {
     try {
       loading.value = true
-      const { data, total } = await fetchShiftKitchen(
-        branchId,
+      const { data, total } = await fetchShiftKitchen({
         page,
-        itemsPerPage,
+        limit,
         search,
         sortBy,
-        sortDesc
-      )
+        sortDesc,
+        filter
+      })
       shiftKitchen.value = { data, total }
       return { data, total }
     } catch (err) {
@@ -350,10 +436,10 @@ export function useShift() {
     }
   }
 
-  async function endKitchen(id: string) {
+  async function endKitchen(payload: UpdateShiftKitchenPayload) {
     try {
       loading.value = true
-      const res = await endShiftKitchen(id)
+      const res = await endShiftKitchen(payload)
       alert.showAlert('Shift dapur berhasil diakhiri.', 'success')
       return res
     } catch (err) {

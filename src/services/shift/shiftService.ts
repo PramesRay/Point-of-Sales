@@ -21,15 +21,23 @@ import { dummyShiftWarehouse } from './dummyShiftWarehouse'
    💼 EMPLOYEE
 ================================ */
 
-export async function fetchShiftEmployee(
-  branchId?: string,
-  page?: number,
-  limit?: number,
-  search?: string,
-  sortBy?: string,
-  sortDesc: boolean = false,
+export async function fetchShiftEmployee({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
   filter?: Record<string, any>
-): Promise<{data: Shift[]; total: number}> {
+} = {}): Promise<{data: Shift[]; total: number}> {
   try {
     const url = `/shift/employee`;
     const query = new URLSearchParams();
@@ -168,16 +176,23 @@ export async function endShiftEmployee(id: string): Promise<Shift> {
    💼 WAREHOUSE
 ================================ */
 
-export async function fetchShiftWarehouse(
-  page?: number,
-  limit?: number,
-  search?: string,
-  sortBy?: string,
-  sortDesc: boolean = false,
+export async function fetchShiftWarehouse({
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
   filter?: Record<string, any>
-): Promise<{data: ShiftWarehouse[]; total: number}> {
+} = {}): Promise<{data: ShiftWarehouse[]; total: number}> {
   try {
-    const url = `/shift/employee`;
+    const url = `/shift/warehouse`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -289,7 +304,7 @@ export async function startShiftWarehouse(): Promise<ShiftWarehouse> {
     const res = await api.post<ShiftWarehouse>('/shift/warehouse')
     return res.data
   } catch (error) {
-    console.warn('Start shift employee failed.', error)
+    console.warn('Start shift warehouse failed.', error)
     throw error
   }
 }
@@ -299,17 +314,17 @@ export async function updateShiftWarehouse(payload: UpdateShiftWarehousePayload)
     const res = await api.put<ShiftWarehouse>(`/shift/warehouse/${payload.id}`, payload)
     return res.data
   } catch (error) {
-    console.warn('Update shift employee failed.', error)
+    console.warn('Update shift warehouse failed.', error)
     throw error
   }
 }
 
 export async function endShiftWarehouse(id: string): Promise<ShiftWarehouse> {
   try {
-    const res = await api.put<ShiftWarehouse>(`/shift/employee/end/${id}`)
+    const res = await api.put<ShiftWarehouse>(`/shift/warehouse/end/${id}`)
     return res.data
   } catch (error) {
-    console.warn('End shift employee failed.', error)
+    console.warn('End shift warehouse failed.', error)
     throw error
   }
 }
@@ -318,15 +333,23 @@ export async function endShiftWarehouse(id: string): Promise<ShiftWarehouse> {
    💼 CASHIER
 ================================ */
 
-export async function fetchShiftCashier(
-  branchId?: string,
-  page?: number,
-  limit?: number,
-  search?: string,
-  sortBy?: string,
-  sortDesc: boolean = false,
+export async function fetchShiftCashier({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
   filter?: Record<string, any>
-): Promise<{data: ShiftCashier[]; total: number}> {
+} = {}): Promise<{data: ShiftCashier[]; total: number}> {
   try {
     const url = `/shift/cashier`;
     const query = new URLSearchParams();
@@ -474,15 +497,23 @@ export async function endShiftCashier(payload: UpdateShiftCashierPayload): Promi
    🍱 KITCHEN
 ================================ */
 
-export async function fetchShiftKitchen(
-  branchId?: string,
-  page?: number,
-  limit?: number,
-  search?: string,
-  sortBy?: string,
-  sortDesc: boolean = false,
+export async function fetchShiftKitchen({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
   filter?: Record<string, any>
-): Promise<{data: ShiftKitchen[]; total: number}> {
+} = {}): Promise<{data: ShiftKitchen[]; total: number}> {
   try {
     const url = `/shift/kitchen`;
     const query = new URLSearchParams();

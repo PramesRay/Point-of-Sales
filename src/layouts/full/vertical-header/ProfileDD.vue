@@ -52,7 +52,7 @@ onMounted(() => {
   }
 
   if (userStore.me?.activity?.is_active) {
-    loadShiftbyRole(userStore.me.activity.branch?.id)
+    loadShiftbyRole()
   }
 })
 </script>
