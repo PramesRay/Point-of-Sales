@@ -8,20 +8,25 @@ const alertStore = useAlertStore();
  * Fetch Current Order data from backend.
  * Fallback to dummy data if request fails.
  */
-export async function fetchCurrentOrder(
-    branchId?: string,
-    page?: number,
-    limit?: number,
-    search?: string,
-    sortBy?: string,
-    sortDesc: boolean = false,
+export async function fetchCurrentOrder({
+    page,
+    limit,
+    search,
+    sortBy,
+    sortDesc,
+    filter
+  }: {
+    page?: number
+    limit?: number
+    search?: string
+    sortBy?: string
+    sortDesc?: boolean
     filter?: Record<string, any>
-  ): Promise<{data: Order[]; total: number}> {
+  } = {}): Promise<{data: Order[]; total: number}> {
     try {
       const url = `/orders`;
       const query = new URLSearchParams();
       
-      if (branchId) query.append('branch', branchId)
       if (search) query.append('search', search)
       if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
       if (typeof page === 'number') query.append('page', page.toString())
@@ -44,11 +49,6 @@ export async function fetchCurrentOrder(
     } catch (error) {
       console.warn(`Fetch Current Order data failed, using dummy.`, error);
       let dummy = dummyOrderQue;
-  
-      // 1. Filter by branch
-      if (branchId) {
-        dummy = dummy.filter(item => item.branch.id === branchId)
-      }
       
       // 2. Optional: pagination
       if (typeof page === 'number' && typeof limit === 'number') {
@@ -68,17 +68,23 @@ export async function fetchCurrentOrder(
             console.log('keys', keys);
   
             dummy = dummy.filter(item => {
-              // Iterasi melalui nested keys (misalnya 'branch.id')
               let itemValue: any = item;
               for (const k of keys) {
-                console.log('k', k);
-                itemValue = itemValue[k];
-                console.log('itemValue', itemValue);
-                if (itemValue == null) 
-                  return false; // Jika properti tidak ada, return false
+                itemValue = itemValue?.[k];
+                if (itemValue === undefined || itemValue === null) {
+                  return false;
+                }
               }
+
+              // Jika value berupa array, gunakan includes
+              if (Array.isArray(value)) {
+                return value.includes(itemValue);
+              }
+
+              // Jika bukan array, gunakan perbandingan biasa
               return itemValue === value;
             });
+            console.log('dummy', dummy);
           }
         }
       }

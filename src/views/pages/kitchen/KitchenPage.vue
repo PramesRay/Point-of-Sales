@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
 
 import { useUserStore } from '@/stores/authUser';
 const userStore = useUserStore();
@@ -20,7 +22,11 @@ const { load: loadCurrentOrder, data: currentOrder, loading: lco, error, update:
 const { load: loadStockRequests, summary, list: stockRequestlist, loading: lsr, create: createRequest } = useStockRequests();
 
 onMounted(() => {
-  loadCurrentOrder()
+  loadCurrentOrder({
+    filter: {
+      status: ['Diproses', 'Pending', 'Tersaji']
+    }
+  })
   loadStockRequests()
 })
 
@@ -45,41 +51,49 @@ const selectedBranchObject = computed(() => {
 
 <template>
   <v-row>
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Order Card -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
-      <CurrentOrder 
-        :data="currentOrder" 
-        :branch="selectedBranchObject"
-        :loading="lco" 
-        class="flex-grow-1" 
-      />
-    </v-col>
-    
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Order Que -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4" v-if="userStore.hasRole(['Admin', 'Dapur', 'Kasir'])">
-      <CurrentOrderQue
-        :data="currentOrder" 
-        :branch="selectedBranchObject"
-        :loading="lco"
-        class="flex-grow-1" 
-      />
+    <!-- Text jika belum mulai shift -->
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
+      <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
     </v-col>
 
-    <!-- -------------------------------------------------------------------- -->
-    <!-- Current Stock Request List -->
-    <!-- -------------------------------------------------------------------- -->
-    <v-col cols="12" md="4">
-      <CurrentStockRequestList 
-        :data="stockRequestlist" 
-        :branch="selectedBranchObject"
-        :loading="lsr" 
-        @create-request="createRequest"
-        class="flex-grow-1" 
-      />
+    <!-- Kolom Kiri: Current Order + Current Transaction -->
+    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])) || mdAndUp">
+      <v-row>
+        <v-col cols="12">
+          <CurrentOrder 
+            :data="currentOrder.data" 
+            :branch="selectedBranchObject"
+            :loading="lco" 
+            class="flex-grow-1" 
+          />
+        </v-col>
+        <v-col cols="12">
+          <CurrentOrderQue
+            :data="currentOrder.data"
+            :branch="selectedBranchObject"
+            :loading="lco"
+
+            :load="loadCurrentOrder"
+            :refresh="loadCurrentOrder"
+            class="flex-grow-1" 
+          />
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <!-- Kolom Kanan: Create Order + Current Order Que -->
+    <v-col cols="12" md="6">
+      <v-row>
+        <v-col cols="12">
+          <CurrentStockRequestList 
+            :data="stockRequestlist" 
+            :branch="selectedBranchObject"
+            :loading="lsr" 
+            @create-request="createRequest"
+            class="flex-grow-1" 
+          />
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>

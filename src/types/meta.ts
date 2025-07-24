@@ -3,7 +3,7 @@ import type { Employee } from "./employee"
 
 export interface Meta {
   created_at: Date
-  updated_at: Date | null
+  updated_at: Date
 }
 
 export interface MetaDetail extends Meta {

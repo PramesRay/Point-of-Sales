@@ -3,16 +3,37 @@ import { fetchCurrentOrder, updateOrderData, createOrderData, processDirectPayme
 import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 
 export function useCurrentOrders() {
-  const data      = ref<Order[]>([]);
+  const data      = ref<{ data: Order[]; total: number; }>({ data: [], total: 0 });
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
 
-  async function load(id?: string) {
+  async function load({
+    page,
+    limit,
+    search,
+    sortBy,
+    sortDesc,
+    filter
+  }: {
+    page?: number
+    limit?: number
+    search?: string
+    sortBy?: string
+    sortDesc?: boolean
+    filter?: Record<string, any>
+  } = {}) {
     loading.value = true;
     error.value   = null;
     try {
-      data.value = (await fetchCurrentOrder(id)).data;
-      console.log(data.value);
+      data.value = await fetchCurrentOrder({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortDesc,
+        filter
+      })
+      console.log('data', data.value)
     } catch (e: any) {
       error.value = e;
     } finally {

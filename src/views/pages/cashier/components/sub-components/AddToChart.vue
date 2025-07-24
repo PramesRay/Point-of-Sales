@@ -7,18 +7,21 @@ import { ref } from 'vue';
 const emit = defineEmits(['close'])
 
 const props = defineProps<{
-  currentData: MenuSale
-  menus: MenuSale[]
+  menu: MenuSale
+  data?: OrderItem
+  // menus: MenuSale[]
 
   onSubmit: (data: OrderItem) => void
+  onUpdate: (data: OrderItem) => void
 }>()
 
 const payload = ref<OrderItem>({
-  id: props.currentData.id,
-  name: props.currentData.name,
-  quantity: 1,
-  note: '',
-  price: props.currentData.price
+  id: props.menu.id,
+  name: props.menu.name,
+  quantity: props.data ? props.data.quantity : 1,
+  note: props.data ? props.data.note || '' : '',
+  price: props.menu.price,
+  status: 'Pending'
 })
 
 const formRef = ref()
@@ -33,7 +36,11 @@ const rules = {
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    props.onSubmit(payload.value)
+    if (props.data) {
+      props.onUpdate(payload.value)
+    } else {
+      props.onSubmit(payload.value)
+    }
     emit('close')
   })
 }
@@ -55,14 +62,14 @@ function submitForm() {
       <v-row class="align-center">
         <v-col cols="5">
           <h4 class="text-h4 text-medium-emphasis text-center">
-            <div>{{ props.currentData.name }}</div>
-            <div>{{ props.currentData.price && formatRupiah(props.currentData.price) }}</div>
+            <div>{{ props.menu.name }}</div>
+            <div>{{ props.menu.price && formatRupiah(props.menu.price) }}</div>
           </h4>
         </v-col>
         <v-divider vertical inset></v-divider>
         <v-col cols="6">
           <div class="text-subtitle-1 text-disabled">
-            {{ props.currentData.description ?? '-' }}
+            {{ props.menu.description || '-' }}
           </div>
         </v-col>
       </v-row>
@@ -73,7 +80,7 @@ function submitForm() {
           control-variant="split"
           variant="plain"
           :min="1" 
-          :max="props.menus.find((item: any) => item.id === props.currentData.id)?.quantity"
+          :max="menu.quantity"
           :rules="rules.positive"
           single-line
         />
@@ -103,7 +110,7 @@ function submitForm() {
           <v-btn
             color="primary" 
             type="submit"
-          >Tambah</v-btn>
+          >{{ props.data ? 'Perbarui' : 'Tambah' }}</v-btn>
         </v-col>
       </v-row>
     </v-form>

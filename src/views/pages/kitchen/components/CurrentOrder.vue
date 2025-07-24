@@ -12,7 +12,7 @@ const props = defineProps<{
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
   if (!props.branch || props.branch.id === 'all') {
-    return props.data;
+    return props.data
   }
   return props.data.filter(
     (tx) => tx.branch.id === props.branch?.id

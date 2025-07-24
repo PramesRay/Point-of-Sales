@@ -1,7 +1,7 @@
 import type { Branch } from "./branch"
 import type { Customer } from "./customer"
 import type { IdName } from "./common"
-import type { Meta } from "./meta"
+import type { Meta, MetaDetail } from "./meta"
 
 export type TotalOrder = {
   current: number
@@ -12,24 +12,23 @@ export type TotalOrder = {
 export interface Order {
   id: string 
   branch: IdName
-  employee: IdName
   table_number: string
   customer: Customer 
   is_take_away: boolean
   items: OrderItem[]
-  status: 'Pending' | 'Diproses' | 'Selesai' | 'Batal' 
+  status: 'Pending' | 'Diproses' | 'Tersaji' | 'Selesai' | 'Batal' | 'Refund'
   amount: number
   payment_status: 'Pending' | 'Selesai' | 'Gagal'
-  meta: Meta
+  meta: MetaDetail
 }
 
 export interface OrderItem {
   id: string
   quantity: number
   note: string | null
-  status: 'Pending' | 'Diproses' | 'Selesai' | 'Refund'
-  // name: string
-  // price: number
+  status: 'Pending' | 'Diproses' | 'Tersaji' | 'Refund'
+  name: string
+  price: number
 }
 
 export type CreateOrderPayload = Pick<Order, 'table_number'|'is_take_away'|'customer'> & {

@@ -14,7 +14,6 @@ const props = defineProps<{
   payload?: CreateOrderPayload
   data?: Order
   is_direct_payment?: boolean
-  item_in_chart: (OrderItem & { name: string; description: string; price: number })[]
   paymentSucceded: () => void
 }>()
 
@@ -35,7 +34,7 @@ const amtRules = [
 
 const totalPrice = computed(() => {
   if (props.is_direct_payment && props.payload) {
-    return props.item_in_chart.reduce((prev, curr) => prev + (curr.price ?? 0) * curr.quantity, 0)
+    return props.data?.items.reduce((prev, curr) => prev + (curr.price ?? 0) * curr.quantity, 0)
   } else {
    return props.data?.amount
   }

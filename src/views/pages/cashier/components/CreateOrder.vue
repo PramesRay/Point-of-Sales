@@ -3,7 +3,7 @@ import type { Category } from '@/types/inventory';
 import type { MenuSale } from '@/types/menu'
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import DetailOrder from './sub-components/DetailOrder.vue';
+import UpdateOrder from './sub-components/UpdateOrder.vue';
 
 const { openOverlay } = useOverlayManager()
 
@@ -22,7 +22,7 @@ const props = defineProps<{
     rounded="md"
     @click="
       openOverlay({
-        component: DetailOrder,
+        component: UpdateOrder,
         props: {
           is_create: true,
           data_menu: props.data_menu,
