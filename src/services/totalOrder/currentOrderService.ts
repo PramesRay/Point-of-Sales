@@ -81,6 +81,24 @@ export async function fetchCurrentOrder({
                 return value.includes(itemValue);
               }
 
+              // Jika value berupa object, gunakan deep comparison
+              if (typeof value === 'object') {
+                return JSON.stringify(itemValue) === JSON.stringify(value);
+              }
+
+              // Jika value berupa date, gunakan perbandingan tanggal saja
+              if (value instanceof Date || typeof value === 'string') {
+                console.log('itemValue', itemValue);
+                
+                // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
+                const itemDate = new Date(itemValue).toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
+                console.log('itemDate', itemDate);
+                const filterDate = value;  // Hanya tanggal (YYYY-MM-DD)
+                console.log('filterDate', filterDate);
+
+                return itemDate == filterDate;  // Bandingkan tanggal tanpa waktu
+              }
+
               // Jika bukan array, gunakan perbandingan biasa
               return itemValue === value;
             });

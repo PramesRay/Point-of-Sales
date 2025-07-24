@@ -5,21 +5,15 @@ import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: Order[];
-  branch: IdName | undefined;
+  branch: IdName | undefined | null;
   loading: boolean;
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  if (!props.branch || props.branch.id === 'all') {
-    return props.data
-  }
-  return props.data.filter(
-    (tx) => tx.branch.id === props.branch?.id
-  );
+  return props.data.filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');
 });
 
-const branchName = computed(() => (!props.branch || props.branch.id === 'all') ? 'Semua Cabang' : props.branch?.name ?? '-');
 const currentOrder = computed(() => filteredData.value.length || 0);
 </script>
 
@@ -31,7 +25,7 @@ const currentOrder = computed(() => filteredData.value.length || 0);
           <BuildingStoreIcon stroke-width="1.5" width="25"/>
         </v-btn>
         <div class="mx-3 my-auto">
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name || '' }}</span>
         </div>
       </div>
       <v-row v-if="!props.loading">

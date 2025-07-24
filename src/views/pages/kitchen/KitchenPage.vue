@@ -24,29 +24,14 @@ const { load: loadStockRequests, summary, list: stockRequestlist, loading: lsr, 
 onMounted(() => {
   loadCurrentOrder({
     filter: {
-      status: ['Diproses', 'Pending', 'Tersaji']
-    }
+      'meta.created_at': new Date().toISOString().split('T')[0]
+    },
+    sortBy: 'meta.created_at',
+    sortDesc: true
   })
   loadStockRequests()
 })
 
-// Branch Selection
-const branchOptions = computed(() => [
-  { id: 'all', name: 'Semua Cabang' },
-  ...branches.value
-]);
-const selectedBranch = ref<string | undefined>(
-  userStore.hasRole(['Admin', 'Pemilik', 'Kasir']) 
-  ? undefined
-  : userStore.me?.activity?.branch?.id 
-    ? userStore.me.activity.branch.id 
-    : undefined
-);
-const selectedBranchObject = computed(() => {
-  return branchOptions.value
-  .find(branch => branch.id === selectedBranch.value
-  ) || undefined
-})
 </script>
 
 <template>
@@ -57,12 +42,12 @@ const selectedBranchObject = computed(() => {
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])) || mdAndUp">
+    <v-col cols="12" md="6">
       <v-row>
         <v-col cols="12">
           <CurrentOrder 
             :data="currentOrder.data" 
-            :branch="selectedBranchObject"
+            :branch="userStore.me?.activity?.branch"
             :loading="lco" 
             class="flex-grow-1" 
           />
@@ -70,10 +55,9 @@ const selectedBranchObject = computed(() => {
         <v-col cols="12">
           <CurrentOrderQue
             :data="currentOrder.data"
-            :branch="selectedBranchObject"
+            :branch="userStore.me?.activity?.branch"
             :loading="lco"
 
-            :load="loadCurrentOrder"
             :refresh="loadCurrentOrder"
             class="flex-grow-1" 
           />
@@ -87,7 +71,7 @@ const selectedBranchObject = computed(() => {
         <v-col cols="12">
           <CurrentStockRequestList 
             :data="stockRequestlist" 
-            :branch="selectedBranchObject"
+            :branch="userStore.me?.activity?.branch"
             :loading="lsr" 
             @create-request="createRequest"
             class="flex-grow-1" 

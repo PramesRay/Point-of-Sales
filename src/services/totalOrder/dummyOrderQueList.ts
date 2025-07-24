@@ -51,9 +51,9 @@ const dummyOrdersQue: Order[] = [
   amount: 90000,
   payment_status: "Pending",
   meta: {
-    created_at: new Date ("2025-04-28T12:00:00"),
+    created_at: new Date(),
     created_by: dummyEmployee[2],
-    updated_at: new Date ("2025-04-28T12:30:00"),
+    updated_at: new Date(),
     last_updated_by: dummyEmployee[2]
   }
 },
@@ -88,9 +88,9 @@ const dummyOrdersQue: Order[] = [
   amount: 50000,
   payment_status: "Pending",
   meta: {
-    created_at: new Date ("2025-04-28T12:00:00"),
+    created_at: new Date(),
     created_by: dummyEmployee[2],
-    updated_at: new Date ("2025-04-28T12:30:00"),
+    updated_at: new Date(),
     last_updated_by: dummyEmployee[2]
   }
 },
@@ -133,9 +133,9 @@ const dummyOrdersQue: Order[] = [
   amount: 30000,
   payment_status: "Pending",
   meta: {
-    created_at: new Date ("2025-04-28T12:00:00"),
+    created_at: new Date(),
     created_by: dummyEmployee[2],
-    updated_at: new Date ("2025-04-28T12:30:00"),
+    updated_at: new Date(),
     last_updated_by: dummyEmployee[2]
   }
 },
@@ -178,9 +178,9 @@ const dummyOrdersQue: Order[] = [
   amount: 60000,
   payment_status: "Pending",
   meta: {
-    created_at: new Date ("2025-04-28T12:00:00"),
+    created_at: new Date(),
     created_by: dummyEmployee[2],
-    updated_at: new Date ("2025-04-28T12:30:00"),
+    updated_at: new Date(),
     last_updated_by: dummyEmployee[2]
   }
 },
@@ -223,9 +223,9 @@ const dummyOrdersQue: Order[] = [
   amount: 90000,
   payment_status: "Selesai",
   meta: {
-    created_at: new Date ("2025-04-28T12:00:00"),
+    created_at: new Date(),
     created_by: dummyEmployee[2],
-    updated_at: new Date ("2025-04-28T12:30:00"),
+    updated_at: new Date(),
     last_updated_by: dummyEmployee[2]
   }
 }

@@ -19,11 +19,6 @@ const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = use
 const { openOverlay } = useOverlayManager()
 
 onMounted(() => {
-  props.load({
-    filter: {
-      status: ['Diproses', 'Pending', 'Tersaji']
-    }
-  })
   loadItemSales()
 })
 
@@ -32,12 +27,12 @@ const props = defineProps<{
   branch: IdName | undefined;
   loading: boolean;
 
-  load: (filter: Record<string, any>) => void
+  // load: (filter: Record<string, any>) => Order
   refresh: () => void
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
-const filteredData = computed(() => {
+const filteredDataByBranch = computed(() => {
   if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }
@@ -45,6 +40,14 @@ const filteredData = computed(() => {
     (tx) => tx?.branch?.id === props.branch?.id
   );
 });
+
+const filteredData = computed(() => {
+  if (isActive.value) {
+    return filteredDataByBranch.value.filter((tx) => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji')
+  }
+
+  return filteredDataByBranch.value.filter(tx => tx.status === 'Selesai' || tx.status === 'Batal' || tx.status === 'Refund')
+})
 
 // Ambil permintaan terbaru
 const latestOrderQue = computed(() => filteredData?.value[0] || null);
@@ -138,14 +141,7 @@ watch(() => cashInput.value, (val) => {
                 variant="text"
                 density="compact"
                 size="small"
-                @click="
-                  isActive = !isActive,
-                  props.load({
-                    filter: {
-                      status: isActive ? ['Diproses', 'Pending', 'Tersaji'] : ['Selesai', 'Batal', 'Refund']
-                    }
-                  })
-                "
+                @click="isActive = !isActive"
               >
                 <v-icon>mdi-swap-vertical</v-icon></v-btn>
             </h4>
