@@ -10,7 +10,10 @@ export type TotalOrder = {
 }
 
 export interface Order {
-  id: string 
+  id: string
+  shift_id: string
+  shift_cashier_id: string
+  shift_kitchen_id: string
   branch: IdName
   table_number: string
   customer: Customer 

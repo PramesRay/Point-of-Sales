@@ -81,6 +81,8 @@ export interface Employee {
   access: AccessKey[] | null;
   assigned_branch: IdName[] | null;
   activity: {
+    shift_emp_id: string | null;
+    shift_op_id: string | null;
     is_active: boolean;
     branch: IdName | null;
     last_active: Date;

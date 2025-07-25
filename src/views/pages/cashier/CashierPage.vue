@@ -29,12 +29,23 @@ onMounted(() => {
     return
   }
 
-  loadCurrentOrder({
-    filter: {
-      'branch.id': selectedBranch.value,
-      status: ['Diproses', 'Pending', 'Tersaji']
-    }
-  })
+  if (userStore.hasRole(['Admin', 'Pemilik'])) {
+    loadCurrentOrder({
+      filter: {
+        'meta.created_at': new Date().toISOString().split('T')[0]
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
+  } else {
+    loadCurrentOrder({
+      filter: {
+        'shift_cashier_id': userStore.me?.activity?.shift_op_id
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
+  }
   loadItemSales(userStore.me?.activity?.branch?.id);
 })
 

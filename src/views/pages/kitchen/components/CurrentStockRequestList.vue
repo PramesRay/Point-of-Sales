@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   data: StockRequestList[];
-  branch: IdName | undefined;
+  branch: IdName | undefined | null;
   loading?: boolean;
 }>();
 

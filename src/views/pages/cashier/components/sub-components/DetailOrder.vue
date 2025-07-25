@@ -356,55 +356,62 @@ const copyToClipboard = (text: string) => {
         </v-row> -->
         
         <!-- Tombol untuk Role Kasir -->
-        <div v-if="(userStore.hasRole(['Admin', 'Kasir'])) && props.data_order?.payment_status === 'Pending'">
+        <div v-if="(userStore.hasRole(['Admin', 'Pemilik', 'Kasir', 'Dapur'])) && props.data_order?.payment_status === 'Pending'">
           <v-divider class="my-3"></v-divider>
-          <div class="d-flex justify-space-between align-center">
-            <v-btn 
-              color="error"
-              variant="plain"
-              prepend-icon="mdi-delete"
-              size="small"
-              :disabled="loading"
-              :loading="loading"
-              @click="
-                openOverlay({
-                  component: Blank,
-                  props: {
-                    confirmToContinue: true,
-                    confirmMessage: 'Apakah anda yakin ingin membatalkan pesanan ini?',
-                    onConfirm: () => {
-                      update({
-                        id: props.data_order?.id!,
-                        status: 'Batal',
-                      }),
-                      props.refresh()
-                      emit('close')
-                    }
-                  },
-              })"
-            >
-              Batalkan
-            </v-btn>
-  
-            <v-btn 
-              color="success"
-              :disabled="loading"
-              :loading="loading"
-              @click="
-                openOverlay({
-                  component: Payment,
-                  props: {
-                    data: props.data_order,
-                    paymentSucceded: () => {
-                      props.refresh()
-                    }
-                  },
-                })
-              "
-            >
-              Pembayaran
-            </v-btn>
-          </div>
+          <v-row class="d-flex justify-space-between align-center">
+            <v-col cols="auto">
+              <v-btn 
+                v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
+                color="error"
+                block
+                variant="plain"
+                prepend-icon="mdi-delete"
+                size="small"
+                :disabled="loading"
+                :loading="loading"
+                @click="
+                  openOverlay({
+                    component: Blank,
+                    props: {
+                      confirmToContinue: true,
+                      confirmMessage: 'Apakah anda yakin ingin membatalkan pesanan ini?',
+                      onConfirm: () => {
+                        update({
+                          id: props.data_order?.id!,
+                          status: 'Batal',
+                        }),
+                        props.refresh()
+                        emit('close')
+                      }
+                    },
+                  })"
+              >
+                Batalkan
+              </v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn
+                v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])"
+                color="success"
+                block
+                :disabled="loading"
+                :loading="loading"
+                @click="
+                  openOverlay({
+                    component: Payment,
+                    props: {
+                      data: props.data_order,
+                      paymentSucceded: () => {
+                        props.refresh()
+                      }
+                    },
+                  })
+                "
+              >
+                Pembayaran
+              </v-btn>
+            </v-col>
+          </v-row>
         </div>
       </div>
     </v-card>

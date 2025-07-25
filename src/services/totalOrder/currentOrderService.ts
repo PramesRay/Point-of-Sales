@@ -61,7 +61,9 @@ export async function fetchCurrentOrder({
         console.log('filter in service', filter)
         for (const [key, value] of Object.entries(filter)) {
           if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-            console.log('key', key, 'value', value);
+            console.log('key', key);
+            console.log('value', value);
+            console.log('value type', typeof value);
   
             // Menangani nested key (contoh: 'branch.id')
             const keys = key.split('.'); // Pisahkan key berdasarkan '.'
@@ -87,17 +89,29 @@ export async function fetchCurrentOrder({
               }
 
               // Jika value berupa date, gunakan perbandingan tanggal saja
-              if (value instanceof Date || typeof value === 'string') {
-                console.log('itemValue', itemValue);
-                
-                // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
-                const itemDate = new Date(itemValue).toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-                console.log('itemDate', itemDate);
-                const filterDate = value;  // Hanya tanggal (YYYY-MM-DD)
-                console.log('filterDate', filterDate);
+              if ((value instanceof Date && !isNaN(value.getTime())) || typeof value === 'string') {
+                // Jika value adalah string, kita konversi menjadi Date
+                const parsedValue = typeof value === 'string' ? new Date(value) : value;
 
-                return itemDate == filterDate;  // Bandingkan tanggal tanpa waktu
+                if ((itemValue instanceof Date && !isNaN(itemValue.getTime())) || typeof itemValue === 'string') {
+                  // Jika itemValue adalah string, kita konversi menjadi Date
+                  const parsedItemValue = typeof itemValue === 'string' ? new Date(itemValue) : itemValue;
+
+                  // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
+                  const itemDate = parsedItemValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
+                  console.log('itemDate', itemDate);
+
+                  const filterDate = parsedValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
+                  console.log('filterDate', filterDate);
+
+                  return itemDate === filterDate;  // Bandingkan tanggal tanpa waktu
+                } else {
+                  console.log("itemValue is not a valid Date or string.");
+                }
+              } else {
+                console.log("value is not a valid Date or string.");
               }
+
 
               // Jika bukan array, gunakan perbandingan biasa
               return itemValue === value;

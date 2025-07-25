@@ -15,20 +15,36 @@ import CurrentOrderQue from './components/CurrentOrderQue.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useStockRequests } from "@/composables/useStockRequest";
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
+import { useAlertStore } from '@/stores/alert';
 
 // Data Loading
-const { data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, error, update: updateOrder } = useCurrentOrders();
-const { load: loadStockRequests, summary, list: stockRequestlist, loading: lsr, create: createRequest } = useStockRequests();
+const { load: loadStockRequests, list: stockRequestlist, loading: lsr, create: createRequest } = useStockRequests();
+const alertStore = useAlertStore();
 
 onMounted(() => {
-  loadCurrentOrder({
-    filter: {
-      'meta.created_at': new Date().toISOString().split('T')[0]
-    },
-    sortBy: 'meta.created_at',
-    sortDesc: true
-  })
+  if (!userStore.me?.activity?.is_active) { 
+    alertStore.showAlert('Anda belum memulai shift!', 'warning');
+    return
+  }
+  
+  if (userStore.hasRole(['Admin', 'Pemilik'])) {
+    loadCurrentOrder({
+      filter: {
+        'meta.created_at': new Date().toISOString().split('T')[0]
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
+  } else {
+    loadCurrentOrder({
+      filter: {
+        'shift_kitchen_id': userStore.me?.activity?.shift_op_id
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
+  }
   loadStockRequests()
 })
 

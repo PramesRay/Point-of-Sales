@@ -3,13 +3,15 @@ import type { Employee } from "@/types/employee";
 
 const dummyEmployee: Employee[] = [
   {
-    id: 'emp-001',
+    id: 'emp-000',
     name: 'Hermanu',
     role: 'Admin',
     access: ['all'],
     email: 'hermanu.admin@example.com',
     assigned_branch: dummyBranchList,
     activity: {
+      shift_emp_id: null,
+      shift_op_id: null,
       is_active: true,
       branch: dummyBranchList[0],
       last_active: new Date('2025-05-01T09:30:00Z'),
@@ -27,6 +29,8 @@ const dummyEmployee: Employee[] = [
     email: 'hermanu.admin@example.com',
     assigned_branch: dummyBranchList,
     activity: {
+      shift_emp_id: 'sft-emp-2',
+      shift_op_id: 'sft-kch-1',
       is_active: true,
       branch: dummyBranchList[0],
       last_active: new Date('2025-05-01T09:30:00Z'),
@@ -44,6 +48,8 @@ const dummyEmployee: Employee[] = [
   email: 'aldi.kitchen@example.com',
   assigned_branch: [dummyBranchList[0], dummyBranchList[1]],
   activity: {
+    shift_emp_id: 'sft-emp-3',
+    shift_op_id: 'sft-csr-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
     branch: dummyBranchList[0]
@@ -61,6 +67,8 @@ const dummyEmployee: Employee[] = [
   email: 'rani.kitchen@example.com',
   assigned_branch: [dummyBranchList[0]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -78,9 +86,11 @@ const dummyEmployee: Employee[] = [
   email: 'budi.kitchen@example.com',
   assigned_branch: [dummyBranchList[0]],
   activity: {
+    shift_emp_id: 'sft-emp-5',
+    shift_op_id: 'sft-kch-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[0] 
+    branch: dummyBranchList[0]
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -95,6 +105,8 @@ const dummyEmployee: Employee[] = [
   email: 'siti.kitchen@example.com',
   assigned_branch: dummyBranchList,
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -112,6 +124,8 @@ const dummyEmployee: Employee[] = [
   email: 'siti.kitchen@example.com',
   assigned_branch: dummyBranchList,
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -129,6 +143,8 @@ const dummyEmployee: Employee[] = [
   email: 'joko.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,
     branch: null
@@ -146,6 +162,8 @@ const dummyEmployee: Employee[] = [
   email: 'dian.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: 'sft-emp-6',
+    shift_op_id: 'sft-csr-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,
     branch: dummyBranchList[1]
@@ -163,9 +181,11 @@ const dummyEmployee: Employee[] = [
   email: 'fajar.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: 'sft-emp-7',
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[1]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -180,9 +200,11 @@ const dummyEmployee: Employee[] = [
   email: 'tono.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: 'sft-emp-8',
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[1]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -197,6 +219,8 @@ const dummyEmployee: Employee[] = [
   email: 'ayu.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
     branch: dummyBranchList[1]
@@ -214,9 +238,11 @@ const dummyEmployee: Employee[] = [
   email: 'ayu.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
-    is_active: true,  
-    branch: dummyBranchList[1]
+    is_active: false,  
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -231,6 +257,8 @@ const dummyEmployee: Employee[] = [
   email: 'bagas.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,
     branch: null
@@ -248,6 +276,8 @@ const dummyEmployee: Employee[] = [
   email: 'lina.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-csr-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
     branch: dummyBranchList[2]
@@ -265,9 +295,11 @@ const dummyEmployee: Employee[] = [
   email: 'rizky.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[2]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -282,9 +314,11 @@ const dummyEmployee: Employee[] = [
   email: 'anton.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[2]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -299,6 +333,8 @@ const dummyEmployee: Employee[] = [
   email: 'sari.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -316,6 +352,8 @@ const dummyEmployee: Employee[] = [
   email: 'sari.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -333,6 +371,8 @@ const dummyEmployee: Employee[] = [
   email: 'hadi.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,
     branch: null
@@ -350,6 +390,8 @@ const dummyEmployee: Employee[] = [
   email: 'yuni.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-csr-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
     branch: dummyBranchList[3]
@@ -367,9 +409,11 @@ const dummyEmployee: Employee[] = [
   email: 'gilang.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[3]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -384,9 +428,11 @@ const dummyEmployee: Employee[] = [
   email: 'nita.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: 'sft-wh-1',
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: true,  
-    branch: dummyBranchList[3]
+    branch: null
   },
   meta: {
     created_at: new Date('2024-10-01T08:00:00Z'),
@@ -401,6 +447,8 @@ const dummyEmployee: Employee[] = [
   email: 'eko.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -418,6 +466,8 @@ const dummyEmployee: Employee[] = [
   email: 'eko.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,  
     branch: null
@@ -435,6 +485,8 @@ const dummyEmployee: Employee[] = [
   email: 'bambang.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
+    shift_emp_id: null,
+    shift_op_id: null,
     last_active: new Date('2025-05-27T16:00:00'), 
     is_active: false,
     branch: null

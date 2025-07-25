@@ -157,7 +157,7 @@ onMounted(() => {
           </span>
         </div>
         <v-progress-circular v-if="loading" indeterminate color="warning" height="1"/>
-        <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir']) && !loading">
+        <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir', 'Gudang']) && !loading">
           <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
             <!-- Mekanisme kondisional rendering perlu ditingkatkan? -->
             <v-btn 
