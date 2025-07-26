@@ -29,7 +29,7 @@ const { requests, loading: lfr, create: createFundRequest, update: updateFundReq
 onMounted(() => {
   initItems();
   initStockMovement();
-  loadStockRequest(selectedBranch.value ?? '');
+  loadStockRequest();
 });
 
 // Branch Selection
@@ -38,13 +38,7 @@ import { useStockMovements } from '@/composables/useStockMovement';
 import { useFundRequests } from '@/composables/useFundRequest';
 
 const branchOptions = computed(() => branches.value);
-const selectedBranch = ref<string | undefined>(
-  userStore.hasRole(['Admin', 'Pemilik']) 
-  ? undefined
-  : userStore.me?.activity?.branch?.id 
-    ? userStore.me.activity.branch.id 
-    : undefined
-);
+const selectedBranch = ref<string | undefined>(undefined)
 const selectedBranchObject = computed(() => {
   return branchOptions.value
   .find(branch => branch.id === selectedBranch.value
@@ -118,7 +112,7 @@ const pinBranch = ref(false)
     <!-- Kolom Kiri: Current Order + Current Transaction -->
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
+        <v-col cols="12">
           <CurrentStockRequestSummary 
             :data="summary" 
             :branch="selectedBranch"
@@ -130,10 +124,11 @@ const pinBranch = ref(false)
         <v-col cols="12">
           <CurrentStockRequestList 
             :data="stockRequestlist" 
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="lsr" 
             class="flex-grow-1"
             @approve-request="updateRequest"
+            :refresh="loadStockRequest"
           />
         </v-col>
       </v-row>
@@ -142,7 +137,7 @@ const pinBranch = ref(false)
     <!-- Kolom Kanan: Create Order + Current Order Que -->
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
+        <v-col cols="12">
           <InventoryItems 
             :data="dataInventory"
             :categories="categories"
@@ -150,10 +145,11 @@ const pinBranch = ref(false)
             class="flex-grow-1"
             @update-item="updateItem"
             @delete-item="deleteItem"
+            :refresh="initItems"
           />
         </v-col>
 
-        <v-col cols="12" v-if="userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
+        <v-col cols="12">
           <StockMovement
             :data="dataStockMovement"
             :categories="categories"
@@ -168,7 +164,7 @@ const pinBranch = ref(false)
     </v-col>
     <v-col cols="12" md="4">
       <v-row>
-        <v-col cols="12" v-if="userStore.me && userStore.hasRole(['Admin', 'Pemilik' , 'Dapur'])">
+        <v-col cols="12" >
           <CurrentFundRequest
             :user="userStore.me"
             :data="requests"

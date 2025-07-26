@@ -1,6 +1,6 @@
-import type { StockRequestList } from "@/types/inventory";
+import type { StockRequest } from "@/types/inventory";
 
-const dummyStockRequestList: StockRequestList[] = [
+const dummyStockRequestList: StockRequest[] = [
   {
     id: 'STR-001',
     branch: {

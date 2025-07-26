@@ -1,7 +1,7 @@
 import api from '@/services/api';
 import dummyStockRequestSummary from '@/services/inventory/dummyStockRequestSummary';
 import dummyStockRequestList from "@/services/inventory/dummyStockRequestList";
-import type { StockRequestSummary, StockRequestList } from '@/types/inventory';
+import type { StockRequestSummary, StockRequest } from '@/types/inventory';
 import branchList from '@/services/common/branch/dummyBranchList'; 
 import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
@@ -39,14 +39,14 @@ export async function fetchStockRequestList(
   branchId?: string,
   page?: number ,
   limit?: number
-): Promise<StockRequestList[]> {
+): Promise<StockRequest[]> {
   try {
     let url = `/inventory/stock-requests`;
     let queryParams = '';
 
     // Tambahkan query params jika filter diberikan
     if (!branchId && !page && !limit) {
-      const res = await api.get<StockRequestList[]>(url);
+      const res = await api.get<StockRequest[]>(url);
       return res.data;
     }
     
@@ -60,7 +60,7 @@ export async function fetchStockRequestList(
       queryParams += `&page=${page}&limit=${limit}`
     }
 
-    const res = await api.get<StockRequestList[]>(url + queryParams);
+    const res = await api.get<StockRequest[]>(url + queryParams);
     return res.data;
     
   } catch (error) {
@@ -87,9 +87,9 @@ export async function fetchStockRequestList(
   } 
 }
 
-export async function createStockRequest(payload: any): Promise<StockRequestList> {
+export async function createStockRequest(payload: any): Promise<StockRequest> {
   try {
-    const res = await api.post<StockRequestList>(`/inventory/stock-requests`, payload);
+    const res = await api.post<StockRequest>(`/inventory/stock-requests`, payload);
     alertStore.showAlert('Permintaan Stok berhasil dibuat!', 'success');
     return res.data;
   } catch (error) {
@@ -99,9 +99,9 @@ export async function createStockRequest(payload: any): Promise<StockRequestList
   }  
 }
 
-export async function updateStockRequest(payload: any): Promise<StockRequestList> {
+export async function updateStockRequest(payload: any): Promise<StockRequest> {
   try {
-    const res = await api.put<StockRequestList>(`/inventory/stock-requests`, payload);
+    const res = await api.put<StockRequest>(`/inventory/stock-requests`, payload);
     alertStore.showAlert('Permintaan Stok berhasil diubah!', 'success');
     return res.data;
   } catch (error) {

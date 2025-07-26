@@ -8,7 +8,7 @@ const userStore = useUserStore();
 
 // imported components
 import CurrentOrder from './components/CurrentOrder.vue';
-import CurrentStockRequestList from './components/CurrentStockRequestList.vue';
+import CurrentStockRequestList from '../inventory/components/CurrentStockRequestList.vue';
 import CurrentOrderQue from './components/CurrentOrderQue.vue';
 
 // imported composables
@@ -91,6 +91,7 @@ onMounted(() => {
             :loading="lsr" 
             @create-request="createRequest"
             class="flex-grow-1" 
+            :refresh="loadStockRequests"
           />
         </v-col>
       </v-row>

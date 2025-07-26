@@ -1,12 +1,12 @@
 import { ref, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchStockRequestSummary } from '@/services/inventory/stockRequestService';
-import type { StockRequestList, StockRequestSummary } from '@/types/inventory';
+import type { StockRequest, StockRequestSummary } from '@/types/inventory';
 
 export function useStockRequests() {
   const branchId  = ref<string>();
   const summary   = ref<StockRequestSummary[]>([]);
-  const list      = ref<StockRequestList[]>([]);
+  const list      = ref<StockRequest[]>([]);
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
 

@@ -628,7 +628,7 @@ export const dummyInventoryItems: InventoryItem[] = [
   },
   // new item
   {
-    id: 'c5x7s6d7-4c0b-4a0b-9f5f-2j8sj3n2j3f',
+    id: 'c5x7s6d7-4c0b-4a0b-9f5f-2j8sk3n1j4f',
     name: 'Nasi Goreng',
     description: 'Nasi yang dimasak dengan telur dan ayam.',
     category: dummyInventoryItemsCategories[5],

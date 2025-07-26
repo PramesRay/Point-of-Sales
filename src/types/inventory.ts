@@ -2,7 +2,6 @@ import type { IdName } from "./common"
 import type { Branch } from "./branch";
 import type { Employee } from "./employee";
 import type { Meta } from "./meta";
-import { omit } from "vuetify/lib/util";
 
 export interface StockRequestSummary {
   branch: IdName;
@@ -13,7 +12,7 @@ export interface StockRequestSummary {
   }
 }
 
-export interface StockRequestList {
+export interface StockRequest {
   id: string;
   branch: IdName;
   employee: Employee;
@@ -81,9 +80,8 @@ export type UpdateStockMovementPayload = CreateStockMovementPayload & {
 
 
 export interface CreateStockRequestPayload {
-  branch_id: string
+  items: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>[]
   note: string
-  items: {[K in keyof Pick<InventoryItem, 'id' | 'name' | 'unit' | 'quantity'>]: InventoryItem[K] | null}[]
 }
 
 
