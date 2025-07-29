@@ -1,23 +1,21 @@
 <script setup lang="ts">
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import { useInventoryItems } from '@/composables/useInventoryItems';
-import { useMenuItems } from '@/composables/useMenuItems';
 import { useStockRequests } from '@/composables/useStockRequest';
 import { useUserStore } from '@/stores/authUser';
-import type { CreateStockRequestPayload, InventoryItem } from '@/types/inventory';
-import type { MenuSale } from '@/types/menu';
 import { computed, onMounted, ref, watchEffect } from 'vue';
 import AddItemRequest from './AddItemRequest.vue';
-import Blank from '@/components/shared/Blank.vue';
+import type { CreateStockRequestPayload, InventoryItem, StockRequest, UpdateStockRequestPayload } from '@/types/inventory';
 
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
-const { create, loading } = useStockRequests();
+const { create, update, loading } = useStockRequests();
 
 const props = defineProps<{
+  is_create: boolean
+  data?: StockRequest
+  
   refresh: () => void
-
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
 }>()
@@ -34,13 +32,17 @@ const payload = ref<{
   }[]
   note: string
 }>({
-  items: [],
-  note: '',
+  items: props.data ? props.data.items.map(item => ({
+    id: item.item.id,
+    name: item.item.name,
+    quantity: item.quantity,
+    unit: item.item.unit
+  })) : [],
+  note: props.data ? props.data.note : '',
 })
 
 const formRef = ref()
 const isFormValid = ref(false)
-const selectedCtg = ref()
 
 const rules = {
   required: [(v: any) => !!v || 'Wajib diisi.'],
@@ -70,6 +72,17 @@ function addItem() {
 }
 
 const isChanged = computed(() => {
+  if (props.data) {
+    return (
+      payload.value.note !== props.data.note ||
+      JSON.stringify(payload.value.items) !== JSON.stringify(props.data.items.map(item => ({
+        id: item.item.id,
+        name: item.item.name,
+        quantity: item.quantity,
+        unit: item.item.unit
+      })))
+    )
+  }
   return payload.value.items.some((item) => item.quantity! > 0)
 })
 
@@ -87,16 +100,50 @@ function removeItem(index: number) {
 }
 
 function createRequest() {
-  create(payload.value)
+  const createPayload: CreateStockRequestPayload = {
+    items: payload.value.items.map((item) => ({
+      id: item.id!,
+      quantity: item.quantity
+    })),
+    note: payload.value.note
+  }
+  create(createPayload).then(() => {
+    if (typeof props.onIsChangedUpdate === 'function') {
+      props.onIsChangedUpdate(false)
+    }
+    emit('close')
+    props.refresh()
+  })
+}
+
+function updateRequest() {
+  const updatePayload: UpdateStockRequestPayload = {
+    id: props.data?.id!,
+    items: payload.value.items.map((item) => ({
+      id: item.id!,
+      quantity: item.quantity
+    })),
+    note: payload.value.note
+  }
+  update(updatePayload).then(() => {
+    if (typeof props.onIsChangedUpdate === 'function') {
+      props.onIsChangedUpdate(false)
+    }
+    emit('close')
+    props.refresh()
+  })
 }
 
 function handleSubmit() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    createRequest()
+    if (props.is_create) {
+      createRequest()
+    } else {
+      updateRequest()
+    }
   })
 }
-
 </script>
 
 <template>
@@ -108,7 +155,7 @@ function handleSubmit() {
       <v-icon>mdi-close</v-icon>
     </v-btn>
     
-    <h4 class="text-h4">Tambah Permintaan Stok</h4>
+    <h4 class="text-h4">{{ props.is_create ? 'Buat Permintaan Stok' : 'Ubah Permintaan Stok'}}</h4>
     <v-divider class="my-4"></v-divider>
     <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="handleSubmit">
       <div class="d-flex justify-space-between align-baseline">
@@ -144,35 +191,17 @@ function handleSubmit() {
                       quantity: data.quantity,
                       unit: data.unit
                     }
-                  }
+                  },  
+                  remove: () => removeItem(index)
                 }
               })
             "
           >
             <v-divider v-if="index > 0" class="mb-4 mt-2"></v-divider>
             <v-row>
-              <v-col cols="10">
+              <v-col cols="12">
                 <v-list-item-title class="font-weight-bold text-medium-emphasis">{{ item.name }}</v-list-item-title>
                 <v-list-item-subtitle>Jumlah: {{ item.quantity }} {{ item.unit }}</v-list-item-subtitle>
-              </v-col>
-              <v-col cols="2" class="d-flex justify-end">
-                <v-btn 
-                  icon
-                  color="error" 
-                  variant="text"
-                  @click="
-                  openOverlay({
-                    component: Blank,
-                    props: {
-                      confirmToContinue: true,
-                      confirmMessage: 'Apakah anda yakin ingin menghapus item ini?',
-                      onConfirm: () => removeItem(index)
-                    }
-                  })
-                  "
-                >
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
               </v-col>
             </v-row>
           </v-list-item>

@@ -1,7 +1,7 @@
 import type { IdName } from "./common"
 import type { Branch } from "./branch";
 import type { Employee } from "./employee";
-import type { Meta } from "./meta";
+import type { Meta, MetaDetail } from "./meta";
 
 export interface StockRequestSummary {
   branch: IdName;
@@ -15,14 +15,38 @@ export interface StockRequestSummary {
 export interface StockRequest {
   id: string;
   branch: IdName;
-  employee: Employee;
+  shift: {
+    kitchen: string;
+    warehouse: string | null;
+  }
   items: {
-    item: InventoryItem
+    item: Pick<InventoryItem, 'id' | 'name' | 'unit'>
     status: 'Disetujui' | 'Ditolak' | 'Pending';
+    quantity: number
   }[]
   status: 'Disetujui'| 'Beberapa Disetujui' | 'Ditolak' | 'Pending';
   note: string;
-  time: Meta
+  meta: MetaDetail
+}
+
+export type CreateStockRequestPayload = Pick<StockRequest, 'note'> & {
+  items: {
+    id: string
+    quantity: number
+  }[]
+}
+
+export type UpdateStockRequestPayload = CreateStockRequestPayload & {
+  id: string
+}
+
+export interface ApproveStockRequestPayload {
+  id: string
+  items: { 
+    id: string, 
+    approved: boolean
+  }[]
+  note: string
 }
 
 export interface Category {
@@ -70,26 +94,10 @@ export type CreateStockMovementPayload = Omit<StockMovement, 'id' | 'meta' | 'br
   item: {
     id: string
     quantity: number
-    category_id: string
+    category_id: string // hilangin
   }
 }
 
 export type UpdateStockMovementPayload = CreateStockMovementPayload & {
   id: string
-}
-
-
-export interface CreateStockRequestPayload {
-  items: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>[]
-  note: string
-}
-
-
-export interface ApproveStockRequestPayload {
-  id: string
-  items: { 
-    id: string, 
-    status: 'Disetujui' | 'Ditolak' 
-  }[]
-  note: string
 }

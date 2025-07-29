@@ -3,21 +3,16 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
-import type { StockRequest, ApproveStockRequestPayload, CreateStockRequestPayload } from '@/types/inventory';
+import type { StockRequest } from '@/types/inventory';
 
 import { getTimeDiff } from "@/utils/helpers/time";
 import type { IdName } from '@/types/common';
 import { useUserStore } from '@/stores/authUser';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailStockRequest from './sub-components/DetailStockRequest.vue';
-import CreateStockRequest from './sub-components/CreateStockRequest.vue';
+import CreateStockRequest from './sub-components/UpdateStockRequest.vue';
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
-
-const emit = defineEmits<{
-  (e: 'create-request', payload: any): void
-  (e: 'approve-request', payload: ApproveStockRequestPayload): StockRequest
-}>();
 
 const props = defineProps<{
   data: StockRequest[];
@@ -76,7 +71,7 @@ function openDetail(request: StockRequest) {
                 <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
               </div>
               <div 
-                v-if="!props.branch || props.branch?.id !== 'all'" 
+                v-if="props.branch && props.branch.id !== 'all' && !props.loading"
                 class="text-subtitle-2 text-medium-emphasis"
               >{{ props.branch?.name }}
               </div> 
@@ -103,7 +98,7 @@ function openDetail(request: StockRequest) {
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <h6 class="text-secondary text-h4 font-weight-bold">
-                      {{ latestRequest?.employee.name }}
+                      {{ latestRequest?.meta.created_by.name }}
                     </h6>
                     <span class="text-subtitle-2 text-disabled">
                       Lihat Detail
@@ -115,9 +110,9 @@ function openDetail(request: StockRequest) {
                       <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.time.created_at) }}</h4>
-                    <i v-if="latestRequest.time.updated_at !== null" class="text-subtitle-2 text-medium-emphasis">
-                      Diubah {{ getTimeDiff(latestRequest.time.updated_at) }}
+                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.meta.created_at) }}</h4>
+                    <i v-if="latestRequest.meta.updated_at !== null" class="text-subtitle-2 text-medium-emphasis">
+                      Diubah {{ getTimeDiff(latestRequest.meta.updated_at) }}
                     </i>
                   </div>
                 </div>
@@ -133,7 +128,7 @@ function openDetail(request: StockRequest) {
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
                         <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                          {{ listRequest?.employee.name }}
+                          {{ listRequest?.meta.created_by.name }}
                         </h6>
                         <span class="text-subtitle-2 text-disabled">
                           Lihat Detail
@@ -145,9 +140,9 @@ function openDetail(request: StockRequest) {
                           <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.time.created_at) }}</div>
-                        <i v-if="listRequest.time.updated_at" class="text-subtitle-2 text-medium-emphasis">
-                          Diubah {{ getTimeDiff(listRequest.time.updated_at) }}
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.meta.created_at) }}</div>
+                        <i v-if="listRequest.meta.updated_at" class="text-subtitle-2 text-medium-emphasis">
+                          Diubah {{ getTimeDiff(listRequest.meta.updated_at) }}
                         </i>
                       </div>
                     </div>

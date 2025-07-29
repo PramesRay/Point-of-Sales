@@ -24,10 +24,11 @@ const { data: branches, loading: lb } = useBranchList();
 const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr, update: updateRequest } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm, create: createStockMovement, update: updateStockMovement } = useStockMovements();
-const { requests, loading: lfr, create: createFundRequest, update: updateFundRequest } = useFundRequests();
+const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 
 onMounted(() => {
   initItems();
+  loadFundRequest();
   initStockMovement();
   loadStockRequest();
 });
@@ -47,7 +48,9 @@ const selectedBranchObject = computed(() => {
 console.log('me', userStore.me)
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
-  loadStockRequest(selectedBranch.value)
+  loadStockRequest({
+    filter: { 'branch.id': selectedBranch.value }
+  })
   console.log('selectedBranch', selectedBranch.value)
 });
 
@@ -115,7 +118,7 @@ const pinBranch = ref(false)
         <v-col cols="12">
           <CurrentStockRequestSummary 
             :data="summary" 
-            :branch="selectedBranch"
+            :branch="selectedBranchObject"
             :loading="lsr" 
             class="flex-grow-1" 
           />
@@ -123,11 +126,10 @@ const pinBranch = ref(false)
         
         <v-col cols="12">
           <CurrentStockRequestList 
-            :data="stockRequestlist" 
+            :data="stockRequestlist.data" 
             :branch="selectedBranchObject"
             :loading="lsr" 
             class="flex-grow-1"
-            @approve-request="updateRequest"
             :refresh="loadStockRequest"
           />
         </v-col>
@@ -166,14 +168,11 @@ const pinBranch = ref(false)
       <v-row>
         <v-col cols="12" >
           <CurrentFundRequest
-            :user="userStore.me"
-            :data="requests"
-            :inv_items="dataInventory"
-            :branch="selectedBranchObject!"
+            :data="fundRequestList.data"
+            :branch="selectedBranchObject"
             :loading="lfr"
             class="flex-grow-1"
-            @create-fr="createFundRequest"
-            @update-fr="updateFundRequest"
+            :refresh="loadFundRequest"
           />
         </v-col>
       </v-row>

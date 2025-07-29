@@ -1,21 +1,40 @@
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchStockRequestSummary } from '@/services/inventory/stockRequestService';
-import type { StockRequest, StockRequestSummary } from '@/types/inventory';
+import type { ApproveStockRequestPayload, CreateStockRequestPayload, StockRequest, StockRequestSummary, UpdateStockRequestPayload } from '@/types/inventory';
 
 export function useStockRequests() {
-  const branchId  = ref<string>();
   const summary   = ref<StockRequestSummary[]>([]);
-  const list      = ref<StockRequest[]>([]);
+  const list      = ref<{ data: StockRequest[]; total: number; }>({ data: [], total: 0 });
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
 
-  async function load(id?: string) {
+  async function load({
+    page,
+    limit,
+    search,
+    sortBy,
+    sortDesc,
+    filter
+  }: {
+    page?: number
+    limit?: number
+    search?: string
+    sortBy?: string
+    sortDesc?: boolean
+    filter?: Record<string, any>
+  } = {}) {
     loading.value = true;
     error.value   = null;
     try {
-      summary.value = await fetchStockRequestSummary(id);
-      list.value = await fetchStockRequestList(id);
+      summary.value = await fetchStockRequestSummary();
+      list.value = await fetchStockRequestList({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortDesc,
+        filter
+      });
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -23,7 +42,7 @@ export function useStockRequests() {
     }
   }
 
-  async function create(payload: any) {
+  async function create(payload: CreateStockRequestPayload) {
     try {
       loading.value = true;
       await createStockRequest(payload);
@@ -34,7 +53,7 @@ export function useStockRequests() {
     }
   }
 
-  async function update(payload: any) {
+  async function update(payload: UpdateStockRequestPayload | ApproveStockRequestPayload) {
     try {
       loading.value = true;
       await updateStockRequest(payload);
@@ -45,5 +64,5 @@ export function useStockRequests() {
     }
   }
 
-  return { branchId, summary, list, loading, error, load, create, update };
+  return { summary, list, loading, error, load, create, update };
 }

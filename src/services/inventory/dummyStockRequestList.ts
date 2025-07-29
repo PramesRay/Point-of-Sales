@@ -1,4 +1,5 @@
 import type { StockRequest } from "@/types/inventory";
+import { dummyInventoryItems } from "./dummyInventoryItems";
 
 const dummyStockRequestList: StockRequest[] = [
   {
@@ -7,23 +8,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-1",
       name: "Restoran 1"
     },
-    employee: { 
-      id: "",
-      name: "Budi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Nasi Uduk",
-        quantity: 20,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 20,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Persiapan malam minggu",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T10:00:00"),
-      updated_at: new Date("2025-04-28T11:00:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T11:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -32,33 +36,36 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-1",
       name: "Restoran 1"
     },
-    employee: { 
-      id: "",
-      name: "Budi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Ayam Goreng",
-        quantity: 30,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 30,
       status: "Pending"
     },
     {
       item: {
-        id: "",
-        name: "Bebek Goreng",
-        quantity: 30,
-        unit: "pcs"
+        id: dummyInventoryItems[1].id,
+        name: dummyInventoryItems[1].name,
+        unit: dummyInventoryItems[1].unit
       },
+      quantity: 30,
       status: "Pending"
     }
     ],
     status: "Pending",
     note: "Stok mulai menipis",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T12:30:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T12:30:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -67,23 +74,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-1",
       name: "Restoran 1"
     },
-    employee: { 
-      id: "",
-      name: "Budi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Kertas Struk",
-        quantity: 5,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 5,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Untuk mesin kasir 2",
-    time: {
+    meta: {
       created_at: new Date("2025-04-27T09:00:00"),
-      updated_at: new Date("2025-04-27T09:15:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-27T09:15:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -92,23 +102,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-1",
       name: "Restoran 1"
     },
-    employee: { 
-      id: "",
-      name: "Budi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Minyak Goreng",
-        quantity: 10,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 10,
       status: "Ditolak"
     }],
     status: "Ditolak",
     note: "Sudah tersedia dari gudang",
-    time: {
+    meta: {
       created_at: new Date("2025-04-26T11:00:00"),
-      updated_at: new Date("2025-04-26T11:45:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-26T11:45:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -117,23 +130,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-1",
       name: "Restoran 1"
     },
-    employee: { 
-      id: "",
-      name: "Budi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Lele Segar",
-        quantity: 15,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 15,
       status: "Pending"
     }],
     status: "Pending",
     note: "Stok untuk malam ini",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T15:00:00"),
-      updated_at: new Date("2025-04-28T15:10:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T15:10:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
 
@@ -143,23 +159,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-2",
       name: "Restoran 2"
     },
-    employee: { 
-      id: "",
-      name: "Siti" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Nasi Putih",
-        quantity: 25,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 25,
       status: "Pending"
     }],
     status: "Pending",
     note: "Stok menipis menjelang akhir pekan",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T11:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T11:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -168,23 +187,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-2",
       name: "Restoran 2"
     },
-    employee: { 
-      id: "",
-      name: "Siti" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Ayam Bakar",
-        quantity: 20,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 20,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Menu spesial hari Jumat",
-    time: {
+    meta: {
       created_at: new Date("2025-04-27T14:00:00"),
-      updated_at: new Date("2025-04-27T15:00:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-27T15:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -193,23 +215,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-2",
       name: "Restoran 2"
     },
-    employee: { 
-      id: "",
-      name: "Siti" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Plastik Takeaway",
-        quantity: 100,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 100,
       status: "Ditolak"
     }],
     status: "Ditolak",
     note: "Stok masih aman hingga minggu depan",
-    time: {
+    meta: {
       created_at: new Date("2025-04-26T10:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-26T10:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -218,23 +243,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-2",
       name: "Restoran 2"
     },
-    employee: { 
-      id: "",
-      name: "Siti" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Tahu Goreng",
-        quantity: 40,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 40,
       status: "Pending"
     }],
     status: "Pending",
     note: "Permintaan dari dapur",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T16:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T16:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -243,23 +271,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-2",
       name: "Restoran 2"
     },
-    employee: { 
-      id: "",
-      name: "Siti" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Alat Panggang",
-        quantity: 1,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 1,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Alat lama rusak",
-    time: {
+    meta: {
       created_at: new Date("2025-04-25T09:30:00"),
-      updated_at: new Date("2025-04-25T09:40:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-25T09:40:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
 
@@ -269,23 +300,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-3",
       name: "Restoran 3"
     },
-    employee: { 
-      id: "",
-      name: "Rudi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Nasi Uduk",
-        quantity: 30,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 30,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Stok rutin harian",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T08:00:00"),
-      updated_at: new Date("2025-04-28T08:10:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T08:10:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -294,23 +328,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-3",
       name: "Restoran 3"
     },
-    employee: { 
-      id: "",
-      name: "Rudi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Lele Goreng",
-        quantity: 20,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 20,
       status: "Pending"
     }],
     status: "Pending",
     note: "Persiapan promo malam",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T13:00:00"),
-      updated_at: new Date("2025-04-28T13:20:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T13:20:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -319,23 +356,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-3",
       name: "Restoran 3"
     },
-    employee: { 
-      id: "",
-      name: "Rudi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Kertas Struk",
-        quantity: 10,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 10,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Stok habis sejak kemarin",
-    time: {
+    meta: {
       created_at: new Date("2025-04-27T17:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-27T17:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -344,23 +384,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-3",
       name: "Restoran 3"
     },
-    employee: { 
-      id: "",
-      name: "Rudi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Minyak Goreng",
-        quantity: 15,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 15,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Persediaan rendah",
-    time: {
+    meta: {
       created_at: new Date("2025-04-26T12:00:00"),
-      updated_at: new Date("2025-04-26T13:00:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-26T13:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -369,23 +412,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-3",
       name: "Restoran 3"
     },
-    employee: { 
-      id: "",
-      name: "Rudi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Ayam Suwir",
-        quantity: 25,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 25,
       status: "Ditolak"
     }],
     status: "Ditolak",
     note: "Menu ditiadakan minggu ini",
-    time: {
+    meta: {
       created_at: new Date("2025-04-25T10:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-25T10:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
 
@@ -395,23 +441,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-4",
       name: "Restoran 4"
     },
-    employee: { 
-      id: "",
-      name: "Dewi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Tempe Goreng",
-        quantity: 50,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 50,
       status: "Pending"
     }],
     status: "Pending",
     note: "Stok cadangan habis",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T09:00:00"),
-      updated_at: new Date("2025-04-28T09:50:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T09:50:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -420,23 +469,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-4",
       name: "Restoran 4"
     },
-    employee: { 
-      id: "",
-      name: "Dewi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Nasi Putih",
-        quantity: 35,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 35,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Untuk shift malam",
-    time: {
+    meta: {
       created_at: new Date("2025-04-28T14:00:00"),
-      updated_at: new Date("2025-04-28T14:50:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-28T14:50:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -445,23 +497,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-4",
       name: "Restoran 4"
     },
-    employee: { 
-      id: "",
-      name: "Dewi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Sambal",
-        quantity: 10,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 10,
       status: "Ditolak"
     }],
     status: "Ditolak",
     note: "Masih cukup hingga akhir minggu",
-    time: {
+    meta: {
       created_at: new Date("2025-04-27T08:00:00"),
-      updated_at: new Date("2025-04-27T08:50:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-27T08:50:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -470,23 +525,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-4",
       name: "Restoran 4"
     },
-    employee: { 
-      id: "",
-      name: "Dewi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: 'sft-wh-1',
+    },
     items: [{
       item: {
-        id: "",
-        name: "Gas Elpiji",
-        quantity: 3,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 3,
       status: "Disetujui"
     }],
     status: "Disetujui",
     note: "Cadangan habis",
-    time: {
+    meta: {
       created_at: new Date("2025-04-26T15:00:00"),
-      updated_at: null
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-26T15:00:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
   {
@@ -495,23 +553,26 @@ const dummyStockRequestList: StockRequest[] = [
       id: "branch-4",
       name: "Restoran 4"
     },
-    employee: { 
-      id: "",
-      name: "Dewi" },
+    shift: {
+      kitchen: 'sft-kch-1',
+      warehouse: null,
+    },
     items: [{
       item: {
-        id: "",
-        name: "Sendok Plastik",
-        quantity: 200,
-        unit: "pcs"
+        id: dummyInventoryItems[0].id,
+        name: dummyInventoryItems[0].name,
+        unit: dummyInventoryItems[0].unit
       },
+      quantity: 200,
       status: "Pending"
     }],
     status: "Pending",
     note: "Persiapan take away akhir pekan",
-    time: {
+    meta: {
       created_at: new Date("2025-04-25T16:30:00"),
-      updated_at: new Date("2025-04-25T16:35:00")
+      created_by: { id: 'emp-004', name: 'Budi'},
+      updated_at: new Date("2025-04-25T16:35:00"),
+      last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   }
 ];

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import Blank from '@/components/shared/Blank.vue';
+import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import { useInventoryItems } from '@/composables/useInventoryItems';
 import type { InventoryItem } from '@/types/inventory';
 import { ref, computed, onMounted } from 'vue'
 
+const { openOverlay } = useOverlayManager()
 const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
 
 onMounted(() => {
@@ -10,8 +13,9 @@ onMounted(() => {
 });
 
 const props = defineProps<{
-  data?: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>
-  add: (data: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>) => void
+  data?: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>
+  add: (data: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>) => void
+  remove: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -30,14 +34,16 @@ const payload = ref<{
     id: string | null, 
     name: string | null,
     quantity: number 
-    unit: string | null
+    unit: string | null,
+    purchase_price: number
   }
 }>({
   items: {
     id: props.data ? props.data.id : null,
     name: props.data ? props.data.name : null,
     quantity: props.data ? props.data.quantity : 1,
-    unit: props.data ? props.data.unit : null
+    unit: props.data ? props.data.unit : null,
+    purchase_price: props.data ? props.data.purchase_price : 0
   }
 })
 
@@ -47,7 +53,8 @@ function handleSubmit() {
     id: payload.value.items.id!,
     name: payload.value.items.name!,
     quantity: payload.value.items.quantity,
-    unit: payload.value.items.unit!
+    unit: payload.value.items.unit!,
+    purchase_price: payload.value.items.purchase_price
   }
   props.add(item)
   emit('close')
@@ -101,7 +108,8 @@ function handleSubmit() {
             :return-object="false"
             @update:model-value="
               payload.items.name = inventoryItems.find(item => item.id === payload.items.id)?.name!,
-              payload.items.unit = inventoryItems.find(item => item.id === payload.items.id)?.unit!
+              payload.items.unit = inventoryItems.find(item => item.id === payload.items.id)?.unit!,
+              payload.items.purchase_price = inventoryItems.find(item => item.id === payload.items.id)?.purchase_price!
               "
           />
         </v-col>
@@ -120,8 +128,29 @@ function handleSubmit() {
 
       <v-divider class="my-4"></v-divider>
 
-      <v-row class="mt-4">
-        <v-col cols="12" class="d-flex justify-end">
+      <v-row class="mt-4" no-gutters>
+        <v-col cols="12" class="d-flex justify-space-between">
+          <v-btn 
+            v-if="props.data"
+            color="error" 
+            variant="plain"
+            text="Hapus"
+            prepend-icon="mdi-delete"
+            @click="
+            openOverlay({
+              component: Blank,
+              props: {
+                confirmToContinue: true,
+                confirmMessage: 'Apakah anda yakin ingin menghapus item ini?',
+                onConfirm: () => {
+                  props.remove()
+                  emit('close')
+                }
+              }
+            })
+            "
+          />
+          <v-spacer v-else/>
           <v-btn 
             color="primary" 
             type="submit"

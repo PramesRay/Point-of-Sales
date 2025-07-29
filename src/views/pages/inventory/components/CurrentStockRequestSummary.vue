@@ -2,10 +2,11 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useStockRequests } from '@/composables/useStockRequest'
 import type { StockRequestSummary } from '@/types/inventory';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: StockRequestSummary[];
-  branch: string | undefined;
+  branch: IdName | undefined | null;
   loading: boolean;
 }>();
 
@@ -14,18 +15,13 @@ const currentData = computed(() => {
     return props.data[0]
   }
   return props.data.filter(
-    (tx) => tx.branch.id === props.branch
+    (tx) => tx.branch.id === props.branch?.id
   )[0]
-});
-
-watch(() => props.data, () => {
-  console.log('props.data', props.data)
-  console.log('stockRequest', currentData.value)
 });
 
 const tab = ref('1');
 
-const branchName = computed(() => currentData.value?.branch.name || '-');
+const branchName = computed(() => props.branch?.name || '-');
 const currentRequest = computed(() => currentData.value?.summary.request || 0);
 
 const currentSeries = computed(() => {
@@ -92,7 +88,7 @@ const chartOptions = computed(() => {
         <v-btn icon rounded="sm" color="darksecondary" variant="flat">
           <ShoppingCartIcon stroke-width="1.5" width="20" />
         </v-btn>
-        <div class="mx-3 my-auto">
+        <div v-if="!props.loading" class="mx-3 my-auto">
           <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ branchName }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">

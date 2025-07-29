@@ -86,10 +86,9 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <CurrentStockRequestList 
-            :data="stockRequestlist" 
+            :data="stockRequestlist.data" 
             :branch="userStore.me?.activity?.branch"
             :loading="lsr" 
-            @create-request="createRequest"
             class="flex-grow-1" 
             :refresh="loadStockRequests"
           />

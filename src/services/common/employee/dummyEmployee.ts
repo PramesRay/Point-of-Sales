@@ -30,7 +30,7 @@ const dummyEmployee: Employee[] = [
     assigned_branch: dummyBranchList,
     activity: {
       shift_emp_id: 'sft-emp-2',
-      shift_op_id: 'sft-kch-1',
+      shift_op_id: 'sft-wh-1',
       is_active: true,
       branch: dummyBranchList[0],
       last_active: new Date('2025-05-01T09:30:00Z'),
