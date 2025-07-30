@@ -6,9 +6,11 @@ import { dummyMenuSale } from '../menu/dummyMenuSale';
 const dummyOrdersQue: Order[] = [
 {
   id: "order-dfcff88c",
-  shift_id: 'sft-emp-1',
-  shift_cashier_id: 'sft-csr-1',
-  shift_kitchen_id: 'sft-kch-1',
+  shift: {
+    employee: 'sft-emp-1',
+    cashier: 'sft-csr-1',
+    kitchen: 'sft-kch-1',
+  },
   branch: dummyBranchList[0],
   table_number: "10",
   customer: {
@@ -62,9 +64,11 @@ const dummyOrdersQue: Order[] = [
 },
 {
   id: "order-3d0d43aa",
-  shift_id: 'sft-emp-1',
-  shift_cashier_id: 'sft-csr-1',
-  shift_kitchen_id: 'sft-kch-1',
+  shift: {
+    employee: 'sft-emp-1',
+    cashier: 'sft-csr-1',
+    kitchen: 'sft-kch-1',
+  },
   branch: dummyBranchList[0],
   table_number: "10",
   customer: {
@@ -102,9 +106,11 @@ const dummyOrdersQue: Order[] = [
 },
 {
   id: "order-3cd00059",
-  shift_id: 'sft-emp-1',
-  shift_cashier_id: 'sft-csr-1',
-  shift_kitchen_id: 'sft-kch-1',
+  shift: {
+    employee: 'sft-emp-1',
+    cashier: 'sft-csr-1',
+    kitchen: 'sft-kch-1',
+  },
   branch: dummyBranchList[0],
   table_number: "7",
   customer: {
@@ -150,9 +156,11 @@ const dummyOrdersQue: Order[] = [
 },
 {
   id: "order-aeb5b357",
-  shift_id: 'sft-emp-1',
-  shift_cashier_id: 'sft-csr-1',
-  shift_kitchen_id: 'sft-kch-1',
+  shift: {
+    employee: 'sft-emp-1',
+    cashier: 'sft-csr-1',
+    kitchen: 'sft-kch-1',
+  },
   branch: dummyBranchList[0],
   table_number: "20",
   customer: {
@@ -198,9 +206,11 @@ const dummyOrdersQue: Order[] = [
 },
 {
   id: "order-c13eb9b0",
-  shift_id: 'sft-emp-1',
-  shift_cashier_id: 'sft-csr-1',
-  shift_kitchen_id: 'sft-kch-1',
+  shift: {
+    employee: 'sft-emp-1',
+    cashier: 'sft-csr-1',
+    kitchen: 'sft-kch-1',
+  },
   branch: dummyBranchList[0],
   table_number: "18",
   customer: {

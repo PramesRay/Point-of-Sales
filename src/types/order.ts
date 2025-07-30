@@ -11,9 +11,11 @@ export type TotalOrder = {
 
 export interface Order {
   id: string
-  shift_id: string
-  shift_cashier_id: string
-  shift_kitchen_id: string
+  shift: {
+    employee: string
+    cashier: string
+    kitchen: string
+  }
   branch: IdName
   table_number: string
   customer: Customer 
