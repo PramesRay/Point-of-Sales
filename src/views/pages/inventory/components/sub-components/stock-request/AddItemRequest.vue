@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import Blank from '@/components/shared/Blank.vue';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import { useInventoryItems } from '@/composables/useInventoryItems';
+import type { IdName } from '@/types/common';
+// import { useInventoryItems } from '@/composables/useInventoryItems';
 import type { InventoryItem } from '@/types/inventory';
 import { ref, computed, onMounted } from 'vue'
 
 const { openOverlay } = useOverlayManager()
-const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
+// const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
 
-onMounted(() => {
-  loadInventoryItems();
-});
+// onMounted(() => {
+//   loadInventoryItems();
+// });
 
 const props = defineProps<{
+  inv_item: InventoryItem[]
+  categories: IdName[]
   data?: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>
   add: (data: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>) => void
   remove: () => void
@@ -25,8 +28,8 @@ const isFormValid = ref(false)
 const selectedCtg = ref<string>('all')
 
 const filteredInventoryItems = computed(() => {
-  if (selectedCtg.value === 'all') return inventoryItems.value
-  return inventoryItems.value.filter(item => item.category?.id === selectedCtg.value)
+  if (selectedCtg.value === 'all') return props.inv_item
+  return props.inv_item.filter(item => item.category?.id === selectedCtg.value)
 })
 
 const payload = ref<{ 
@@ -80,15 +83,13 @@ function handleSubmit() {
         <v-col cols="12">
           <v-autocomplete
             v-model="selectedCtg"
-            :items="[{ id: 'all', name: 'Semua' }, ...inventoryCategories]"
+            :items="[{ id: 'all', name: 'Semua' }, ...props.categories]"
             item-title="name"
             item-value="id"
             prepend-icon="mdi-format-list-bulleted-type"
             variant="underlined"
             label="Kategori"
             :rules="[v => !!v || 'Kategori wajib diisi']"
-            :loading="loadingInventory"
-            :disabled="loadingInventory"
             @update:model-value="payload.items.id = null"
             :return-object="false"
           />
@@ -103,13 +104,11 @@ function handleSubmit() {
             variant="underlined"
             label="Nama Item"
             :rules="[v => !!v || 'Nama item wajib diisi']"
-            :loading="loadingInventory"
-            :disabled="loadingInventory"
             :return-object="false"
             @update:model-value="
-              payload.items.name = inventoryItems.find(item => item.id === payload.items.id)?.name!,
-              payload.items.unit = inventoryItems.find(item => item.id === payload.items.id)?.unit!,
-              payload.items.purchase_price = inventoryItems.find(item => item.id === payload.items.id)?.purchase_price!
+              payload.items.name = props.inv_item.find(item => item.id === payload.items.id)?.name!,
+              payload.items.unit = props.inv_item.find(item => item.id === payload.items.id)?.unit!,
+              payload.items.purchase_price = props.inv_item.find(item => item.id === payload.items.id)?.purchase_price!
               "
           />
         </v-col>
@@ -156,7 +155,7 @@ function handleSubmit() {
             type="submit"
             :disabled="!isFormValid"
           >
-            Tambah
+            {{ props.data ? 'Simpan' : 'Tambah'}}
           </v-btn>
         </v-col>
       </v-row>

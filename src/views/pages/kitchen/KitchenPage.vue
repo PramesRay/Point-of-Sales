@@ -36,16 +36,29 @@ onMounted(() => {
       sortBy: 'meta.updated_at',
       sortDesc: true
     })
+    loadStockRequests({
+      filter: {
+        'meta.created_at': new Date().toISOString().split('T')[0]
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
   } else {
     loadCurrentOrder({
       filter: {
-        'shift_kitchen_id': userStore.me?.activity?.shift_op_id
+        'shift.kitchen': userStore.me?.activity?.shift_op_id
+      },
+      sortBy: 'meta.updated_at',
+      sortDesc: true
+    })
+    loadStockRequests({
+      filter: {
+        'shift.kitchen': userStore.me?.activity?.shift_op_id
       },
       sortBy: 'meta.updated_at',
       sortDesc: true
     })
   }
-  loadStockRequests()
 })
 
 </script>

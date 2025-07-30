@@ -9,8 +9,8 @@ import { getTimeDiff } from "@/utils/helpers/time";
 import type { IdName } from '@/types/common';
 import { useUserStore } from '@/stores/authUser';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import DetailStockRequest from './sub-components/DetailStockRequest.vue';
-import CreateStockRequest from './sub-components/UpdateStockRequest.vue';
+import DetailStockRequest from './sub-components/stock-request/DetailStockRequest.vue';
+import CreateStockRequest from './sub-components/stock-request/UpdateStockRequest.vue';
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
@@ -65,7 +65,7 @@ function openDetail(request: StockRequest) {
     <v-card variant="outlined">
       <v-card-text>
         <div>
-          <v-row class="justify-space-between">
+          <v-row>
             <v-col cols="8">
               <div class="d-flex align-center">
                 <h4 class="text-h4 mt-1">Permintaan Stok Terkini</h4>
@@ -76,7 +76,7 @@ function openDetail(request: StockRequest) {
               >{{ props.branch?.name }}
               </div> 
             </v-col>
-            <v-col cols="4" class="mt-auto">
+            <v-col cols="4" class="mt-auto text-right">
               <v-btn
                 v-if="!loading"
                 color="primary"

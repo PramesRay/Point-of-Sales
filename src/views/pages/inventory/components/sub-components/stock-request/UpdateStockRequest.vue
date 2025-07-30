@@ -5,11 +5,17 @@ import { useUserStore } from '@/stores/authUser';
 import { computed, onMounted, ref, watchEffect } from 'vue';
 import AddItemRequest from './AddItemRequest.vue';
 import type { CreateStockRequestPayload, InventoryItem, StockRequest, UpdateStockRequestPayload } from '@/types/inventory';
+import { useInventoryItems } from '@/composables/useInventoryItems';
 
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
 const { create, update, loading } = useStockRequests();
+const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
+
+onMounted(() => {
+  loadInventoryItems();
+});
 
 const props = defineProps<{
   is_create: boolean
@@ -54,6 +60,8 @@ function addItem() {
   openOverlay({
     component: AddItemRequest,
     props: {
+      inv_item: inventoryItems.value,
+      categories: inventoryCategories.value,
       add: (item: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>) => {
         const existed = payload.value.items.find(i => i.id === item.id)
         if (existed) {
@@ -183,6 +191,8 @@ function handleSubmit() {
               openOverlay({
                 component: AddItemRequest,
                 props: {
+                  inv_item: inventoryItems,
+                  categories: inventoryCategories,
                   data: item,
                   add: (data: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit'>) => {
                     payload.items[index] = {
@@ -211,14 +221,14 @@ function handleSubmit() {
         </v-list>
       </perfect-scrollbar>
       <v-row>
-        <v-col cols="12">
-          <div class="text-caption text-medium-emphasis">
+        <v-col cols="12" class="text-caption text-medium-emphasis">
+          <div>
             Catatan: 
           </div>
           <v-textarea
             v-model="payload.note"
             :rules="rules.notes"
-            label="Opsional"
+            placeholder="Opsional"
             rows="2"
             auto-grow
             clear-icon="mdi-close-circle"

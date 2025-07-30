@@ -3,7 +3,7 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 import { useUserStore } from '@/stores/authUser';
 import type { InventoryItem } from '@/types/inventory';
 import { computed, onMounted, ref, watchEffect } from 'vue';
-import AddItemRequest from '../AddItemRequest.vue';
+import AddItemRequest from '../stock-request/AddItemRequest.vue';
 import { formatRupiah } from '@/utils/helpers/currency';
 import { useFundRequests } from '@/composables/useFundRequest';
 import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
