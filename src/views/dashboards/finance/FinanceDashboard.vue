@@ -23,28 +23,21 @@ import { useFundRequests } from '@/composables/useFundRequest';
 import { useInventoryItems } from '@/composables/useInventoryItems';
 
 // Data Loading
-const { data, loading: lb } = useBranchList();
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { summary, loading: lf } = useFinanceDashboard();
 const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
-const { requests, loading: lfr, create: createFundRequest, update: updateFundRequest } = useFundRequests();
+const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
 
 onMounted(() => {
+  loadBranch();
   initItems();
+  loadFundRequest();
   loadTransactions(selectedBranch.value ?? '');
 })
 
-const branchOptions = computed(() => [
-  { id: '', name: 'Semua Cabang' },
-  ...(userStore.me?.assigned_branch || [])
-]);
-const selectedBranch = ref<string | undefined>(
-  userStore.hasRole(['Admin', 'Pemilik', 'Bendahara']) 
-  ? undefined
-  : userStore.me?.activity?.branch?.id 
-    ? userStore.me.activity.branch.id 
-    : undefined
-);
+const branchOptions = computed(() => branches.value);
+const selectedBranch = ref<string | undefined>(undefined)
 const selectedBranchObject = computed(() => {
   return branchOptions.value
   .find(branch => branch.id === selectedBranch.value
@@ -53,6 +46,7 @@ const selectedBranchObject = computed(() => {
 console.log('me', userStore.me)
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
+  loadFundRequest({ filter: { 'branch.id': selectedBranch.value } })
   loadTransactions(selectedBranch.value)
   console.log('selectedBranch', selectedBranch.value)
 });
@@ -168,14 +162,11 @@ const pinBranch = ref(false)
         
         <v-col cols="12" md="6" class="d-flex" v-if="userStore.me">
           <CurrentFundRequest
-            :user="userStore.me"
-            :data="requests"
-            :inv_items="dataInventory"
+            :data="fundRequestList.data"
             :branch="selectedBranchObject"
             :loading="lfr"
             class="flex-grow-1"
-            @create-fr="createFundRequest"
-            @update-fr="updateFundRequest"
+            :refresh="loadFundRequest"
           />
         </v-col>
       </v-row>

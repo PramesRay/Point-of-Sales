@@ -7,7 +7,7 @@ import type { IdName } from '@/types/common';
 
 const props = defineProps<{
   data: FinanceSummary[];
-  branch: IdName | undefined;
+  branch: IdName | undefined | null;
   loading: boolean;
 }>();
 

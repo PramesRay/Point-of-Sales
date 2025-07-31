@@ -17,7 +17,7 @@ import { formatDate } from "@/utils/helpers/format-date";
 
 const props = defineProps<{
   data: Transaction[];
-  branch: IdName | undefined;
+  branch: IdName | undefined | null;
   loading?: boolean;
 }>();
 
@@ -29,7 +29,7 @@ const filteredTransactions = computed(() => {
     return []; // Return an empty array if data is not available or not an array
   }
   
-  if (!props.branch || props.branch.id === '') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }
   return props.data.filter(
@@ -50,7 +50,7 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
       <v-row align="center" no-gutters>
         <v-col cols="8">
           <h4 class="text-h4 mt-1">Transaksi Terkini</h4>
-          <span v-if="props.branch && !props.loading" class="text-subtitle-2 text-medium-emphasis">
+          <span v-if="props.branch && props.branch.id !== 'all' && !props.loading" class="text-subtitle-2 text-medium-emphasis">
             {{ props.branch?.name }}
           </span>
         </v-col>

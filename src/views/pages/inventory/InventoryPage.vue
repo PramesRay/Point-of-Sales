@@ -20,9 +20,9 @@ import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
 const { data: branches, loading: lb } = useBranchList();
-const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr, update: updateRequest } = useStockRequests();
+const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
-const { init: initStockMovement, data: dataStockMovement, loading: lsm, create: createStockMovement, update: updateStockMovement } = useStockMovements();
+const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 
 onMounted(() => {
@@ -152,13 +152,13 @@ const pinBranch = ref(false)
 
         <v-col cols="12">
           <StockMovement
-            :data="dataStockMovement"
-            :categories="categories"
+            :data="dataStockMovement.data"
             :branches="branches"
+            :inv_item="dataInventory"
+            :categories="categories"
             :loading="lsm"
             class="flex-grow-1"
-            @create-sm="createStockMovement"
-            @update-sm="updateStockMovement"
+            :refresh="initStockMovement"
           />
         </v-col>
       </v-row>

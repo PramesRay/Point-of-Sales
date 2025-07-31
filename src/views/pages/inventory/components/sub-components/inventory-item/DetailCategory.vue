@@ -128,7 +128,14 @@ function handleClose() {
     class="rounded-lg pa-6 mt-8 bg-white" 
     style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;"
   >
-    <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="handleClose()">
+    <v-btn
+      icon
+      class="position-absolute"
+      variant="text"
+      style="top: 8px; right: 12px;" 
+      :disabled="lm"
+      @click="handleClose()"
+    >
       <v-icon>mdi-close</v-icon>
     </v-btn>
     <div class="d-flex align-center">
@@ -179,7 +186,7 @@ function handleClose() {
                 component: Blank,
                 props: {
                   confirmToContinue: true,
-                  confirmMessage: 'Apakah anda yakin ingin menghapus akun ini?',
+                  confirmMessage: 'Apakah anda yakin ingin menghapus kategori ini?',
                   onConfirm: () => {
                     processDelete()
                   }
@@ -202,7 +209,7 @@ function handleClose() {
               class="ms-2"
               color="primary"
               :loading="lm"
-              :disabled="!isFormValid || !isChanged"
+              :disabled="!isFormValid || !isChanged || lm"
               @click="submitForm"
             >
               Simpan

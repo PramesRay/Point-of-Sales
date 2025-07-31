@@ -81,20 +81,20 @@ export type CreateInventoryItemPayload = Omit<UpdateInventoryItemPayload, 'id' |
 
 export interface StockMovement { 
   id: string
-  description: string
-  status: 'Masuk' | 'Keluar' | 'Penyesuaian'
-  branch: IdName
-  time: Date
+  shift_warehouse: string;
   item: InventoryItem
-  meta: Meta
+  description: string
+  status: 'Masuk' | 'Keluar' | 'Pengurangan'
+  branch: IdName | null
+  time: Date
+  meta: MetaDetail
 }
 
-export type CreateStockMovementPayload = Omit<StockMovement, 'id' | 'meta' | 'branch' | 'item'> & {
-  branch_id: string
+export type CreateStockMovementPayload = Pick<StockMovement, 'shift_warehouse' | 'description' | 'status' | 'time'> & {
+  branch_id: string | null
   item: {
     id: string
     quantity: number
-    category_id: string // hilangin
   }
 }
 
