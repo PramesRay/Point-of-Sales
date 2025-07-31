@@ -41,7 +41,7 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
   >
     <v-window-item
       v-for="(inc, index) in incomes"
-      :key="inc.branchId"
+      :key="inc.branch.id"
       :value="index"
       eager
     >
@@ -83,7 +83,7 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                       index === 0 ? 'text-disabled' : 'text-white',
                     ]"
                   >
-                    Total Pendapatan {{ inc.branchName }}
+                    Total Pendapatan {{ inc.branch.name }}
                   </span>
                 </div>
               </div>

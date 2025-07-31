@@ -13,7 +13,7 @@ const props = defineProps<{
 const earningData = computed(() => {
   if (!props.data?.length) return undefined;
   return props.data
-    .filter(tx => tx.branchId === 'all')
+    // .filter(tx => tx.branch.id === 'all')
     .map(item => item.income)[0]
 })
 </script>

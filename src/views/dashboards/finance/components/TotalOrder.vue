@@ -13,7 +13,7 @@ const props = defineProps<{
 const orderData = computed(() => {
   if (!props.data?.length) return undefined;
   return props.data
-    .filter(tx => tx.branchId === (props.branch?.id || 'all'))
+    // .filter(tx => tx.branch.id === (props.branch?.id || 'all'))
     .map(item => ({order: item.order}))[0]
 });
 

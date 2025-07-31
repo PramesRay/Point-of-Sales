@@ -85,6 +85,5 @@ export interface FinanceSummary {
   income: number
   expense: ExpenseSummary
   order: OrderSummary
-  branchId: string,
-  branchName: string
+  branch: IdName
 }

@@ -25,7 +25,7 @@ const items = ['Hari ini', 'Minggu ini', 'Bulan ini', 'Tahun ini'];
 
 const branchExpenseData = computed(() => {
   if (!props.data?.length) return undefined;
-  return props.data.find(exp => exp.branchId === (props.branch?.id || 'all'))?.expense;
+  return props.data.map(item => item.expense)[0];
 });
 
 const isReady = computed(() => {

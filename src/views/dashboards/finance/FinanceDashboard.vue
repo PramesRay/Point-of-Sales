@@ -24,13 +24,14 @@ import { useInventoryItems } from '@/composables/useInventoryItems';
 
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
-const { summary, loading: lf } = useFinanceDashboard();
+const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
 
 onMounted(() => {
   loadBranch();
+  loadSummary();
   initItems();
   loadFundRequest();
   loadTransactions(selectedBranch.value ?? '');
@@ -46,6 +47,7 @@ const selectedBranchObject = computed(() => {
 console.log('me', userStore.me)
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
+  loadSummary({ filter: { 'branch.id': selectedBranch.value } })
   loadFundRequest({ filter: { 'branch.id': selectedBranch.value } })
   loadTransactions(selectedBranch.value)
   console.log('selectedBranch', selectedBranch.value)

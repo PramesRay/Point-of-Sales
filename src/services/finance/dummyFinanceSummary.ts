@@ -2,8 +2,7 @@ import type { FinanceSummary } from '@/types/finance';
 
 const dummyFinanceSummary: FinanceSummary[] = [
   {
-    branchId: 'all',
-    branchName: 'Semua Cabang',
+    branch: {id: 'all', name: 'Semua Cabang'},
     income: 4800000, // Total pendapatan dari semua cabang
     expense: {
       totalExpense: {
@@ -50,8 +49,7 @@ const dummyFinanceSummary: FinanceSummary[] = [
     }
   },
   {
-    branchId: 'branch-1',
-    branchName: 'Restoran 1',
+    branch: {id: 'branch-1', name: 'Restoran 1'},
     income: 1000000,
     expense: {
       totalExpense: {
@@ -98,8 +96,7 @@ const dummyFinanceSummary: FinanceSummary[] = [
     }
   },
   {
-    branchId: 'branch-2',
-    branchName: 'Restoran 2',
+    branch: {id: 'branch-2', name: 'Restoran 2'},
     income: 1500000,
     expense: {
       totalExpense: {
@@ -146,8 +143,7 @@ const dummyFinanceSummary: FinanceSummary[] = [
     }
   },
   {
-    branchId: 'branch-3',
-    branchName: 'Restoran 3',
+    branch: {id: 'branch-3', name: 'Restoran 3'},
     income: 900000,
     expense: {
       totalExpense: {
@@ -194,8 +190,7 @@ const dummyFinanceSummary: FinanceSummary[] = [
     }
   },
   {
-    branchId: 'branch-4',
-    branchName: 'Restoran 4',
+    branch: {id: 'branch-4', name: 'Restoran 4'},
     income: 1100000,
     expense: {
       totalExpense: {
