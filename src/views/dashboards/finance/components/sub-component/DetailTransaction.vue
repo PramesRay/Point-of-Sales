@@ -11,10 +11,12 @@ import { formatDate } from '@/utils/helpers/format-date'
 import { useTransactions } from '@/composables/useTransactionList'
 
 import { useUserStore } from '@/stores/authUser'
+import type { IdName } from '@/types/common'
 const userStore = useUserStore()
 
 const props = defineProps<{
   data?: Transaction
+  branches: IdName[]
   is_create: boolean
   confirmBeforeClose: Boolean,
 }>()
@@ -203,7 +205,7 @@ watch(isChanged, (val) => {
               v-model="payload.branch_id"
               :rules="rules.required"
               prepend-icon="mdi-home"
-              :items="userStore.me?.assigned_branch"
+              :items="props.branches"
               item-title="name"
               item-value="id"
               label="Cabang"

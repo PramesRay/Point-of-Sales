@@ -157,6 +157,7 @@ const pinBranch = ref(false)
           <CurrentTransaction
             :data="transactions"
             :branch="selectedBranchObject"
+            :branches="branchOptions"
             :loading="ltx"
             class="flex-grow-1"
           />

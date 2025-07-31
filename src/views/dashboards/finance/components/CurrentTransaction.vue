@@ -18,6 +18,7 @@ import { formatDate } from "@/utils/helpers/format-date";
 const props = defineProps<{
   data: Transaction[];
   branch: IdName | undefined | null;
+  branches: IdName[];
   loading?: boolean;
 }>();
 
@@ -61,6 +62,7 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
             @click="openOverlay({
               component: DetailTransaction,
               props: {
+                branches: props.branches,
                 is_create: true,
                 confirmBeforeClose: true,
                 isChanged
@@ -79,6 +81,7 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
             @click="openOverlay({
               component: DetailTransaction,
               props: {
+                branches: props.branches,
                 data: latestTransaction,
                 is_create: false,
                 confirmBeforeClose: true,
@@ -145,6 +148,7 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
                   openOverlay({
                     component: DetailTransaction,
                     props: { 
+                      branches: props.branches,
                       data: data,
                       is_create: false,
                       confirmBeforeClose: true,
