@@ -86,7 +86,7 @@ export interface Employee {
     is_active: boolean;
     branch: IdName | null;
     last_active: Date;
-  } | null
+  }
   meta: Meta
 }
 

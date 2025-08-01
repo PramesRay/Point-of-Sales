@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
@@ -24,41 +24,39 @@ import Management from './components/Management.vue';
 
 // Data Loading
 const userStore = useUserStore();
-const { summary, loading: lf } = useFinanceDashboard();
+const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadEmployeeActive, data: employeeActiveData, loading: lea } = useEmployeeActive();
 const { data: timesheetData, loading: lt, load: loadTimesheet } = useTimesheet()
 const { data: reservationData, loading: lr, load: loadReservation, create: createReservation, update: updateReservation } = useReservation()
 const { load: loadUser, data: userData, loading: lu } = useUser()
-const { load: loadBranch, data: branchData, loading: lb } = useBranchList();
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { init: loadMenu, loadCategory, data: menuData, categories: menuCategories, loading: lm } = useMenuItems();
 
 onMounted(() => {
-  if(!userStore.me) userStore.fetchMe()
+  // if(!userStore.me) userStore.fetchMe()
 
   loadMenu()
   loadBranch()
   loadUser()
-  // loadTimesheet(selectedBranch.value)
-  // loadReservation(selectedBranch.value)
-  loadEmployeeActive(selectedBranch.value)
+  loadSummary()
+  loadTimesheet()
+  loadReservation()
+  loadEmployeeActive()
 })
 
-const branchOptions = computed(() => [
-  { id: '', name: 'Semua Cabang' },
-  ...(userStore.me?.assigned_branch || [])
-]);
-const selectedBranch = ref<string | undefined>(
-  userStore.hasRole(['Admin', 'Pemilik']) 
-  ? undefined
-  : userStore.me?.activity?.branch?.id 
-    ? userStore.me.activity.branch.id 
-    : undefined
-);
+const branchOptions = computed(() => branches.value);
+const selectedBranch = ref<string | undefined>(undefined)
 const selectedBranchObject = computed(() => {
-  return branchOptions.value
-  .find(branch => branch.id === selectedBranch.value
-  ) || undefined
+  return branchOptions.value.find(branch => branch.id === selectedBranch.value) || undefined
 })
+
+// watcher perubahan selectedBranch yang memicu fetching stock request
+watch(selectedBranch, () => {
+  loadSummary({ filter: { 'branch.id': selectedBranch.value } })
+  loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
+  loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
+  loadReservation({ filter: { 'branch.id': selectedBranch.value } })
+});
 
 const pinBranch = ref(false)
 </script>
@@ -85,6 +83,7 @@ const pinBranch = ref(false)
           :loading="lb"
           hide-details
           density="compact"
+          clearable
         />
       </div>
     </template>
@@ -111,6 +110,7 @@ const pinBranch = ref(false)
       :loading="lb"
       hide-details
       density="compact"
+      clearable
     />
   </div>
 
@@ -156,8 +156,7 @@ const pinBranch = ref(false)
             :branch="selectedBranchObject"
             :branch_option="branchOptions"
             :loading="lr"
-            @create-reservation="createReservation"
-            @update-reservation="updateReservation"
+            :refresh="loadReservation"
             class="flex-grow-1"
           />
         </v-col>
@@ -165,7 +164,7 @@ const pinBranch = ref(false)
           <Management 
             :branch="selectedBranchObject!"
             :data_user="userData"
-            :data_branch="branchData"
+            :data_branch="branches"
             :data_menu="menuData"
             :menu_categories="menuCategories"
             :loading_user="lu"
@@ -191,8 +190,7 @@ const pinBranch = ref(false)
             :branch="selectedBranchObject"
             :branch_option="branchOptions"
             :loading="lr"
-            @create-reservation="createReservation"
-            @update-reservation="updateReservation"
+            :refresh="loadReservation"
             class="flex-grow-1"
           />
         </v-col>
@@ -200,7 +198,7 @@ const pinBranch = ref(false)
           <Management 
             :branch="selectedBranchObject!"
             :data_user="userData"
-            :data_branch="branchData"
+            :data_branch="branches"
             :data_menu="menuData"
             :menu_categories="menuCategories"
             :loading_user="lu"
@@ -209,6 +207,7 @@ const pinBranch = ref(false)
             :refresh_menu="loadMenu"
             :refresh_branch="loadBranch"
             :refresh_user="loadUser"
+            :refresh_category="loadCategory"
             class="flex-grow-1"
           />
         </v-col>

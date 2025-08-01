@@ -53,7 +53,7 @@ const branchOptions = computed(() => [
   { id: 'all', name: 'Semua Cabang' },
   ...branches.value
 ]);
-const selectedBranch = ref<string | undefined>(
+const selectedBranch = ref<string | undefined>( 
   userStore.hasRole(['Admin', 'Pemilik', 'Kasir']) 
   ? undefined
   : userStore.me?.activity?.branch?.id 
@@ -75,9 +75,9 @@ const selectedBranchObject = computed(() => {
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])) || mdAndUp">
+    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active) || mdAndUp">
       <v-row>
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
           <CurrentOrder 
             :data="currentOrder.data" 
             :branch="selectedBranchObject"
@@ -85,7 +85,7 @@ const selectedBranchObject = computed(() => {
             class="flex-grow-1" 
           />
         </v-col>
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
           <CreateOrder 
             :data_menu="menuSales"
             :categories="categories"
@@ -100,7 +100,7 @@ const selectedBranchObject = computed(() => {
     <v-col cols="12" md="6">
       <v-row>
 
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active && userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
           <CurrentOrderQue
             :data="currentOrder.data"
             :branch="selectedBranchObject"

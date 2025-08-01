@@ -1,33 +1,36 @@
 // src/composables/useTimesheet.ts
-import { ref, watchEffect } from 'vue'
+import { ref } from 'vue'
 import { fetchTimesheetData } from '@/services/timesheets/timesheetService'
 import type { TimesheetData } from '@/types/timesheet'
-import { useRoute } from 'vue-router'
-
 
 export function useTimesheet() {
-  const route = useRoute();
-  const branchId = ref<string>(String(route.query.branch || 'all'));
   const data = ref<TimesheetData[]>([]);
-  const loading = ref(true);
+  const loading = ref(false);
 
-  async function load(id: string) {
+
+  async function load({ 
+  sortBy,
+  sortDesc,
+  filter 
+}: { 
+  sortBy?: string,
+  sortDesc?: boolean,
+  filter?: Record<string, any> 
+} = {}) {
     try {
       loading.value = true;
-      data.value = await fetchTimesheetData(id);
+      data.value = await fetchTimesheetData({
+        sortBy,
+        sortDesc,
+        filter
+      });
+      console.log('data timesheets', data.value);
     } catch (e: any) {
       throw e
     } finally {
       loading.value = false;
     }
   }
-
-  // Watch fetch timesheet when branch changes
-  watchEffect(() => {
-    const id = String(route.query.branch || 'all');
-    branchId.value = id;
-    load(id);
-  });
 
   return {
     data,

@@ -24,7 +24,7 @@ import type { AllIncomes } from '@/types/finance';
  */
 export async function fetchFinanceSummary({ filter }: { filter?: Record<string, any> } = {}): Promise<FinanceSummary[]> {
   try {
-    const url = `/fund-request`;
+    const url = `/finance-summary`;
     const query = new URLSearchParams();
     if (filter) {
       for (const [key, value] of Object.entries(filter)) {

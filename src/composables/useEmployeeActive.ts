@@ -6,10 +6,10 @@ export function useEmployeeActive() {
   const data = ref<EmployeeActive[]>([]);
   const loading = ref<boolean>(false);
 
-  async function load(id?: string) {
+  async function load({ filter }: { filter?: Record<string, any> } = {}) {
     try {
       loading.value = true;
-      data.value = await fetchEmployeeActive(id);
+      data.value = await fetchEmployeeActive(filter);
     } catch (e: any) {
       throw e
     } finally {

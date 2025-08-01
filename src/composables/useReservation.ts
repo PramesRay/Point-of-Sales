@@ -1,18 +1,17 @@
-import { ref, watchEffect } from 'vue'
-import { createReservation, fetchReservationData, updateReservation } from '@/services/currentReservation/reservationService'
-import type { Reservation, CreateReservationPayload, UpdateReservationPayload } from '@/types/reservation'
-import { useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { createReservation, deleteReservation, fetchReservationData, updateReservation } from '@/services/currentReservation/reservationService'
+import type { Reservation, CreateReservationPayload, UpdateReservationPayload, ReservationApprovalPayload } from '@/types/reservation'
 
 export function useReservation() {
-  const route     = useRoute();
-  const branchId  = ref<string>(String(route.query.branch || 'all'));
   const data = ref<Reservation[]>([]);
-  const loading = ref(true);
+  const dataTable = ref<{data: Reservation[], total: number}>({data: [], total: 0});
+  const loading = ref(false);
 
-async function load(id: string) {
+async function load({ filter }: { filter?: Record<string, any> } = {}) {
   try {
     loading.value = true;
-    data.value = await fetchReservationData(id);
+    dataTable.value = await fetchReservationData({filter});
+    data.value = dataTable.value.data
   } catch (e: any) {
     throw e
   } finally {
@@ -24,7 +23,7 @@ async function create(payload: CreateReservationPayload) {
   try {
     loading.value = true;
     await createReservation(payload);
-    await load(branchId.value);
+    // await load(branchId.value);
   } catch (e: any) {
     throw e
   } finally {
@@ -32,11 +31,11 @@ async function create(payload: CreateReservationPayload) {
   }
 }
 
-async function update(payload: UpdateReservationPayload) {
+async function update(payload: UpdateReservationPayload | ReservationApprovalPayload) {
   try {
     loading.value = true;
     await updateReservation(payload);
-    await load(branchId.value);
+    // await load(branchId.value);
   } catch (e: any) {
     throw e
   } finally {
@@ -44,18 +43,25 @@ async function update(payload: UpdateReservationPayload) {
   }
 }
 
-// Watch fetch timesheet when branch changes
-watchEffect(() => {
-  const id = String(route.query.branch || 'all');
-  branchId.value = id;
-  load(id);
-});
+async function remove(id: string) {
+  try {
+    loading.value = true;
+    await deleteReservation(id);
+    // await load(branchId.value);
+  } catch (e: any) {
+    throw e
+  } finally {
+    loading.value = false;
+  }
+}
 
   return {
     data,
+    dataTable,
     loading,
     load,
     create,
-    update
+    update,
+    remove
   };
 }
