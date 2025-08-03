@@ -43,6 +43,7 @@ export type CreateOrderPayload = Pick<Order, 'table_number'|'is_take_away'|'cust
     quantity: number
     note: string
   }[]
+  amount: number
 }
 
 export type CreateDirectPaymentOrderPayload = CreateOrderPayload & {

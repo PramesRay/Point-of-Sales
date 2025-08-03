@@ -68,7 +68,8 @@ export type CreateFundRequest = Pick<FundRequest, 'subject' | 'description'> & {
   items: {
     id: string
     quantity: number
-  }[]
+  }[],
+  amount: number
 }
 export type UpdateFundRequest = CreateFundRequest & {
   id: string

@@ -45,7 +45,7 @@ export function useCurrentOrders() {
     loading.value = true;
     try {
       await updateOrderData(payload);
-      await load();
+      // await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
     } finally {
@@ -57,7 +57,7 @@ export function useCurrentOrders() {
     loading.value = true;
     try {
       await createOrderData(payload);
-      await load();
+      // await load();
     } catch (e) {
       console.error("Gagal membuat order:", e);
     } finally {

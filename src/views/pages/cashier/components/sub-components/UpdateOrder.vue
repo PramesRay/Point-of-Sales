@@ -64,6 +64,7 @@ const payload = ref<CreateOrderPayload>({
     quantity: item.quantity,
     note: item.note || '', // default to an empty string if note is undefined
   })) : [],
+  amount: props.data_order ? props.data_order.amount : 0
 })
 
 const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
@@ -143,6 +144,7 @@ function resetOrder() {
       quantity: item.quantity,
       note: item.note || '', // default to an empty string if note is undefined
     })) : [],
+    amount: props.data_order ? props.data_order.amount : 0
   }
 
   itemInChart.value = []
@@ -160,6 +162,7 @@ function processOrder() {
     quantity: item.quantity,
     note: item.note!,
   }))
+  payload.value.amount = totalPrice.value
   console.log('items: ',payload.value.items)
 
   if (props.is_create) {
@@ -174,7 +177,8 @@ function processOrder() {
         phone: payload.value.customer.phone ?? '',
       },
       is_take_away: payload.value.is_take_away,
-      items: payload.value.items
+      items: payload.value.items,
+      amount: payload.value.amount
     }
 
     update(updatePayload)

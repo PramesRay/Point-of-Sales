@@ -33,7 +33,8 @@ const payload = ref<{
     quantity: number
     unit: string | null
     purchase_price: number
-  }[]
+  }[],
+  amount: number
 }>({
   subject: props.data ? props.data.subject : null,
   description: props.data ? props.data.description : null,
@@ -44,6 +45,7 @@ const payload = ref<{
     unit: item.item.unit,
     purchase_price: item.item.purchase_price
   })) : [],
+  amount: props.data ? props.data.amount : 0
 })
 
 const formRef = ref()
@@ -76,6 +78,10 @@ function addItem() {
     }
   })
 }
+
+const amount = computed(() => {
+  return payload.value.items.reduce((total, item) => total + item.quantity * item.purchase_price, 0)
+})
 
 const isChanged = computed(() => {
   if (props.data) {
@@ -114,7 +120,8 @@ function createRequest() {
     items: payload.value.items.map((item) => ({
       id: item.id!,
       quantity: item.quantity,
-    }))
+    })),
+    amount: amount.value
   }
   create(createPayload).then(() => {
     if (typeof props.onIsChangedUpdate === 'function') {
@@ -133,7 +140,8 @@ function updateRequest() {
     items: payload.value.items.map((item) => ({
       id: item.id!,
       quantity: item.quantity,
-    }))
+    })),
+    amount: payload.value.amount
   }
   update(updatePayload).then(() => {
     if (typeof props.onIsChangedUpdate === 'function') {
@@ -174,7 +182,7 @@ function handleSubmit() {
           Total Dana Dibutuhkan:
         </div>
         <h4 class="text-h4 text-success font-weight-bold">
-          {{ formatRupiah(payload.items.reduce((prev, curr) => prev + (curr.purchase_price || 0) * curr.quantity, 0)) }}
+          {{ formatRupiah(amount) }}
         </h4>
       </div>
       <v-row>
