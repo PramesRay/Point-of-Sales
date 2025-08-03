@@ -113,9 +113,9 @@ function openDetail(data: Reservation) {
             </div>
           </div>
         </v-card>
-        <div v-if="!props.loading && listReservation" class="mt-4">
-          <perfect-scrollbar :style="{ maxHeight: '15rem'}">
-            <v-list lines="two" class="py-0">
+        <div v-if="!props.loading" class="my-4">
+          <perfect-scrollbar :style="{ maxHeight: '18rem'}">
+            <v-list lines="two" class="py-0" v-if="listReservation.length > 0">
               <v-list-item 
                 v-for="(listReservation, i) in listReservation" 
                 :key="i" 
@@ -143,16 +143,19 @@ function openDetail(data: Reservation) {
                 </div>
               </v-list-item>
             </v-list>
+            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+              Tidak ada data reservasi
+            </div>
           </perfect-scrollbar>
 
-          <div class="text-center mt-3">
+          <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/reservations"
               >View All
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />
               </template>
             </v-btn>
-          </div>
+          </div> -->
         </div>
       </v-card-text>
     </v-card>

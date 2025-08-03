@@ -237,7 +237,7 @@ watch(() => cashInput.value, (val) => {
             </div>
           </v-card>
           <div class="mt-4" >
-            <ScrollContainer :style="{ maxHeight: mdAndUp? '20rem' : '12rem'}">
+            <ScrollContainer :style="{ maxHeight: mdAndUp? '25rem' : '15rem'}">
               <v-list v-if="listOrderQue?.length > 0" class="py-0">
                 <v-list-item 
                   v-for="(item, i) in listOrderQue" 
@@ -300,19 +300,19 @@ watch(() => cashInput.value, (val) => {
             <!-- jika data kosong -->
             <div 
               v-if="!latestOrderQue && listOrderQue?.length === 0" 
-              class="text-center text-caption text-disabled my-4"
+              class="text-center text-subtitle-2 text-disabled mt-4"
             >
               Pesanan Kosong
             </div>
 
-            <div class="text-center mt-3">
+            <!-- <div class="text-center mt-3">
               <v-btn color="primary" variant="text" href="/Order"
                 >View All
                 <template v-slot:append>
                   <ChevronRightIcon stroke-width="1.5" width="20" />
                 </template>
               </v-btn>
-            </div>
+            </div> -->
           </div>
         </div>
         <div v-else class="ml-auto">

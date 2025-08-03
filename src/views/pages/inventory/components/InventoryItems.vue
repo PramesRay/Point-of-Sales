@@ -156,7 +156,7 @@ const currentData = computed(() => {
           </v-col>
         </v-row>
 
-        <div class="mt-4" v-if="!props.loading && !in_category">
+        <div class="my-4" v-if="!props.loading && !in_category">
           <ScrollContainer :maxHeight="mdAndUp ? '20rem' : '15rem'">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
@@ -235,17 +235,17 @@ const currentData = computed(() => {
                 <v-divider class="my-3" />
               </v-list-item>
             </v-list>
-            <div v-else class="text-subtitle-1 text-disabled text-center my-3">Data kosong</div>
+            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">Data kosong</div>
           </ScrollContainer>
 
-          <div class="text-center mt-3">
+          <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/inventory-items">
               Lihat Semua
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />
               </template>
             </v-btn>
-          </div>
+          </div> -->
         </div>
         
         <div class="mt-4" v-if="!props.loading && in_category">

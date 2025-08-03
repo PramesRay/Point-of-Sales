@@ -135,8 +135,8 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
           </v-card>
         </v-col>
 
-        <v-col cols="12" class="mt-4">
-          <ScrollContainer :style="{ maxHeight: mdAndUp ? '25rem' : '12rem' }">
+        <v-col cols="12" class="mb-4">
+          <ScrollContainer :style="{ maxHeight: mdAndUp ? '28rem' : '15rem' }">
             <v-list v-if="listTransaction.length > 0" class="py-0">
               <v-list-item
                 v-for="(data, i) in listTransaction"
@@ -202,16 +202,19 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
                 <v-divider class="my-3" />
               </v-list-item>
             </v-list>
+            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+              Tidak ada transaksi
+            </div>
           </ScrollContainer>
 
-          <div class="text-center mt-3">
+          <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/transactions">
               View All
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />
               </template>
             </v-btn>
-          </div>
+          </div> -->
         </v-col>
       </v-row>
 

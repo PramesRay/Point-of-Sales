@@ -132,9 +132,9 @@ watch(() => props.loading, () => {
           </div>
         </v-card>
 
-        <div class="mt-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '25rem' : '15rem'}">
-            <v-list lines="two" class="py-0">
+        <div class="my-4" v-if="!props.loading">
+          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
+            <v-list lines="two" class="py-0" v-if="listEmployee.length > 0">
               <v-list-item
                 v-for="(list, i) in listEmployee"
                 :key="i"
@@ -166,16 +166,19 @@ watch(() => props.loading, () => {
                 </div>
               </v-list-item>
             </v-list>
+            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+              Tidak ada data kehadiran
+            </div>
           </perfect-scrollbar>
 
-          <div class="text-center mt-3">
+          <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/timesheets">
               Lihat Semua
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />
               </template>
             </v-btn>
-          </div>
+          </div> -->
         </div>
       </v-card-text>
     </v-card>

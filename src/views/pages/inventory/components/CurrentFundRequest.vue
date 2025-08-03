@@ -79,7 +79,7 @@ function openDetail(request: FundRequest) {
   <v-card elevation="0" style="height: fit-content;">
     <v-card variant="outlined">
       <v-card-text>
-        <v-row>
+        <v-row align="baseline">
           <v-col cols="8">
             <div class="d-flex align-center">
               <h4 class="text-h4 mt-1">Permintaan Dana Terkini</h4>
@@ -102,7 +102,7 @@ function openDetail(request: FundRequest) {
         </v-row>
           
         <div v-if="!props.loading">
-          <v-card class="bg-lightsecondary mt-4" @click="openDetail(latestRequest)">
+          <v-card class="bg-lightsecondary mt-6" @click="openDetail(latestRequest)">
             <div v-if="latestRequest" class="pa-5">
               <span class="text-subtitle-2 text-disabled">
                 <span 
@@ -130,8 +130,8 @@ function openDetail(request: FundRequest) {
               </v-row>
             </div>
           </v-card>
-          <div class="mt-4">
-            <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '12rem'}">
+          <div class="my-4">
+            <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
               <v-list v-if="listRequest.length > 0" class="py-0">
                 <v-list-item 
                   v-for="(listRequest, i) in listRequest" 
@@ -170,16 +170,20 @@ function openDetail(request: FundRequest) {
                   <v-divider class="my-3" />
                 </v-list-item>
               </v-list>
+              <!-- jika data kosong -->
+              <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+                Data Permintaan Dana tidak ditemukan
+              </div>
             </perfect-scrollbar>
 
-            <div class="text-center mt-3">
+            <!-- <div class="text-center mt-3">
               <v-btn color="primary" variant="text" href="/fundRequests"
                 >View All
                 <template v-slot:append>
                   <ChevronRightIcon stroke-width="1.5" width="20" />
                 </template>
               </v-btn>
-            </div>
+            </div> -->
           </div>
         </div>
         <div v-else class="ml-auto">

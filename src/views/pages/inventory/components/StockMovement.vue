@@ -114,8 +114,8 @@ function openAddNew() {
           <v-skeleton-loader type="paragraph"></v-skeleton-loader>
         </div>
 
-        <div class="mt-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '17rem' : '12rem'}">
+        <div class="my-4" v-if="!props.loading">
+          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '18rem' : '15rem'}">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
                 v-for="(item, i) in currentData"
@@ -169,16 +169,21 @@ function openAddNew() {
                 <v-divider class="my-3" />
               </v-list-item>
             </v-list>
+            <!-- jika data kosong -->
+            <div v-else class="text-center text-subtitle-2 text-disabled my-4">
+              Data Perpindahan Stok tidak ditemukan
+            </div>
           </perfect-scrollbar>
 
-          <div class="text-center mt-3">
+
+          <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/inventory-items">
               Lihat Semua
               <template v-slot:append>
                 <ChevronRightIcon stroke-width="1.5" width="20" />
               </template>
             </v-btn>
-          </div>
+          </div> -->
         </div>
       </v-card-text>
     </v-card>

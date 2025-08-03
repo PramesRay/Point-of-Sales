@@ -118,8 +118,8 @@ function openDetail(request: StockRequest) {
                 </div>
               </div>
             </v-card>
-            <div class="mt-4">
-              <perfect-scrollbar v-bind:style="{ maxHeight: mdAndUp? `30rem` : '12rem' }">
+            <div class="my-4">
+              <perfect-scrollbar v-bind:style="{ maxHeight: mdAndUp? `30rem` : '18rem' }">
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <span class="text-subtitle-2 text-disabled">
@@ -149,16 +149,20 @@ function openDetail(request: StockRequest) {
                     <v-divider class="my-3"/>
                   </v-list-item>
                 </v-list>
+                <!-- jika data kosong -->
+                <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+                  Data Permintaan Stok tidak ditemukan
+                </div>
               </perfect-scrollbar>
 
-              <div class="text-center mt-3">
+              <!-- <div class="text-center mt-3">
                 <v-btn color="primary" variant="text" href="/StockRequestList"
                   >View All
                   <template v-slot:append>
                     <ChevronRightIcon stroke-width="1.5" width="20" />
                   </template>
                 </v-btn>
-              </div>
+              </div> -->
             </div>
           </div>
           <div v-else class="ml-auto">
