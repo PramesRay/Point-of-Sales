@@ -90,6 +90,9 @@ export type UpdateShiftCashierPayload = Omit<StartShiftCashierPayload, 'branch_i
     unit_price: number;
   }[]
   notes: string | null;
+}
+
+export type UpdateAndEndShiftCashierPayload = UpdateShiftCashierPayload & {
   actual_cash: number;
 }
 

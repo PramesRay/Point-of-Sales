@@ -8,7 +8,8 @@ import type {
   ShiftKitchen,
   Shift,
   ShiftWarehouse,
-  UpdateShiftWarehousePayload
+  UpdateShiftWarehousePayload,
+  UpdateAndEndShiftCashierPayload
 } from '@/types/shift'
 
 // Dummy fallback (opsional, bisa kamu isi nanti)
@@ -483,7 +484,7 @@ export async function updateShiftCashier(payload: UpdateShiftCashierPayload): Pr
   }
 }
 
-export async function endShiftCashier(payload: UpdateShiftCashierPayload): Promise<ShiftCashier> {
+export async function endShiftCashier(payload: UpdateAndEndShiftCashierPayload): Promise<ShiftCashier> {
   try {
     const res = await api.put<ShiftCashier>(`/shift/cashier/end/${payload.id}`, payload)
     return res.data

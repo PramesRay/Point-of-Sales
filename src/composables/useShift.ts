@@ -21,7 +21,8 @@ import {
   type ShiftKitchen,
   type Shift,
   type ShiftWarehouse,
-  type UpdateShiftWarehousePayload
+  type UpdateShiftWarehousePayload,
+  type UpdateAndEndShiftCashierPayload
 } from '@/types/shift'
 
 const alert = useAlertStore()
@@ -360,7 +361,7 @@ export function useShift() {
     }
   }
 
-  async function endCashier(payload: UpdateShiftCashierPayload) {
+  async function endCashier(payload: UpdateAndEndShiftCashierPayload) {
     try {
       loading.value = true
       const res = await endShiftCashier(payload)
