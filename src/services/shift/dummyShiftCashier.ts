@@ -38,13 +38,15 @@ export const dummyShiftCashier: ShiftCashier[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[6].id,
-        name: dummyEmployee[6].name
+        id: 'emp-002',
+        name: 'Aldi', 
+        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[6].id,
-        name: dummyEmployee[6].name
+        id: 'emp-002',
+        name: 'Aldi', 
+        role: 'Kasir', 
       },
     },
   },
@@ -89,13 +91,15 @@ export const dummyShiftCashier: ShiftCashier[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[6].id,
-        name: dummyEmployee[6].name
+        id: 'emp-007',
+        name: 'Dian', 
+        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[6].id,
-        name: dummyEmployee[6].name
+        id: 'emp-007',
+        name: 'Dian', 
+        role: 'Kasir', 
       },
     },
   },
@@ -127,13 +131,15 @@ export const dummyShiftCashier: ShiftCashier[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[11].id,
-        name: dummyEmployee[11].name
+        id: 'emp-012',
+        name: 'Lina', 
+        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[11].id,
-        name: dummyEmployee[11].name
+        id: 'emp-012',
+        name: 'Lina', 
+        role: 'Kasir', 
       },
     },
   },
@@ -172,13 +178,15 @@ export const dummyShiftCashier: ShiftCashier[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[3].name
+        id: 'emp-017',
+        name: 'Yuni', 
+        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[3].name
+        id: 'emp-017',
+        name: 'Yuni', 
+        role: 'Kasir', 
       },
     },
   },

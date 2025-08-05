@@ -102,7 +102,11 @@ async function handleEndShift() {
       confirmMessage: 'Pastikan Stok Akhir sudah dimasukkan dengan benar. Apakah anda yakin ingin mengakhiri shift?',
       onConfirm: async () => {
         try {
-          await endKitchen(currentData.id)
+          await endKitchen({
+            id: currentData.id,
+            final_menu: quantity_menu.value.map((item) => ({ id: item.id, quantity: item.final })),
+            notes: notes.value
+          })
           console.log('end shift kitchen')
           clearPayload()
         } catch (error) {
@@ -136,7 +140,7 @@ async function handleEndShift() {
       </div>
 
       <h4 class="text-h4 mt-1 mb-1">Detail Shift Dapur</h4>
-      <div class="text-subtitle-2 text-disabled">{{ currentData.branch.name }}</div>
+      <div class="text-subtitle-2 text-disabled">{{ currentData.branch?.name }}</div>
 
       <v-divider class="my-4"></v-divider>
 

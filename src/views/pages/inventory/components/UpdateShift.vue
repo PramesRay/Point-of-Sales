@@ -7,7 +7,6 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import type { ShiftWarehouse, UpdateShiftWarehousePayload } from '@/types/shift'
 
-import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import Blank from '@/components/shared/Blank.vue'
 import { cloneDeep } from 'lodash'
 

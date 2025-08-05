@@ -1,15 +1,21 @@
 import { extend } from "lodash";
 import type { IdName } from "./common";
 import type { Meta, MetaDetail } from "./meta";
+import type { Employee } from "./employee";
 
 export interface Shift {
   id: string;
   // employee: IdName;
-  branch: IdName;
+  branch: IdName | null;
   start: Date;
   end: Date | null;
   notes: string | null;
-  meta: MetaDetail;
+  meta: {
+    created_at: Date;
+    created_by: Pick<Employee, 'id' | 'name' | 'role'>;
+    updated_at: Date;
+    last_updated_by: Pick<Employee, 'id' | 'name' | 'role'>;
+  };
 }
 
 export interface ShiftCashier extends Shift {

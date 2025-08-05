@@ -167,7 +167,7 @@ function handleAddNew() {
             </v-col>
           </v-row>
   
-          <ScrollContainer :maxHeight="mdAndUp ? '22rem' : '15rem'">
+          <ScrollContainer :maxHeight="mdAndUp ? '23rem' : '18rem'">
             <v-list lines="two" class="py-0" v-if="tab === 'user'">
               <div v-if="props.loading_user" class="text-center my-4">
                 <v-progress-circular indeterminate color="primary" height="1"></v-progress-circular>

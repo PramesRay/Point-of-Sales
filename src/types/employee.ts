@@ -1,5 +1,6 @@
 import type { IdName } from "./common";
 import type { Meta } from "./meta";
+import type { Shift, ShiftCashier, ShiftKitchen, ShiftWarehouse } from "./shift";
 
 export type UserRole = 'Admin' | 'Pemilik' | 'Bendahara' | 'Gudang' | 'Kasir' | 'Dapur' ;
 
@@ -79,10 +80,10 @@ export interface Employee {
   email: string;
   role: UserRole | null;
   access: AccessKey[] | null;
-  assigned_branch: IdName[] | null;
+  assigned_branch: IdName[];
   activity: {
-    shift_emp_id: string | null;
-    shift_op_id: string | null;
+    shift_emp: Shift | null;
+    shift_op: ShiftCashier | ShiftKitchen | ShiftWarehouse | null;
     is_active: boolean;
     branch: IdName | null;
     last_active: Date;

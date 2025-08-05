@@ -1,4 +1,5 @@
 import type { Branch } from "./branch"
+import type { IdName } from "./common"
 import type { Category } from "./inventory"
 import type { Meta } from "./meta"
 
@@ -8,7 +9,7 @@ export interface Menu {
   description: string
   price: number
   category: Category
-  available_in_branch: Branch[]
+  available_in_branch: IdName[]
   meta: Meta
 }
 

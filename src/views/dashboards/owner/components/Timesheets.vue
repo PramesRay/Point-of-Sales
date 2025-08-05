@@ -86,7 +86,7 @@ watch(() => props.loading, () => {
   <v-card elevation="0">
     <v-card variant="outlined">
       <v-card-text>
-        <v-row class="mb-3">
+        <v-row class="mb-2">
           <v-col cols="12">
             <div class="d-flex align-center">
               <h4 class="text-h4">Kehadiran Pegawai</h4>
@@ -94,7 +94,7 @@ watch(() => props.loading, () => {
             <div v-if="props.branch" class="text-subtitle-2 text-medium-emphasis">
               {{ props.branch?.name }} 
               <span 
-                v-if="!props.loading && !currentData[0]?.branch.operational.activity.is_open" 
+                v-if="!props.loading && !currentData[0]?.branch.operational.activity.is_active" 
                 class="text-disabled"
               >(Tutup)
               </span>
@@ -109,9 +109,9 @@ watch(() => props.loading, () => {
         <div v-if="props.loading">
           <v-skeleton-loader type="paragraph"></v-skeleton-loader>
         </div>
-        <p v-if="!props.loading && (props.branch) && currentData[0]?.branch.operational.activity.is_open" class="text-subtitle-2 text-medium-emphasis text-right mt-4">
+        <p v-if="!props.loading && (props.branch) && currentData[0]?.branch.operational.activity.is_active" class="text-subtitle-2 text-medium-emphasis text-right mt-4">
             Restoran telah buka selama
-            <b class="text-h4">{{ getTimeDiff(currentData[0]?.branch.operational.activity.opened_at!).slice(0, -5) }}</b>
+            <b class="text-h4">{{ getTimeDiff(currentData[0]?.branch.operational.activity.last_active!).slice(0, -5) }}</b>
         </p>
 
         <v-card class="bg-lightsecondary" v-if="!props.loading">
@@ -134,7 +134,7 @@ watch(() => props.loading, () => {
         </v-card>
 
         <div class="my-4" v-if="!props.loading">
-          <ScrollContainer :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
+          <ScrollContainer :style="{ maxHeight: mdAndUp? '10rem' : '18rem'}">
             <v-list lines="two" class="py-0" v-if="listEmployee.length > 0">
               <v-list-item
                 v-for="(list, i) in listEmployee"

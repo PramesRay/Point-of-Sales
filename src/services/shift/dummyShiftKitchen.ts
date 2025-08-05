@@ -25,13 +25,15 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     meta: {
       created_at: new Date('2025-07-03T16:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[0].id,
-        name: dummyEmployee[0].name
+        id: 'emp-004',
+        name: 'Budi', 
+        role: 'Dapur', 
       },
       updated_at: new Date('2025-07-03T16:00:00.000Z'),
       last_updated_by: {
-        id: dummyEmployee[0].id,
-        name: dummyEmployee[0].name
+        id: 'emp-004',
+        name: 'Budi', 
+        role: 'Dapur', 
       },
     },
   },
@@ -56,13 +58,15 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     meta: {
       created_at: new Date('2025-07-03T16:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[1].id,
-        name: dummyEmployee[0].name
+        id: 'emp-008',
+        name: 'Fajar', 
+        role: 'Dapur', 
       },
       updated_at: new Date('2025-07-04T00:00:00.000Z'),
       last_updated_by: {
-        id: dummyEmployee[1].id,
-        name: dummyEmployee[0].name
+        id: 'emp-008',
+        name: 'Fajar', 
+        role: 'Dapur', 
       },
     },
   },
@@ -87,13 +91,15 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     meta: {
       created_at: new Date('2025-07-03T16:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[2].id,
-        name: dummyEmployee[0].name
+        id: 'emp-013',
+        name: 'Rizky', 
+        role: 'Dapur', 
       },
       updated_at: new Date('2025-07-03T16:00:00.000Z'),
       last_updated_by: {
-        id: dummyEmployee[2].id,
-        name: dummyEmployee[0].name
+        id: 'emp-013',
+        name: 'Rizky', 
+        role: 'Dapur', 
       },
     },
   },
@@ -118,13 +124,15 @@ export const dummyShiftKitchen: ShiftKitchen[] = [
     meta: {
       created_at: new Date('2025-07-03T16:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[0].name
+        id: 'emp-018',
+        name: 'Gilang', 
+        role: 'Dapur', 
       },
       updated_at: new Date('2025-07-04T00:00:00.000Z'),
       last_updated_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[0].name
+        id: 'emp-018',
+        name: 'Gilang', 
+        role: 'Dapur', 
       },
     },
   }

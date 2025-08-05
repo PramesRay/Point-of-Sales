@@ -17,13 +17,15 @@ export const dummyShiftWarehouse: ShiftWarehouse[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[0].id,
-        name: dummyEmployee[0].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[0].id,
-        name: dummyEmployee[0].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
     },
   },
@@ -42,13 +44,15 @@ export const dummyShiftWarehouse: ShiftWarehouse[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[1].id,
-        name: dummyEmployee[1].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[1].id,
-        name: dummyEmployee[1].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
     },
   },
@@ -66,13 +70,15 @@ export const dummyShiftWarehouse: ShiftWarehouse[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[3].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[3].id,
-        name: dummyEmployee[3].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
     },
   },
@@ -91,13 +97,15 @@ export const dummyShiftWarehouse: ShiftWarehouse[] = [
     meta: {
       created_at: new Date('2025-07-01T10:00:00.000Z'),
       created_by: {
-        id: dummyEmployee[4].id,
-        name: dummyEmployee[4].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
       updated_at: new Date(),
       last_updated_by: {
-        id: dummyEmployee[4].id,
-        name: dummyEmployee[4].name
+        id: 'emp-001',
+        name: 'Hermanu',
+        role: 'Gudang',
       },
     },
   }

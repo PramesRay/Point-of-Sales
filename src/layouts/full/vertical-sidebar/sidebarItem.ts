@@ -129,9 +129,9 @@ const sidebarItem: menu[] = [
         ]
       },
       {
-        title: 'Kehadiran',
+        title: 'Shift',
         icon: CircleIcon,
-        to: '/dashboard/pemilik?show-only=kehadiran',
+        to: '/dashboard/pemilik?show-only=shift',
         requiredRoles: ['Admin', 'Pemilik'],
         requiredAccess: [ 'all',
           'c:branch',

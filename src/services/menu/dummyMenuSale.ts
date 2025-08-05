@@ -1,6 +1,5 @@
 import type { MenuSale } from '@/types/menu';
 import { dummyMenuCategories } from './dummyMenuCategories';
-import dummyBranches from '../common/branch/dummyBranchList'
 
 export const dummyMenuSale: MenuSale[] = [
   {
@@ -11,7 +10,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -22,7 +26,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -33,7 +42,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -44,7 +58,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -55,7 +74,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -66,7 +90,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -77,7 +106,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -88,7 +122,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -99,7 +138,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -110,7 +154,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -121,7 +170,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -132,7 +186,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -143,7 +202,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -154,7 +218,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -165,7 +234,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -176,7 +250,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -187,7 +266,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -198,7 +282,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -209,7 +298,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -220,7 +314,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -231,7 +330,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -242,7 +346,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[0],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -253,7 +362,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -264,7 +378,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -275,7 +394,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -286,7 +410,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -297,7 +426,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -308,7 +442,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -319,7 +458,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -330,7 +474,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -341,7 +490,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -352,7 +506,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -363,7 +522,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -374,7 +538,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[1],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -385,7 +554,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[2],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -396,7 +570,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[2],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
   {
@@ -407,7 +586,12 @@ export const dummyMenuSale: MenuSale[] = [
     quantity: 100,
     threshold: 10,
     category: dummyMenuCategories[2],
-    available_in_branch: dummyBranches,
+    available_in_branch: [
+      { id: 'branch-1', name: 'Restoran 1'},
+      { id: 'branch-2', name: 'Restoran 2'},
+      { id: 'branch-3', name: 'Restoran 3'},
+      { id: 'branch-4', name: 'Restoran 4'}
+    ],
     meta: { created_at: new Date('2025-06-23T09:37:27'), updated_at: new Date('2025-06-23T09:37:27') },
   },
 ]

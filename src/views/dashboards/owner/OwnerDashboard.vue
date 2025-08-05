@@ -22,15 +22,18 @@ import { useReservation } from '@/composables/useReservation';
 import { useUserStore } from '@/stores/authUser';
 import { useMenuItems } from '@/composables/useMenuItems';
 import Management from './components/Management.vue';
+import ShiftList from './components/ShiftList.vue';
+import { useShift } from '@/composables/useShift';
 
 // Data Loading
 const userStore = useUserStore();
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadEmployeeActive, data: employeeActiveData, loading: lea } = useEmployeeActive();
-const { data: timesheetData, loading: lt, load: loadTimesheet } = useTimesheet()
-const { data: reservationData, loading: lr, load: loadReservation, create: createReservation, update: updateReservation } = useReservation()
+// const { data: timesheetData, loading: lt, load: loadTimesheet } = useTimesheet()
+const { data: reservationData, loading: lr, load: loadReservation } = useReservation()
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
+const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 const { init: loadMenu, loadCategory, data: menuData, categories: menuCategories, loading: lm } = useMenuItems();
 
 const visibleComponent = computed(() => {
@@ -44,9 +47,13 @@ onMounted(() => {
   loadBranch()
   loadUser()
   loadSummary()
-  loadTimesheet()
+  // loadTimesheet()
   loadReservation()
   loadEmployeeActive()
+  loadCashier()
+  loadEmployee()
+  loadKitchen()
+  loadWarehouse()
 })
 
 const branchOptions = computed(() => branches.value);
@@ -58,9 +65,12 @@ const selectedBranchObject = computed(() => {
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
-  loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
+  // loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
   loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
   loadReservation({ filter: { 'branch.id': selectedBranch.value } })
+  loadCashier({ filter: { 'branch.id': selectedBranch.value } })
+  loadEmployee({ filter: { 'branch.id': selectedBranch.value } })
+  loadKitchen({ filter: { 'branch.id': selectedBranch.value } })
 });
 
 const pinBranch = ref(false)
@@ -148,11 +158,25 @@ const pinBranch = ref(false)
         <!-- -------------------------------------------------------------------- -->
         <!-- Timesheets -->
         <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'kehadiran')">
-          <Timesheets 
-            :data="timesheetData" 
+        <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'shift')">
+          <ShiftList 
             :branch="selectedBranchObject"
-            :loading="lt"
+            :loading="ls"
+
+            :shift_employee="shiftEmployee.data"
+            :shift_cashier="shiftCashier.data"
+            :shift_kitchen="shiftKitchen.data"
+            :shift_warehouse="shiftWarehouse.data"
+
+            :data_employee="userData"
+            :data_branch="branches"
+
+            :refresh_employee="loadEmployee"
+            :refresh_cashier="loadCashier"
+            :refresh_kitchen="loadKitchen"
+            :refresh_warehouse="loadWarehouse"
+            :refresh_employees="loadUser"
+            :refresh_branches="loadBranch"
             class="flex-grow-1"
           />
         </v-col>
@@ -220,11 +244,25 @@ const pinBranch = ref(false)
           <!-- -------------------------------------------------------------------- -->
           <!-- Timesheets -->
           <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'kehadiran')">
-          <Timesheets 
-            :data="timesheetData" 
+        <v-col cols="12" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'shift')">
+          <ShiftList 
             :branch="selectedBranchObject"
-            :loading="lt"
+            :loading="ls"
+
+            :shift_employee="shiftEmployee.data"
+            :shift_cashier="shiftCashier.data"
+            :shift_kitchen="shiftKitchen.data"
+            :shift_warehouse="shiftWarehouse.data"
+
+            :data_employee="userData"
+            :data_branch="branches"
+
+            :refresh_employee="loadEmployee"
+            :refresh_cashier="loadCashier"
+            :refresh_kitchen="loadKitchen"
+            :refresh_warehouse="loadWarehouse"
+            :refresh_employees="loadUser"
+            :refresh_branches="loadBranch"
             class="flex-grow-1"
           />
         </v-col>

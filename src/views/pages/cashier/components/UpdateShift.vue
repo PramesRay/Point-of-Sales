@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, reactive, watchEffect } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useDisplay } from 'vuetify'
 
-import { formatRupiah, formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
+import { formatRupiah } from '@/utils/helpers/currency'
 import { useShift } from '@/composables/useShift'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
@@ -10,7 +10,6 @@ import type { ShiftCashier, UpdateShiftCashierPayload } from '@/types/shift'
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import InputCashFlow from './sub-components/InputCashFlow.vue'
-import Blank from '@/components/shared/Blank.vue'
 import { cloneDeep } from 'lodash'
 import EndShift from './sub-components/EndShift.vue'
 
@@ -35,7 +34,6 @@ const payload = ref<UpdateShiftCashierPayload>({
   cash_in: [...currentData.value.cash_in],
   cash_out: [...currentData.value.cash_out],
   notes: null,
-  actual_cash: currentData.value.actual_cash ?? 0
 })
 
 const formRef = ref()
@@ -107,7 +105,6 @@ function clearPayload() {
     cash_in: [...currentData.value.cash_in],
     cash_out: [...currentData.value.cash_out],
     notes: null,
-    actual_cash: currentData.value.actual_cash
   }
   cashRaw.value = ''
   formRef.value?.resetValidation()
@@ -128,7 +125,6 @@ async function processSubmit() {
       cash_in: payload.value.cash_in,
       cash_out: payload.value.cash_out,
       notes: payload.value.notes,
-      actual_cash: payload.value.actual_cash
     })
     clearPayload()
   } catch (error) {
