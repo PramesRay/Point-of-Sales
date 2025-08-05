@@ -11,6 +11,7 @@ import { useUserStore } from '@/stores/authUser';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailStockRequest from './sub-components/stock-request/DetailStockRequest.vue';
 import CreateStockRequest from './sub-components/stock-request/UpdateStockRequest.vue';
+import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
@@ -119,7 +120,7 @@ function openDetail(request: StockRequest) {
               </div>
             </v-card>
             <div class="my-4">
-              <perfect-scrollbar v-bind:style="{ maxHeight: mdAndUp? `30rem` : '18rem' }">
+              <ScrollContainer v-bind:style="{ maxHeight: mdAndUp? `30rem` : '18rem' }">
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <span class="text-subtitle-2 text-disabled">
@@ -153,7 +154,7 @@ function openDetail(request: StockRequest) {
                 <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
                   Data Permintaan Stok tidak ditemukan
                 </div>
-              </perfect-scrollbar>
+              </ScrollContainer>
 
               <!-- <div class="text-center mt-3">
                 <v-btn color="primary" variant="text" href="/StockRequestList"

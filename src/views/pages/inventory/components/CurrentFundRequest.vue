@@ -11,6 +11,7 @@ import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import UpdateFundRequest from './sub-components/fund-request/UpdateFundRequest.vue';
 import DetailFundRequest from './sub-components/fund-request/DetailFundRequest.vue';
+import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 
 const { openOverlay } = useOverlayManager()
 
@@ -131,7 +132,7 @@ function openDetail(request: FundRequest) {
             </div>
           </v-card>
           <div class="my-4">
-            <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
+            <ScrollContainer :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
               <v-list v-if="listRequest.length > 0" class="py-0">
                 <v-list-item 
                   v-for="(listRequest, i) in listRequest" 
@@ -174,7 +175,7 @@ function openDetail(request: FundRequest) {
               <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
                 Data Permintaan Dana tidak ditemukan
               </div>
-            </perfect-scrollbar>
+            </ScrollContainer>
 
             <!-- <div class="text-center mt-3">
               <v-btn color="primary" variant="text" href="/fundRequests"

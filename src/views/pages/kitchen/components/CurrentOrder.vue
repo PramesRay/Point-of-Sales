@@ -11,7 +11,7 @@ const props = defineProps<{
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  return props.data.filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');
+  return props.data.filter(tx => tx.payment_status === 'Pending');
 });
 
 const currentOrder = computed(() => filteredData.value.length || 0);
@@ -25,7 +25,7 @@ const currentOrder = computed(() => filteredData.value.length || 0);
           <BuildingStoreIcon stroke-width="1.5" width="25"/>
         </v-btn>
         <div class="mx-3 my-auto">
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name || '' }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch ? props.branch?.name : 'Semua Cabang' }}</span>
         </div>
       </div>
       <v-row v-if="!props.loading">

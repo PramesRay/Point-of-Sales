@@ -16,6 +16,7 @@ const alertStore = useAlertStore();
 import { useInventoryItems } from '@/composables/useInventoryItems';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailStockMovement from './sub-components/stock-movement/DetailStockMovement.vue';
+import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 const userStore = useUserStore();
 
 const { init: initItems, data: inventoryItem, categories: ctg, loading: li } = useInventoryItems();
@@ -115,7 +116,7 @@ function openAddNew() {
         </div>
 
         <div class="my-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '18rem' : '15rem'}">
+          <ScrollContainer :style="{ maxHeight: mdAndUp? '18rem' : '15rem'}">
             <v-list v-if="currentData.length > 0" class="py-0">
               <v-list-item
                 v-for="(item, i) in currentData"
@@ -173,7 +174,7 @@ function openAddNew() {
             <div v-else class="text-center text-subtitle-2 text-disabled my-4">
               Data Perpindahan Stok tidak ditemukan
             </div>
-          </perfect-scrollbar>
+          </ScrollContainer>
 
 
           <!-- <div class="text-center mt-3">

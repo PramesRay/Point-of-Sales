@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -31,6 +32,10 @@ const { data: reservationData, loading: lr, load: loadReservation, create: creat
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { init: loadMenu, loadCategory, data: menuData, categories: menuCategories, loading: lm } = useMenuItems();
+
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
 
 onMounted(() => {
   // if(!userStore.me) userStore.fetchMe()
@@ -84,6 +89,7 @@ const pinBranch = ref(false)
           hide-details
           density="compact"
           clearable
+          clear-icon="mdi-close"
         />
       </div>
     </template>
@@ -120,7 +126,7 @@ const pinBranch = ref(false)
         <!-- -------------------------------------------------------------------- -->
         <!-- Employee Active -->
         <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'aktifitas-karyawan'">
           <EmployeeActive
           :data="employeeActiveData" 
           :branch="selectedBranchObject"
@@ -131,7 +137,7 @@ const pinBranch = ref(false)
         <!-- -------------------------------------------------------------------- -->
         <!-- Total Order -->
         <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'aktifitas-karyawan'">
           <TotalOrder 
           :data="summary" 
           :branch="selectedBranchObject"
@@ -142,7 +148,7 @@ const pinBranch = ref(false)
         <!-- -------------------------------------------------------------------- -->
         <!-- Timesheets -->
         <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" v-if="!mdAndUp">
+        <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'kehadiran')">
           <Timesheets 
             :data="timesheetData" 
             :branch="selectedBranchObject"
@@ -150,7 +156,7 @@ const pinBranch = ref(false)
             class="flex-grow-1"
           />
         </v-col>
-        <v-col cols="6" v-else>
+        <v-col cols="6" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'reservasi')">
           <CurrentReservation
             :data="reservationData" 
             :branch="selectedBranchObject"
@@ -160,7 +166,7 @@ const pinBranch = ref(false)
             class="flex-grow-1"
           />
         </v-col>
-        <v-col cols="6" v-if="mdAndUp">
+        <v-col cols="6" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
             :branch="selectedBranchObject!"
             :data_user="userData"
@@ -184,7 +190,7 @@ const pinBranch = ref(false)
         <!-- -------------------------------------------------------------------- -->
         <!-- Current Reservation -->
         <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" v-if="!mdAndUp">
+        <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'reservasi')">
           <CurrentReservation
             :data="reservationData" 
             :branch="selectedBranchObject"
@@ -194,7 +200,7 @@ const pinBranch = ref(false)
             class="flex-grow-1"
           />
         </v-col>
-        <v-col cols="12" v-if="!mdAndUp">
+        <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
             :branch="selectedBranchObject!"
             :data_user="userData"
@@ -214,7 +220,7 @@ const pinBranch = ref(false)
           <!-- -------------------------------------------------------------------- -->
           <!-- Timesheets -->
           <!-- -------------------------------------------------------------------- -->
-        <v-col cols="12" v-else>
+        <v-col cols="12" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'kehadiran')">
           <Timesheets 
             :data="timesheetData" 
             :branch="selectedBranchObject"

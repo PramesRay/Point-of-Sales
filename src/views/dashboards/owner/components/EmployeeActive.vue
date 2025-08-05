@@ -95,7 +95,7 @@ const chartOptions = computed(() => {
           <BuildingStoreIcon stroke-width="1.5" width="25" />
         </v-btn>
         <div class="mx-3 my-auto">
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch ? props.branch?.name : 'Semua Cabang' }}</span>
         </div>
         <div v-if="!props.loading && data" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">

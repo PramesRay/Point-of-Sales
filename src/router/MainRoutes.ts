@@ -45,32 +45,50 @@ const MainRoutes = {
     {
       name: 'Bendahara',
       path: '/dashboard/bendahara',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik', 'Bendahara']
+      },
       component: () => import('@/views/dashboards/finance/FinanceDashboard.vue')
     },
     {
       name: 'Transaksi',
       path: '/dashboard/bendahara/transaksi',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik', 'Bendahara']
+      },
       component: () => import('@/views/dashboards/finance/components/sub-component/TableTransaction.vue')
     },
 
     {
       name: 'Pemilik',
       path: '/dashboard/pemilik',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik']
+      },
       component: () => import('@/views/dashboards/owner/OwnerDashboard.vue')
     },
     {
       name: 'Kasir',
       path: '/halaman/kasir',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik', 'Kasir']
+      },
       component: () => import('@/views/pages/cashier/CashierPage.vue')
     },
     {
       name: 'Gudang',
       path: '/halaman/gudang',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik', 'Gudang']
+      },
       component: () => import('@/views/pages/inventory/InventoryPage.vue')
     },
     {
       name: 'Dapur',
       path: '/halaman/dapur',
+      meta: {
+        requiredRoles: ['Admin', 'Pemilik', 'Dapur']
+      },
       component: () => import('@/views/pages/kitchen/KitchenPage.vue')
     },
     {

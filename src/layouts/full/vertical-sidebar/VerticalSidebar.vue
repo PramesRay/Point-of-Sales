@@ -25,13 +25,16 @@ const user = computed(() => userStore.me);
 const sidebarMenu = computed(() => {
   return sidebarItems.filter(item => {
     // Periksa apakah pengguna memiliki akses yang diperlukan
-    const hasRequiredAccess = item.requiredAccess ? userStore.hasAccess(item.requiredAccess) : true;
+    // const hasRequiredAccess = item.requiredAccess ? userStore.hasAccess(item.requiredAccess) : true;
 
     // Periksa apakah pengguna memiliki role yang diperlukan
     const hasRequiredRole = item.requiredRoles ? (user.value?.role ? item.requiredRoles.includes(user.value?.role) : false) : true;
 
     // Tampilkan item jika pengguna memiliki akses atau role yang diperlukan
-    return hasRequiredAccess || hasRequiredRole;
+    return (
+      // hasRequiredAccess || 
+      hasRequiredRole
+    );
   });
 });
 
@@ -52,8 +55,15 @@ const customizer = useCustomizerStore();
   >
     <!---Logo part -->
 
-    <div class="pa-5">
-      <Logo />
+    <div class="">
+      <!-- <Logo /> -->
+      <v-img
+        class="mx-auto"
+        src="/temp_logo.png"
+        max-width="100"
+        max-height="100"
+        cover
+      />
     </div>
     <!-- ---------------------------------------------- -->
     <!---Navigation -->

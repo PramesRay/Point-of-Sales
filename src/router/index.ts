@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainRoutes from './MainRoutes';
 import PublicRoutes from './PublicRoutes';
 import { useAuthStore } from '@/stores/auth';
+import { useUserStore } from '@/stores/authUser';
+import { useAlertStore } from '@/stores/alert';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,27 +33,46 @@ export const router = createRouter({
 // }
 
 router.beforeEach(async (to, from, next) => {
-  // redirect to login page if not logged in and trying to access a restricted page
   const publicPages = ['/login', '/register', '/starter'];
-  const auth = useAuthStore();
-
   const isPublicPage = publicPages.includes(to.path);
+  const auth = useAuthStore();
+  const userStore = useUserStore();
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
 
-  // Jika user sudah login dan mencoba mengakses halaman login/register, arahkan ke LandingPage
-  if (auth.user && (to.path === '/login' || to.path === '/register')) {
-    // User logged in and trying to access the login page
-    // if (auth.returnUrl && (auth.returnUrl !== '/login' && auth.returnUrl !== '/register')) {
-      //   next(auth.returnUrl);
-      // } else {
-        next({name:'LandingPage'});
-    // }
-  } else if (authRequired && !auth.user) {
-    // Jika halaman membutuhkan autentikasi dan user belum login
-    auth.returnUrl = to.fullPath; // Simpan halaman yang akan diakses
-    next('/login'); // Redirect ke login
-  } else {
-    // Semua kondisi lain
-    next(); // Lanjutkan ke halaman tujuan
+  const user = auth.user;
+  const userRole = userStore.me?.role;
+
+  // Redirect jika sudah login tapi ke halaman login/register
+  if (user && (to.path === '/login' || to.path === '/register')) {
+    return next({ name: 'LandingPage' });
   }
+
+  // Redirect jika butuh auth tapi belum login
+  if (authRequired && !user) {
+    auth.returnUrl = to.fullPath;
+    return next('/login');
+  }
+
+  
+  // Cek role-based access
+  const allowedRoles = to.meta.requiredRoles as string[] | undefined;
+  console.log('allowedRoles', allowedRoles);
+  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
+    useAlertStore().showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
+    // Arahkan pengguna ke halaman yang sesuai dengan perannya
+    if (userRole === 'Admin') {
+      return next({ name: 'Pemilik' });
+    } else if (userRole === 'Kasir') {
+      return next({ name: 'Kasir' });
+    } else if (userRole === 'Gudang') {
+      return next({ name: 'Gudang' });
+    } else if (userRole === 'Dapur') {
+      return next({ name: 'Dapur' });
+    } else {
+      return next({ name: 'Starter' }); // Default halaman jika role tidak ditemukan
+    }
+  }
+
+  // Lanjutkan
+  next();
 });

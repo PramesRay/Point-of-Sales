@@ -59,7 +59,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Rekapitulasi Keuangan',
         icon: CircleIcon,
-        to: '/dashboard/bendahara/rekapitulasi-keuangan',
+        to: '/dashboard/bendahara?show-only=rekapitulasi-keuangan',
         requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
         requiredAccess: [ 'all',
           'r:total-all-income',
@@ -71,7 +71,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Permintaan Dana',
         icon: CircleIcon,
-        to: '/dashboard/bendahara/permintaan-dana',
+        to: '/dashboard/bendahara?show-only=permintaan-dana',
         requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
         requiredAccess: [ 'all',
           'c:fund-request',
@@ -83,7 +83,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Transaksi',
         icon: CircleIcon,
-        to: '/dashboard/bendahara/transaksi',
+        to: '/dashboard/bendahara?show-only=transaksi',
         requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
         requiredAccess: [ 'all',
           'c:transaction',
@@ -120,7 +120,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Aktifitas Karyawan',
         icon: CircleIcon,
-        to: '/dashboard/pemilik/aktifitas-karyawan',
+        to: '/dashboard/pemilik?show-only=aktifitas-karyawan',
         requiredRoles: ['Admin', 'Pemilik'],
         requiredAccess: [ 'all',
           'r:active-employee',
@@ -129,9 +129,9 @@ const sidebarItem: menu[] = [
         ]
       },
       {
-        title: 'Pengaturan',
+        title: 'Kehadiran',
         icon: CircleIcon,
-        to: '/dashboard/pemilik/pengaturan',
+        to: '/dashboard/pemilik?show-only=kehadiran',
         requiredRoles: ['Admin', 'Pemilik'],
         requiredAccess: [ 'all',
           'c:branch',
@@ -147,7 +147,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Reservasi',
         icon: CircleIcon,
-        to: '/dashboard/pemilik/reservasi',
+        to: '/dashboard/pemilik?show-only=reservasi',
         requiredRoles: ['Admin', 'Pemilik'],
         requiredAccess: [ 'all',
           'c:reservation',
@@ -155,6 +155,12 @@ const sidebarItem: menu[] = [
           'u:reservation',
           'd:reservation',
         ]
+      },
+      {
+        title: 'Manajemen',
+        icon: CircleIcon,
+        to: '/dashboard/pemilik?show-only=manajemen',
+        requiredRoles: ['Admin', 'Pemilik']
       }
     ]
   },
@@ -173,32 +179,32 @@ const sidebarItem: menu[] = [
       'u:order-history',
       'd:order-history',
     ],
-    children: [
-      {
-        title: 'Rekapitulasi Pesanan',
-        icon: CircleIcon,
-        to: '/halaman/kasir/rekapitulasi-pesanan',
-        requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
-        requiredAccess: [ 'all',
-          'r:active-order',
-        ]
-      },
-      {
-        title: 'Pesanan',
-        icon: CircleIcon,
-        to: '/halaman/kasir/pesanan',
-        requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
-        requiredAccess: [ 'all',
-          'c:order',
-          'u:order',
-          'd:order',
-          'r:order-que',
-          'r:order-history',
-          'u:order-history',
-          'd:order-history',
-        ]
-      }
-    ]
+    // children: [
+    //   {
+    //     title: 'Rekapitulasi Pesanan',
+    //     icon: CircleIcon,
+    //     to: '/halaman/kasir?show-only=rekapitulasi-pesanan',
+    //     requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
+    //     requiredAccess: [ 'all',
+    //       'r:active-order',
+    //     ]
+    //   },
+    //   {
+    //     title: 'Pesanan',
+    //     icon: CircleIcon,
+    //     to: '/halaman/kasir?show-only=pesanan',
+    //     requiredRoles: ['Admin', 'Pemilik', 'Kasir'],
+    //     requiredAccess: [ 'all',
+    //       'c:order',
+    //       'u:order',
+    //       'd:order',
+    //       'r:order-que',
+    //       'r:order-history',
+    //       'u:order-history',
+    //       'd:order-history',
+    //     ]
+    //   }
+    // ]
   },
   {
     title: 'Gudang',
@@ -230,7 +236,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Rekapitulasi Gudang',
         icon: CircleIcon,
-        to: '/halaman/gudang/rekapitulasi-gudang',
+        to: '/halaman/gudang?show-only=rekapitulasi-gudang',
         requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
         requiredAccess: [ 'all',
           'r:active-stock-request',
@@ -239,7 +245,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Permintaan Persediaan',
         icon: CircleIcon,
-        to: '/halaman/gudang/permintaan-persediaan',
+        to: '/halaman/gudang?show-only=permintaan-persediaan',
         requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
         requiredAccess: [ 'all',
           'r:active-stock-request',
@@ -252,7 +258,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Persediaan',
         icon: CircleIcon,
-        to: '/halaman/gudang/persediaan',
+        to: '/halaman/gudang?show-only=persediaan',
         requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
         requiredAccess: [ 'all',
           'c:stock',
@@ -268,7 +274,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Mutasi Persediaan',
         icon: CircleIcon,
-        to: '/halaman/gudang/mutasi-persediaan',
+        to: '/halaman/gudang?show-only=mutasi-stok',
         requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
         requiredAccess: [ 'all',
           'c:stock-movement',
@@ -280,7 +286,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Permintaan Dana',
         icon: CircleIcon,
-        to: '/halaman/gudang/permintaan-dana',
+        to: '/halaman/gudang?show-only=permintaan-dana',
         requiredRoles: ['Admin', 'Pemilik', 'Gudang'],
         requiredAccess: [ 'all',
           'c:fund-request',
@@ -316,27 +322,9 @@ const sidebarItem: menu[] = [
     ],
     children: [
       {
-        title: 'Menu',
-        icon: CircleIcon,
-        to: '/halaman/dapur/menu',
-        requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
-        requiredAccess: [ 'all',
-          'c:menu',
-          'r:menu',
-          'u:menu',
-          'd:menu',
-          'c:menu-category',
-          'r:menu-category',
-          'u:menu-category',
-          'd:menu-category',
-          'c:stock-request',
-          'r:stock-request'
-        ]
-      },
-      {
         title: 'Pesanan',
         icon: CircleIcon,
-        to: '/halaman/dapur/pesanan',
+        to: '/halaman/dapur?show-only=pesanan',
         requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
         requiredAccess: [ 'all',
           'c:order',
@@ -351,7 +339,7 @@ const sidebarItem: menu[] = [
       {
         title: 'Permintaan Persediaan',
         icon: CircleIcon,
-        to: '/halaman/dapur/permintaan-persediaan',
+        to: '/halaman/dapur?show-only=permintaan-persediaan',
         requiredRoles: ['Admin', 'Pemilik', 'Dapur'],
         requiredAccess: [ 'all',
           'c:stock-request',
@@ -360,45 +348,45 @@ const sidebarItem: menu[] = [
       }
     ]
   },
-  { divider: true },
-  { header: 'Lainnya' },
-  {
-    title: 'Autentikasi',
-    icon: KeyIcon,
-    to: '/auth',
-    children: [
-      {
-        title: 'Login',
-        icon: CircleIcon,
-        to: '/login'
-      },
-      {
-        title: 'Register',
-        icon: CircleIcon,
-        to: '/register'
-      }
-    ]
-  },
-  { divider: true },
-  { header: 'Perawatan' },
-  {
-    title: 'Error 404',
-    icon: BugIcon,
-    to: '/error'
-  },
+  // { divider: true },
+  // { header: 'Lainnya' },
+  // {
+  //   title: 'Autentikasi',
+  //   icon: KeyIcon,
+  //   to: '/auth',
+  //   children: [
+  //     {
+  //       title: 'Login',
+  //       icon: CircleIcon,
+  //       to: '/login'
+  //     },
+  //     {
+  //       title: 'Register',
+  //       icon: CircleIcon,
+  //       to: '/register'
+  //     }
+  //   ]
+  // },
+  // { divider: true },
+  // { header: 'Perawatan' },
+  // {
+  //   title: 'Error 404',
+  //   icon: BugIcon,
+  //   to: '/error'
+  // },
   
-  { divider: true },
-  {
-    title: 'Halaman Contoh',
-    icon: BrandChromeIcon,
-    to: '/starter'
-  },
-  {
-    title: 'Dokumentasi',
-    icon: HelpIcon,
-    to: 'https://codedthemes.gitbook.io/berry-vuetify/',
-    type: 'external'
-  }
+  // { divider: true },
+  // {
+  //   title: 'Halaman Contoh',
+  //   icon: BrandChromeIcon,
+  //   to: '/starter'
+  // },
+  // {
+  //   title: 'Dokumentasi',
+  //   icon: HelpIcon,
+  //   to: 'https://codedthemes.gitbook.io/berry-vuetify/',
+  //   type: 'external'
+  // }
 ];
 
 export default sidebarItem;

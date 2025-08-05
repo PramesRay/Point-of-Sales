@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 import { useUserStore } from '@/stores/authUser';
 const userStore = useUserStore();
@@ -12,7 +14,6 @@ import CurrentStockRequestList from '../inventory/components/CurrentStockRequest
 import CurrentOrderQue from './components/CurrentOrderQue.vue';
 
 // imported composables
-import { useBranchList } from '@/composables/useBranchList';
 import { useStockRequests } from "@/composables/useStockRequest";
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useAlertStore } from '@/stores/alert';
@@ -21,6 +22,10 @@ import { useAlertStore } from '@/stores/alert';
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, error, update: updateOrder } = useCurrentOrders();
 const { load: loadStockRequests, list: stockRequestlist, loading: lsr, create: createRequest } = useStockRequests();
 const alertStore = useAlertStore();
+
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
 
 onMounted(() => {
   if (!userStore.me?.activity?.is_active) { 
@@ -37,9 +42,7 @@ onMounted(() => {
       sortDesc: true
     })
     loadStockRequests({
-      filter: {
-        'meta.created_at': new Date().toISOString().split('T')[0]
-      },
+      limit: 20,
       sortBy: 'meta.updated_at',
       sortDesc: true
     })
@@ -60,7 +63,6 @@ onMounted(() => {
     })
   }
 })
-
 </script>
 
 <template>
@@ -75,6 +77,7 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <CurrentOrder 
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')"
             :data="currentOrder.data" 
             :branch="userStore.me?.activity?.branch"
             :loading="lco" 
@@ -83,6 +86,7 @@ onMounted(() => {
         </v-col>
         <v-col cols="12">
           <CurrentOrderQue
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')"
             :data="currentOrder.data"
             :branch="userStore.me?.activity?.branch"
             :loading="lco"
@@ -99,6 +103,7 @@ onMounted(() => {
       <v-row>
         <v-col cols="12">
           <CurrentStockRequestList 
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-persediaan')"
             :data="stockRequestlist.data" 
             :branch="userStore.me?.activity?.branch"
             :loading="lsr" 

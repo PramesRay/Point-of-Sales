@@ -2,6 +2,8 @@
 import { computed, onMounted, ref } from 'vue';
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 import { useUserStore } from '@/stores/authUser';
 import { useAlertStore } from '@/stores/alert';
@@ -22,6 +24,10 @@ import { useMenuItems } from '@/composables/useMenuItems';
 const { data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, update: updateOrder, create: createOrder } = useCurrentOrders();
 const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
 
 onMounted(() => {
   if (!userStore.me?.activity?.is_active) { 
@@ -54,7 +60,7 @@ const branchOptions = computed(() => [
   ...branches.value
 ]);
 const selectedBranch = ref<string | undefined>( 
-  userStore.hasRole(['Admin', 'Pemilik', 'Kasir']) 
+  userStore.hasRole(['Admin', 'Pemilik']) 
   ? undefined
   : userStore.me?.activity?.branch?.id 
     ? userStore.me.activity.branch.id 
@@ -75,9 +81,9 @@ const selectedBranchObject = computed(() => {
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active) || mdAndUp">
+    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active || mdAndUp) && (!visibleComponent || visibleComponent === 'rekapitulasi-pesanan')">
       <v-row>
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
+        <v-col cols="12">
           <CurrentOrder 
             :data="currentOrder.data" 
             :branch="selectedBranchObject"
@@ -85,7 +91,7 @@ const selectedBranchObject = computed(() => {
             class="flex-grow-1" 
           />
         </v-col>
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
+        <v-col cols="12">
           <CreateOrder 
             :data_menu="menuSales"
             :categories="categories"
@@ -99,8 +105,7 @@ const selectedBranchObject = computed(() => {
     <!-- Kolom Kanan: Create Order + Current Order Que -->
     <v-col cols="12" md="6">
       <v-row>
-
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active">
+        <v-col cols="12" v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')">
           <CurrentOrderQue
             :data="currentOrder.data"
             :branch="selectedBranchObject"

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
+import { useRoute } from 'vue-router'
+const route = useRoute()
 import { useDisplay } from 'vuetify'
 const { mdAndUp } = useDisplay()
 
@@ -28,6 +30,11 @@ const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
+
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
+
 
 onMounted(() => {
   loadBranch();
@@ -116,7 +123,7 @@ const pinBranch = ref(false)
 
   <v-row v-else >
     <v-col cols="12" md="4">
-      <v-row>
+      <v-row v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
         <v-col cols="12" class="d-flex">
           <TotalEarning 
           :data="summary" 
@@ -144,7 +151,7 @@ const pinBranch = ref(false)
     </v-col>
     <v-col cols="12" md="8">
       <v-row>
-        <v-col cols="12"class="d-flex">
+        <v-col cols="12"class="d-flex" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
           <TotalExpense
             :data="summary"
             :branch="selectedBranchObject"
@@ -153,7 +160,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" md="6" class="d-flex">
+        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'transaksi'">
           <CurrentTransaction
             :data="transactions"
             :branch="selectedBranchObject"
@@ -163,7 +170,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" md="6" class="d-flex" v-if="userStore.me">
+        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'permintaan-dana'">
           <CurrentFundRequest
             :data="fundRequestList.data"
             :branch="selectedBranchObject"

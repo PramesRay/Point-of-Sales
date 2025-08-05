@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 import type { IdName } from '@/types/common';
 import type { TimesheetData } from '@/types/timesheet';
 import { getTimeDiff } from '@/utils/helpers/time';
@@ -133,7 +134,7 @@ watch(() => props.loading, () => {
         </v-card>
 
         <div class="my-4" v-if="!props.loading">
-          <perfect-scrollbar :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
+          <ScrollContainer :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
             <v-list lines="two" class="py-0" v-if="listEmployee.length > 0">
               <v-list-item
                 v-for="(list, i) in listEmployee"
@@ -169,7 +170,7 @@ watch(() => props.loading, () => {
             <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
               Tidak ada data kehadiran
             </div>
-          </perfect-scrollbar>
+          </ScrollContainer>
 
           <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/timesheets">

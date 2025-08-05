@@ -13,7 +13,7 @@ const dummyEmployee: Employee[] = [
       shift_emp_id: null,
       shift_op_id: null,
       is_active: true,
-      branch: dummyBranchList[0],
+      branch: null,
       last_active: new Date('2025-05-01T09:30:00Z'),
     },
     meta: {

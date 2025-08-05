@@ -101,7 +101,7 @@ const chartOptions = computed(() => {
               single-line
             >
           </v-select> -->
-          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch?.name }}</span>
+          <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch ? props.branch?.name : 'Semua Cabang' }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-primary">

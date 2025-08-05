@@ -9,6 +9,7 @@ import type { Reservation } from '@/types/reservation';
 import { formatDate } from '@/utils/helpers/format-date'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailReservation from './sub-components/DetailReservation.vue';
+import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
@@ -114,7 +115,7 @@ function openDetail(data: Reservation) {
           </div>
         </v-card>
         <div v-if="!props.loading" class="my-4">
-          <perfect-scrollbar :style="{ maxHeight: '18rem'}">
+          <ScrollContainer :style="{ maxHeight: '18rem'}">
             <v-list lines="two" class="py-0" v-if="listReservation.length > 0">
               <v-list-item 
                 v-for="(listReservation, i) in listReservation" 
@@ -146,7 +147,7 @@ function openDetail(data: Reservation) {
             <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
               Tidak ada data reservasi
             </div>
-          </perfect-scrollbar>
+          </ScrollContainer>
 
           <!-- <div class="text-center mt-3">
             <v-btn color="primary" variant="text" href="/reservations"

@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay();
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 import { useUserStore } from '@/stores/authUser';
 const userStore = useUserStore();
+
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore();
 
 // imported components
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
@@ -25,7 +30,16 @@ const { init: initItems, data: dataInventory, categories, loading: li, updateIte
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
+
 onMounted(() => {
+  if (!userStore.me?.activity?.is_active) { 
+    alertStore.showAlert('Anda belum memulai shift!', 'warning');
+    return
+  }
+
   initItems();
   loadFundRequest();
   initStockMovement();
@@ -44,7 +58,7 @@ const selectedBranchObject = computed(() => {
   .find(branch => branch.id === selectedBranch.value
   ) || (userStore.me?.activity?.branch)
 })
-console.log('me', userStore.me)
+
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadStockRequest({
@@ -111,11 +125,16 @@ const pinBranch = ref(false)
     </div>
 
   <v-row>
+    <!-- Text jika belum mulai shift -->
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
+      <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
+    </v-col>
     <!-- Kolom Kiri: Current Order + Current Transaction -->
     <v-col cols="12" md="4">
       <v-row>
         <v-col cols="12">
           <CurrentStockRequestSummary 
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'rekapitulasi-gudang')"
             :data="summary" 
             :branch="selectedBranchObject"
             :loading="lsr" 
@@ -124,7 +143,8 @@ const pinBranch = ref(false)
         </v-col>
         
         <v-col cols="12">
-          <CurrentStockRequestList 
+          <CurrentStockRequestList
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-persediaan')"
             :data="stockRequestlist.data" 
             :branch="selectedBranchObject"
             :loading="lsr" 
@@ -140,6 +160,7 @@ const pinBranch = ref(false)
       <v-row>
         <v-col cols="12">
           <InventoryItems 
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'persediaan')"
             :data="dataInventory"
             :categories="categories"
             :loading="li"
@@ -152,6 +173,7 @@ const pinBranch = ref(false)
 
         <v-col cols="12">
           <StockMovement
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'mutasi-stok')"
             :data="dataStockMovement.data"
             :branches="branches"
             :inv_item="dataInventory"
@@ -167,6 +189,7 @@ const pinBranch = ref(false)
       <v-row>
         <v-col cols="12" >
           <CurrentFundRequest
+            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-dana')"
             :data="fundRequestList.data"
             :branch="selectedBranchObject"
             :loading="lfr"

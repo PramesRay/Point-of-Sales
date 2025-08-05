@@ -51,8 +51,8 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
       <v-row align="center" no-gutters>
         <v-col cols="8">
           <h4 class="text-h4 mt-1">Transaksi Terkini</h4>
-          <span v-if="props.branch && props.branch.id !== 'all' && !props.loading" class="text-subtitle-2 text-medium-emphasis">
-            {{ props.branch?.name }}
+          <span v-if="!props.loading" class="text-subtitle-2 text-medium-emphasis">
+            {{ props.branch ? props.branch?.name : 'Semua Cabang' }}
           </span>
         </v-col>
         <v-col cols="4" class="mt-auto text-right">
@@ -117,14 +117,14 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
                   </span>
                   <h4 
                     v-if="latestTransaction?.is_income" 
-                    class="text-h4 text-success"
+                    class="text-h5 text-success"
                     style="overflow: auto; text-overflow: clip; white-space: nowrap; scrollbar-width: none;"
                   >
                     + {{ formatRupiah(latestTransaction?.amount) }}
                   </h4>
                   <h4 
                     v-else 
-                    class="text-h4 text-error"
+                    class="text-h5 text-error"
                     style="overflow: auto; text-overflow: clip; white-space: nowrap; scrollbar-width: none;"
                   >
                     - {{ formatRupiah(latestTransaction?.amount) }}
@@ -185,14 +185,14 @@ const listTransaction = computed(() => filteredTransactions.value.slice(1));
                   </span>
                   <h4 
                     v-if="data?.is_income" 
-                    class="text-h4 text-success"
+                    class="text-h5 text-success"
                     style="overflow: auto; text-overflow: clip; white-space: nowrap; scrollbar-width: none;"
                   >
                     + {{ formatRupiah(data?.amount) }}
                   </h4>
                   <h4 
                     v-else 
-                    class="text-h4 text-error"
+                    class="text-h5 text-error"
                     style="overflow: auto; text-overflow: clip; white-space: nowrap; scrollbar-width: none;"
                   >
                     - {{ formatRupiah(data?.amount) }}
