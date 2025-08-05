@@ -81,9 +81,9 @@ const sidebarItem: menu[] = [
         ]
       },
       {
-        title: 'Transaksi',
+        title: 'Shift',
         icon: CircleIcon,
-        to: '/dashboard/bendahara?show-only=transaksi',
+        to: '/dashboard/bendahara?show-only=shift',
         requiredRoles: ['Admin', 'Pemilik', 'Bendahara'],
         requiredAccess: [ 'all',
           'c:transaction',

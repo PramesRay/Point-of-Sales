@@ -23,9 +23,14 @@ import { useFinanceDashboard } from '@/composables/useFinanceSummary';
 import { useTransactions } from '@/composables/useTransactionList';
 import { useFundRequests } from '@/composables/useFundRequest';
 import { useInventoryItems } from '@/composables/useInventoryItems';
+import { useShift } from '@/composables/useShift';
+import { useUser } from '@/composables/useUser';
+import ShiftList from '../owner/components/ShiftList.vue';
 
 // Data Loading
+const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
+const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
@@ -38,6 +43,13 @@ const visibleComponent = computed(() => {
 
 onMounted(() => {
   loadBranch();
+  loadUser()
+
+  loadCashier()
+  loadEmployee()
+  loadKitchen()
+  loadWarehouse()
+
   loadSummary();
   initItems();
   loadFundRequest();
@@ -160,12 +172,25 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'transaksi'">
-          <CurrentTransaction
-            :data="transactions"
+        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'shift'">
+          <ShiftList
             :branch="selectedBranchObject"
-            :branches="branchOptions"
-            :loading="ltx"
+            :loading="ls"
+
+            :shift_employee="shiftEmployee.data"
+            :shift_cashier="shiftCashier.data"
+            :shift_kitchen="shiftKitchen.data"
+            :shift_warehouse="shiftWarehouse.data"
+
+            :data_employee="userData"
+            :data_branch="branches"
+
+            :refresh_employee="loadEmployee"
+            :refresh_cashier="loadCashier"
+            :refresh_kitchen="loadKitchen"
+            :refresh_warehouse="loadWarehouse"
+            :refresh_employees="loadUser"
+            :refresh_branches="loadBranch"
             class="flex-grow-1"
           />
         </v-col>
