@@ -21,10 +21,17 @@ export interface StockRequest {
   }
   items: {
     item: Pick<InventoryItem, 'id' | 'name' | 'unit'>
-    status: 'Disetujui' | 'Ditolak' | 'Pending';
+    status: 'Siap' | 'Diproses' | 'Ditolak' | 'Pending';
     quantity: number
   }[]
-  status: 'Disetujui'| 'Beberapa Disetujui' | 'Ditolak' | 'Pending';
+  /*
+    Selesai = Approved by Kitchen
+    Siap = All of the approved items has been proceed. Waiting for approval
+    Diproses = One of the items has been approved. In progress
+    Pending = All items has not been approved.
+    Ditolak = All items has been Rejected
+  */
+  status: 'Selesai' | 'Siap' | 'Diproses' | 'Ditolak' | 'Pending';
   note: string;
   meta: MetaDetail
 }

@@ -108,7 +108,9 @@ function openDetail(request: StockRequest) {
                   <div>
                     <div class="d-flex justify-end">  
                       <span v-if="latestRequest?.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ latestRequest?.status }}</span>
-                      <span v-else-if="latestRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
+                      <span v-else-if="latestRequest?.status === 'Diproses'" class="text-subtitle-2 text-medium-emphasis text-primary">{{ latestRequest?.status }}</span>
+                      <span v-else-if="latestRequest?.status === 'Siap'" class="text-subtitle-2 text-medium-emphasis text-success">{{ latestRequest?.status }}</span>
+                      <span v-else-if="latestRequest?.status === 'Selesai'" class="text-subtitle-2 text-medium-emphasis text-secondary">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
                     <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.meta.created_at) }}</h4>
@@ -138,7 +140,9 @@ function openDetail(request: StockRequest) {
                       <div>
                         <div class="d-flex justify-end">
                           <span v-if="listRequest?.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ listRequest?.status }}</span>
-                          <span v-else-if="listRequest?.status === 'Disetujui'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
+                          <span v-else-if="listRequest?.status === 'Diproses'" class="text-subtitle-2 text-medium-emphasis text-primary">{{ listRequest?.status }}</span>
+                          <span v-else-if="listRequest?.status === 'Siap'" class="text-subtitle-2 text-medium-emphasis text-success">{{ listRequest?.status }}</span>
+                          <span v-else-if="listRequest?.status === 'Selesai'" class="text-subtitle-2 text-medium-emphasis text-secondary">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.meta.created_at) }}</div>

@@ -281,3 +281,13 @@ export async function updateStockRequest(payload: UpdateStockRequestPayload | Ap
     throw error
   }  
 }
+
+export async function finishStockRequest(id: string): Promise<StockRequest> {
+  try {
+    const res = await api.put<StockRequest>(`/inventory/stock-requests/${id}/end`);
+    alertStore.showAlert('Permintaan Stok berhasil dikonfirmasi!', 'success');
+    return res.data;
+  } catch (error) {
+    throw error
+  }  
+}

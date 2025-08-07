@@ -13,7 +13,7 @@ import UpdateStockRequest from './UpdateStockRequest.vue';
 const { openOverlay } = useOverlayManager()
 const userStore = useUserStore()
 const alertStore = useAlertStore()
-const { loading: lsr, update } = useStockRequests();
+const { loading: lsr, update, finish } = useStockRequests();
 
 const props = defineProps<{
   data: StockRequest
@@ -37,7 +37,7 @@ const approvalItems = ref<{
       unit: item.item.unit
     },
     approved: item.status === 'Pending' 
-    ? null : item.status === 'Disetujui' 
+    ? null : item.status === 'Diproses' 
       ? true : false 
   }))
 )
@@ -51,7 +51,7 @@ const notesRules = [
 //   return props.data.items.map(data => {
 //     return {
 //       item: data.item,
-//       approved: data.status === 'Pending' ? null : data.status === 'Disetujui' ? true : false,
+//       approved: data.status === 'Pending' ? null : data.status === 'Diproses' ? true : false,
 //     }
 //   })
 // })
@@ -95,7 +95,7 @@ const handleSubmit = () => {
 const handleUpdate = () => {
   if (userStore.me?.id !== props.data.meta.created_by.id) {
     alertStore.showAlert('Data permintaan hanya dapat diubah oleh yang membuat', 'warning')
-  } else if (userStore.me?.activity?.shift_op_id !== props.data.shift.kitchen) {
+  } else if (userStore.me?.activity?.shift_op?.id !== props.data.shift.kitchen) {
     alertStore.showAlert('Data permintaan sudah tidak dapat diubah', 'warning')
   } else {
     openOverlay({
@@ -106,6 +106,22 @@ const handleUpdate = () => {
       }
     })
   }
+}
+
+const handleFinish = () => {
+  openOverlay({
+    component: Blank,
+    props: {
+      confirmToContinue: true,
+      confirmMessage: 'Apakah anda yakin ingin menyelesaikan permintaan ini?',
+      onConfirm: async () => {
+        finish(props.data.id).then(() => {
+          props.refresh()
+          emit('close')
+        })
+      }
+    }
+  })
 }
 </script>
 
@@ -152,7 +168,7 @@ const handleUpdate = () => {
               class="text-subtitle-2 text-medium-emphasis"
               :class="{
                 'text-warning': props.data.status === 'Pending',
-                'text-success': props.data.status === 'Disetujui',
+                'text-success': props.data.status === 'Diproses',
                 'text-error': props.data.status === 'Ditolak'
               }"
             >{{ props.data.status }}</span>
@@ -214,7 +230,7 @@ const handleUpdate = () => {
                   }"
                   :readonly="props.data.status !== 'Pending'"
                   @click="item.approved = null"
-                  >{{ item.approved ? "Disetujui" : "Ditolak" }}
+                  >{{ item.approved ? "Diproses" : "Ditolak" }}
                 </v-btn>
               </div>
             </v-col>
@@ -238,17 +254,27 @@ const handleUpdate = () => {
           counter
         />
 
-        <!-- Tombol proses -->
-        <div class="d-flex justify-end mt-1">
-          <v-btn 
-            color="primary" 
-            @click="handleSubmit"
-            :disabled="isDisabled"
-          >
-            Proses Permintaan
-          </v-btn>
-        </div>
+        <v-btn 
+          v-if="props.data.status === 'Pending'"
+          class="mt-2"
+          block
+          color="primary" 
+          @click="handleSubmit"
+          :disabled="isDisabled"
+        >
+          Proses Permintaan
+        </v-btn>
       </div>
+      
+      <v-btn 
+        v-if="props.data.status === 'Siap' && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
+        class="mt-2"
+        block
+        color="success" 
+        @click="handleFinish"
+      >
+        Konfirmasi Penerimaan
+      </v-btn>
     </v-form>
   </v-card>
 </template>

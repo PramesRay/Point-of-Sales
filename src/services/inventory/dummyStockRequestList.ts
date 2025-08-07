@@ -19,9 +19,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 20,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Persiapan malam minggu",
     meta: {
       created_at: new Date("2025-04-28T10:00:00"),
@@ -47,7 +47,7 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 30,
-      status: "Pending"
+      status: "Siap"
     },
     {
       item: {
@@ -56,10 +56,10 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[1].unit
       },
       quantity: 30,
-      status: "Pending"
+      status: "Ditolak"
     }
     ],
-    status: "Pending",
+    status: "Siap",
     note: "Stok mulai menipis",
     meta: {
       created_at: new Date("2025-04-28T12:30:00"),
@@ -85,9 +85,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 5,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Untuk mesin kasir 2",
     meta: {
       created_at: new Date("2025-04-27T09:00:00"),
@@ -198,9 +198,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 20,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Menu spesial hari Jumat",
     meta: {
       created_at: new Date("2025-04-27T14:00:00"),
@@ -282,9 +282,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 1,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Alat lama rusak",
     meta: {
       created_at: new Date("2025-04-25T09:30:00"),
@@ -311,9 +311,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 30,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Stok rutin harian",
     meta: {
       created_at: new Date("2025-04-28T08:00:00"),
@@ -367,9 +367,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 10,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Stok habis sejak kemarin",
     meta: {
       created_at: new Date("2025-04-27T17:00:00"),
@@ -395,9 +395,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 15,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Persediaan rendah",
     meta: {
       created_at: new Date("2025-04-26T12:00:00"),
@@ -480,9 +480,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 35,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Untuk shift malam",
     meta: {
       created_at: new Date("2025-04-28T14:00:00"),
@@ -536,9 +536,9 @@ const dummyStockRequestList: StockRequest[] = [
         unit: dummyInventoryItems[0].unit
       },
       quantity: 3,
-      status: "Disetujui"
+      status: "Diproses"
     }],
-    status: "Disetujui",
+    status: "Diproses",
     note: "Cadangan habis",
     meta: {
       created_at: new Date("2025-04-26T15:00:00"),

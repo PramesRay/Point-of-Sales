@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchStockRequestSummary } from '@/services/inventory/stockRequestService';
+import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchStockRequestSummary, finishStockRequest } from '@/services/inventory/stockRequestService';
 import type { ApproveStockRequestPayload, CreateStockRequestPayload, StockRequest, StockRequestSummary, UpdateStockRequestPayload } from '@/types/inventory';
 
 export function useStockRequests() {
@@ -64,5 +64,16 @@ export function useStockRequests() {
     }
   }
 
-  return { summary, list, loading, error, load, create, update };
+  async function finish(id: string) {
+    try {
+      loading.value = true;
+      await finishStockRequest(id);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return { summary, list, loading, error, load, create, update, finish };
 }

@@ -243,6 +243,7 @@ function handleSubmit() {
       <!-- Tombol proses -->
       <div class="d-flex justify-end mt-1">
         <v-btn 
+          block
           color="primary" 
           type="submit"
           :disabled="!isFormValid || !isChanged"
