@@ -7,11 +7,17 @@ import AddItemRequest from '../stock-request/AddItemRequest.vue';
 import { formatRupiah } from '@/utils/helpers/currency';
 import { useFundRequests } from '@/composables/useFundRequest';
 import type { CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
+import { useInventoryItems } from '@/composables/useInventoryItems';
 
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
+const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
 const { create, update, loading } = useFundRequests()
+
+onMounted(() => {
+  loadInventoryItems();
+});
 
 const props = defineProps<{
   is_create: boolean
@@ -61,6 +67,8 @@ function addItem() {
   openOverlay({
     component: AddItemRequest,
     props: {
+      inv_item: inventoryItems.value,
+      categories: inventoryCategories.value,
       add: (item: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>) => {
         const existed = payload.value.items.find(i => i.id === item.id)
         if (existed) {
@@ -226,6 +234,8 @@ function handleSubmit() {
           variant="text"
           append-icon="mdi-plus"
           color="primary"
+          :disabled="loadingInventory"
+          :loading="loadingInventory"
           @click="addItem"
         >
           Tambah Item
@@ -241,6 +251,8 @@ function handleSubmit() {
               openOverlay({
                 component: AddItemRequest,
                 props: {
+                  inv_item: inventoryItems,
+                  categories: inventoryCategories,
                   data: item,
                   add: (data: Pick<InventoryItem, 'id' | 'name' | 'quantity' | 'unit' | 'purchase_price'>) => {
                     payload.items[index] = {

@@ -176,6 +176,8 @@ function handleSubmit() {
           variant="text"
           append-icon="mdi-plus"
           color="primary"
+          :disabled="loadingInventory"
+          :loading="loadingInventory"
           @click="addItem"
         >
           Tambah Item
