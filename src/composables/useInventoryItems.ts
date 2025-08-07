@@ -13,7 +13,9 @@ export function useInventoryItems() {
     error.value   = null;
     try {
       data.value = await fetchInventoryItem();
+      console.log('data.value', data.value)
       categories.value = await fetchCategoryInvItem()
+      console.log('categories.value', categories.value)
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -73,7 +75,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await createCategoryInvItem(payload);
-      // await loadCategory();
+      await loadCategory();
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -85,7 +87,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await updateCategoryInvItem(payload);
-      // await loadCategory();
+      await loadCategory();
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -97,7 +99,7 @@ export function useInventoryItems() {
     try {
       loading.value = true;
       await deleteCategoryInvItem(id);
-      // await loadCategory();
+      await loadCategory();
     } catch (e: any) {
       error.value = e;
     } finally {

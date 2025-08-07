@@ -401,6 +401,7 @@ export function useShift() {
         filter
       })
       shiftKitchen.value = { data, total }
+      console.log('hasil fetch shift kitchen', { data, total })
       return { data, total }
     } catch (err) {
       throw err

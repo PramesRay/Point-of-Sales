@@ -1,6 +1,6 @@
-import { createCategoryMenu, createMenu, deleteCategoryMenu, deleteMenu, fetchCategorMenu, fetchMenuItems, fetchMenuSales, updateCategoryMenu, updateMenu } from '@/services/menu/menuItemService';
+import { createCategoryMenu, createMenu, deleteCategoryMenu, deleteMenu, fetchCategorMenu, fetchMenuItems, fetchMenuSales, qtyMenuUpdate, updateCategoryMenu, updateMenu } from '@/services/menu/menuItemService';
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/inventory';
-import type { CreateMenuPayload, Menu, MenuSale, UpdateMenuPayload } from '@/types/menu';
+import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, UpdateMenuPayload } from '@/types/menu';
 import { ref } from 'vue';
 
 export function useMenuItems() {
@@ -90,6 +90,17 @@ export function useMenuItems() {
     }
   }
 
+  async function qtyUpdate(payload: RestockMenuSalesPayload) {
+    try {
+      loading.value = true;
+      await qtyMenuUpdate(payload);
+    } catch (e: any) {
+      error.value = e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function remove(id: string) {
     try {
       loading.value = true;
@@ -152,6 +163,7 @@ export function useMenuItems() {
     loadItemSales,
     create,
     update,
+    qtyUpdate,
     remove,
     
     loadCategory,

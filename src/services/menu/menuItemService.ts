@@ -1,6 +1,6 @@
 import api from "../api";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/inventory";
-import type { CreateMenuPayload, Menu, MenuSale, UpdateMenuPayload } from '@/types/menu'
+import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, UpdateMenuPayload } from '@/types/menu'
 import { dummyMenuCategories } from "./dummyMenuCategories";
 import { dummyMenuItems } from "./dummyMenuItems";
 import { dummyMenuSale } from "./dummyMenuSale";
@@ -36,7 +36,7 @@ export async function fetchMenuItems(
     // 1. Filter by branch
     if (branchId) {
       dummy = dummy.filter(item =>
-        item.available_in_branch.some(branch => branch.id === branchId)
+        item.branch.id === branchId
       )
     }
 
@@ -114,7 +114,7 @@ export async function fetchMenuSales(
     // 1. Filter by branch
     if (branchId) {
       dummy = dummy.filter(item =>
-        item.available_in_branch.some(branch => branch.id === branchId)
+        item.branch.id === branchId
       )
     }
 
@@ -177,6 +177,16 @@ export async function updateMenu(menu: UpdateMenuPayload): Promise<Menu> {
     return res.data;
   } catch (error) {
     console.error('Failed to update menu:', error);
+    throw error;
+  }
+}
+
+export async function qtyMenuUpdate(payload: RestockMenuSalesPayload): Promise<Menu> {
+  try {
+    const res = await api.patch<Menu>(`/kitchen/menus/manage-qty`, payload);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to restock menu:', error);
     throw error;
   }
 }

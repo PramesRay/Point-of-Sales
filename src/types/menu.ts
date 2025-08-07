@@ -9,7 +9,7 @@ export interface Menu {
   description: string
   price: number
   category: Category
-  available_in_branch: IdName[]
+  branch: IdName
   meta: Meta
 }
 
@@ -18,12 +18,14 @@ export interface MenuSale extends Menu {
   threshold: number
 } 
 
-export type CreateMenuPayload = Omit<Menu, "id" | "category" | "available_in_branch" | "meta"> & {
+export type CreateMenuPayload = Omit<Menu, "id" | "category" | "branch" | "meta"> & {
   category_id: string
   available_in_branch_id: string[]
 }
 
-export type UpdateMenuPayload = Omit<Menu, "category" | "available_in_branch" | "meta"> & {
+export type UpdateMenuPayload = Omit<Menu, "category" | "branch" | "meta"> & {
   category_id: string
-  available_in_branch_id: string[]
+  branch_id: string
 }
+
+export type RestockMenuSalesPayload = Pick<MenuSale, "id" | "quantity">[]
