@@ -24,9 +24,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Persiapan malam minggu",
     meta: {
-      created_at: new Date("2025-04-28T10:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T11:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -62,9 +62,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Siap",
     note: "Stok mulai menipis",
     meta: {
-      created_at: new Date("2025-04-28T12:30:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T12:30:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -90,9 +90,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Untuk mesin kasir 2",
     meta: {
-      created_at: new Date("2025-04-27T09:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-27T09:15:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -118,9 +118,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Ditolak",
     note: "Sudah tersedia dari gudang",
     meta: {
-      created_at: new Date("2025-04-26T11:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-26T11:45:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -146,9 +146,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Stok untuk malam ini",
     meta: {
-      created_at: new Date("2025-04-28T15:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T15:10:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -175,9 +175,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Stok menipis menjelang akhir pekan",
     meta: {
-      created_at: new Date("2025-04-28T11:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T11:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -203,9 +203,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Menu spesial hari Jumat",
     meta: {
-      created_at: new Date("2025-04-27T14:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-27T15:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -231,9 +231,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Ditolak",
     note: "Stok masih aman hingga minggu depan",
     meta: {
-      created_at: new Date("2025-04-26T10:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-26T10:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -259,9 +259,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Permintaan dari dapur",
     meta: {
-      created_at: new Date("2025-04-28T16:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T16:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -287,9 +287,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Alat lama rusak",
     meta: {
-      created_at: new Date("2025-04-25T09:30:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-25T09:40:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -316,9 +316,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Stok rutin harian",
     meta: {
-      created_at: new Date("2025-04-28T08:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T08:10:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -344,9 +344,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Persiapan promo malam",
     meta: {
-      created_at: new Date("2025-04-28T13:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T13:20:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -372,9 +372,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Stok habis sejak kemarin",
     meta: {
-      created_at: new Date("2025-04-27T17:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-27T17:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -400,9 +400,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Persediaan rendah",
     meta: {
-      created_at: new Date("2025-04-26T12:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-26T13:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -428,9 +428,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Ditolak",
     note: "Menu ditiadakan minggu ini",
     meta: {
-      created_at: new Date("2025-04-25T10:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-25T10:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -457,9 +457,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Stok cadangan habis",
     meta: {
-      created_at: new Date("2025-04-28T09:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T09:50:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -485,9 +485,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Untuk shift malam",
     meta: {
-      created_at: new Date("2025-04-28T14:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-28T14:50:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -513,9 +513,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Ditolak",
     note: "Masih cukup hingga akhir minggu",
     meta: {
-      created_at: new Date("2025-04-27T08:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-27T08:50:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -541,9 +541,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Diproses",
     note: "Cadangan habis",
     meta: {
-      created_at: new Date("2025-04-26T15:00:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-26T15:00:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   },
@@ -569,9 +569,9 @@ const dummyStockRequestList: StockRequest[] = [
     status: "Pending",
     note: "Persiapan take away akhir pekan",
     meta: {
-      created_at: new Date("2025-04-25T16:30:00"),
+      created_at: new Date(),
       created_by: { id: 'emp-004', name: 'Budi'},
-      updated_at: new Date("2025-04-25T16:35:00"),
+      updated_at: new Date(),
       last_updated_by: { id: 'emp-004', name: 'Budi'}
     }
   }
