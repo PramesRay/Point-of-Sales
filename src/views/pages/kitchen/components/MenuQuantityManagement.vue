@@ -62,7 +62,8 @@ function handleSubmit() {
   const itemsToSubmit = currentData.value.filter(item => item.showQty)
   const payload: RestockMenuSalesPayload = itemsToSubmit.map(item => ({
     id: item.id,
-    quantity: item.newQty
+    quantity: item.newQty,
+    branch_id: props.branch?.id!
   }))
 
   openOverlay({

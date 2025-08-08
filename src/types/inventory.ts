@@ -37,6 +37,7 @@ export interface StockRequest {
 }
 
 export type CreateStockRequestPayload = Pick<StockRequest, 'note'> & {
+  branch_id: string
   items: {
     id: string
     quantity: number

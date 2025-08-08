@@ -24,7 +24,7 @@ import { useStockRequests } from "@/composables/useStockRequest";
 import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
-const { data: branches, loading: lb } = useBranchList();
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
@@ -40,10 +40,18 @@ onMounted(() => {
     return
   }
 
+  loadBranch();
+
   initItems();
   loadFundRequest();
   initStockMovement();
-  loadStockRequest();
+  loadStockRequest({
+    filter: { 
+      'meta.created_at': new Date().toISOString().split('T')[0] 
+    },
+    sortBy: 'meta.created_at',
+    sortDesc: true
+  });
 });
 
 // Branch Selection
@@ -56,13 +64,18 @@ const selectedBranch = ref<string | undefined>(undefined)
 const selectedBranchObject = computed(() => {
   return branchOptions.value
   .find(branch => branch.id === selectedBranch.value
-  ) || (userStore.me?.activity?.branch)
+  ) || undefined
 })
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadStockRequest({
-    filter: { 'branch.id': selectedBranch.value }
+    filter: { 
+      'branch.id': selectedBranch.value,
+      'meta.created_at': new Date().toISOString().split('T')[0] 
+    },
+    sortBy: 'meta.created_at',
+    sortDesc: true
   })
   console.log('selectedBranch', selectedBranch.value)
 });
@@ -72,7 +85,7 @@ const pinBranch = ref(false)
 
 <template>
     <BaseBreadcrumb
-      v-if="mdAndUp && userStore.hasRole(['Admin'])"
+      v-if="mdAndUp"
       title="Halaman Gudang"
       :breadcrumbs="[
         { title: 'Halaman Gudang', href: '/page/inventory' }
@@ -94,6 +107,7 @@ const pinBranch = ref(false)
             hide-details
             density="compact"
             clearable
+            clear-icon="mdi-close"
           />
         </div>
       </template>
@@ -101,12 +115,12 @@ const pinBranch = ref(false)
 
     <!-- sticky branch selector button -->
     <div
-      v-else-if="!mdAndUp && userStore.hasRole(['Admin'])"
+      v-else-if="!mdAndUp"
       class="d-flex align-center justify-end mb-4"
       :style="pinBranch ? 'position: sticky;' : ''"
       style="top: 90px; z-index: 1; background-color: transparent;"
     >
-      <v-icon size="x-small" opacity="0.5" @click="pinBranch = !pinBranch" class="me-1">{{ pinBranch ? 'mdi-pin-outline' : 'mdi-pin'}}</v-icon>
+      <v-icon size="x-small" opacity="0.5" @click="pinBranch = !pinBranch" class="me-1">{{ pinBranch ? 'mdi-pin' : 'mdi-pin-outline'}}</v-icon>
 
       <v-select
         class="pe-2 pl-3 pb-2 rounded-pill bg-white bg-opacity-75 backdrop-blur-lg elevation-1 "

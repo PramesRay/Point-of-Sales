@@ -10,7 +10,7 @@ import type { IdName } from '@/types/common';
 import { useUserStore } from '@/stores/authUser';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailStockRequest from './sub-components/stock-request/DetailStockRequest.vue';
-import CreateStockRequest from './sub-components/stock-request/UpdateStockRequest.vue';
+import UpdateStockRequest from './sub-components/stock-request/UpdateStockRequest.vue';
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
@@ -42,8 +42,10 @@ const isChanged = ref(false)
 
 function openAddRequest() {
   openOverlay({
-    component: CreateStockRequest,
+    component: UpdateStockRequest,
     props: {
+      is_create: true,
+      branch: props.branch,
       confirmBeforeClose: true,
       isChanged,
       refresh: props.refresh
@@ -79,7 +81,7 @@ function openDetail(request: StockRequest) {
             </v-col>
             <v-col cols="4" class="mt-auto text-right">
               <v-btn
-                v-if="!loading"
+                v-if="!loading && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
                 color="primary"
                 @click="openAddRequest"
               >

@@ -101,6 +101,7 @@ const handleUpdate = () => {
     openOverlay({
       component: UpdateStockRequest,
       props: {
+        branch: props.data.branch,
         data: props.data,
         refresh: props.refresh
       }

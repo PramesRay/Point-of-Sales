@@ -21,7 +21,7 @@ const currentData = computed(() => {
 
 const tab = ref('1');
 
-const branchName = computed(() => props.branch?.name || '-');
+const branchName = computed(() => props.branch?.name || 'Semua Cabang');
 const currentRequest = computed(() => currentData.value?.summary.request || 0);
 
 const currentSeries = computed(() => {

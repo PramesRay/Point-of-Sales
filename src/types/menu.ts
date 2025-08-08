@@ -28,4 +28,6 @@ export type UpdateMenuPayload = Omit<Menu, "category" | "branch" | "meta"> & {
   branch_id: string
 }
 
-export type RestockMenuSalesPayload = Pick<MenuSale, "id" | "quantity">[]
+export type RestockMenuSalesPayload = (Pick<MenuSale, "id" | "quantity"> & {
+  branch_id: string
+})[]

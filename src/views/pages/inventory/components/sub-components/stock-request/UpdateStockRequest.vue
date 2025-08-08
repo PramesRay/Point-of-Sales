@@ -6,19 +6,23 @@ import { computed, onMounted, ref, watchEffect } from 'vue';
 import AddItemRequest from './AddItemRequest.vue';
 import type { CreateStockRequestPayload, InventoryItem, StockRequest, UpdateStockRequestPayload } from '@/types/inventory';
 import { useInventoryItems } from '@/composables/useInventoryItems';
+import { useBranchList } from '@/composables/useBranchList';
 
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
 
-const { create, update, loading } = useStockRequests();
+const { load: loadBranch, data: branches, loading: lb } = useBranchList()
+const { create, update, loading: lsr } = useStockRequests();
 const { init: loadInventoryItems, data: inventoryItems, categories: inventoryCategories, loading: loadingInventory } = useInventoryItems();
 
 onMounted(() => {
+  loadBranch();
   loadInventoryItems();
 });
 
 const props = defineProps<{
   is_create: boolean
+  branch: string
   data?: StockRequest
   
   refresh: () => void
@@ -30,6 +34,7 @@ const emit = defineEmits(['close']);
 
 
 const payload = ref<{
+  branch_id: string
   items: {
     id: string | null
     name: string | null
@@ -38,6 +43,7 @@ const payload = ref<{
   }[]
   note: string
 }>({
+  branch_id: userStore.hasRole(['Admin', 'Pemilik']) ? props.branch : userStore.me?.activity?.branch?.id!,
   items: props.data ? props.data.items.map(item => ({
     id: item.item.id,
     name: item.item.name,
@@ -109,6 +115,7 @@ function removeItem(index: number) {
 
 function createRequest() {
   const createPayload: CreateStockRequestPayload = {
+    branch_id: payload.value.branch_id,
     items: payload.value.items.map((item) => ({
       id: item.id!,
       quantity: item.quantity
@@ -127,6 +134,7 @@ function createRequest() {
 function updateRequest() {
   const updatePayload: UpdateStockRequestPayload = {
     id: props.data?.id!,
+    branch_id: payload.value.branch_id,
     items: payload.value.items.map((item) => ({
       id: item.id!,
       quantity: item.quantity
@@ -166,6 +174,19 @@ function handleSubmit() {
     <h4 class="text-h4">{{ props.is_create ? 'Buat Permintaan Stok' : 'Ubah Permintaan Stok'}}</h4>
     <v-divider class="my-4"></v-divider>
     <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="handleSubmit">
+      <div>
+        <v-select
+          v-model="payload.branch_id"
+          :rules="rules.required"
+          :items="branches"
+          :loading="lb"
+          :disabled="lb || userStore.hasRole('Dapur')"
+          variant="underlined"
+          item-title="name"
+          item-value="id"
+          label="Cabang"
+        ></v-select>
+      </div>
       <div class="d-flex justify-space-between align-baseline">
         <h4 class="text-h5">
           Daftar Item: 
@@ -249,7 +270,7 @@ function handleSubmit() {
           color="primary" 
           type="submit"
           :disabled="!isFormValid || !isChanged"
-          :loading="loading"
+          :loading="lsr"
         >
           Proses Permintaan
         </v-btn>
