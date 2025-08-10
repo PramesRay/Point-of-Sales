@@ -7,7 +7,6 @@ const dummyEmployee: Employee[] = [
     id: 'emp-000',
     name: 'Hermanu',
     role: 'Admin',
-    access: ['all'],
     email: 'hermanu.admin@example.com',
     assigned_branch: dummyBranchList,
     activity: {
@@ -26,7 +25,6 @@ const dummyEmployee: Employee[] = [
     id: 'emp-001',
     name: 'Hermanu',
     role: 'Gudang',
-    access: ['all'],
     email: 'hermanu.admin@example.com',
     assigned_branch: dummyBranchList,
     activity: {
@@ -91,7 +89,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-002',
   name: 'Aldi', 
   role: 'Kasir', 
-  access: ['all'],
   email: 'aldi.kitchen@example.com',
   assigned_branch: [dummyBranchList[0], dummyBranchList[1]],
   activity: {
@@ -176,7 +173,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-003',
   name: 'Rani', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'rani.kitchen@example.com',
   assigned_branch: [dummyBranchList[0]],
   activity: {
@@ -215,7 +211,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-004',
   name: 'Budi', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'budi.kitchen@example.com',
   assigned_branch: [dummyBranchList[0]],
   activity: {
@@ -286,7 +281,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-005',
   name: 'Siti', 
   role: 'Admin', 
-  access: ['all'],
   email: 'siti.kitchen@example.com',
   assigned_branch: dummyBranchList,
   activity: {
@@ -305,7 +299,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-005',
   name: 'Siti', 
   role: 'Gudang', 
-  access: ['all'],
   email: 'siti.kitchen@example.com',
   assigned_branch: dummyBranchList,
   activity: {
@@ -324,7 +317,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-006',
   name: 'Joko', 
   role: 'Pemilik', 
-  access: ['all'],
   email: 'joko.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -343,7 +335,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-007',
   name: 'Dian', 
   role: 'Kasir', 
-  access: ['all'],
   email: 'dian.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -434,7 +425,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-008',
   name: 'Fajar', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'fajar.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -505,7 +495,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-009',
   name: 'Tono', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'tono.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -576,7 +565,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-010',
   name: 'Ayu', 
   role: 'Admin', 
-  access: ['all'],
   email: 'ayu.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -595,7 +583,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-010',
   name: 'Ayu', 
   role: 'Gudang', 
-  access: ['all'],
   email: 'ayu.kitchen@example.com',
   assigned_branch: [dummyBranchList[1]],
   activity: {
@@ -614,7 +601,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-011',
   name: 'Bagas', 
   role: 'Pemilik', 
-  access: ['all'],
   email: 'bagas.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -633,7 +619,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-012',
   name: 'Lina', 
   role: 'Kasir', 
-  access: ['all'],
   email: 'lina.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -691,7 +676,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-013',
   name: 'Rizky', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'rizky.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -742,7 +726,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-014',
   name: 'Anton', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'anton.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -793,7 +776,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-015',
   name: 'Sari', 
   role: 'Admin', 
-  access: ['all'],
   email: 'sari.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -812,7 +794,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-022',
   name: 'Sari', 
   role: 'Gudang', 
-  access: ['all'],
   email: 'sari.kitchen@example.com',
   assigned_branch: [dummyBranchList[2]],
   activity: {
@@ -831,7 +812,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-016',
   name: 'Hadi', 
   role: 'Pemilik', 
-  access: ['all'],
   email: 'hadi.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -850,7 +830,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-017',
   name: 'Yuni', 
   role: 'Kasir', 
-  access: ['all'],
   email: 'yuni.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -935,7 +914,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-018',
   name: 'Gilang', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'gilang.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -986,7 +964,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-019',
   name: 'Nita', 
   role: 'Dapur', 
-  access: ['all'],
   email: 'nita.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -1037,7 +1014,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-020',
   name: 'Eko', 
   role: 'Admin', 
-  access: ['all'],
   email: 'eko.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -1056,7 +1032,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-020',
   name: 'Eko', 
   role: 'Gudang', 
-  access: ['all'],
   email: 'eko.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {
@@ -1075,7 +1050,6 @@ const dummyEmployee: Employee[] = [
   id: 'emp-021',
   name: 'Bambang', 
   role: 'Pemilik', 
-  access: ['all'],
   email: 'bambang.kitchen@example.com',
   assigned_branch: [dummyBranchList[3]],
   activity: {

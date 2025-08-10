@@ -3,15 +3,13 @@ import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
-import type { AccessKey, Employee, UpdateEmployeePayload } from '@/types/employee';
-import { accessMatrix } from '@/services/common/employee/accessKey';
+import type { Employee, UpdateEmployeePayloadByOwner } from '@/types/employee';
 
 import { useUser } from '@/composables/useUser';
 import { useBranchList } from '@/composables/useBranchList';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
 import Blank from '@/components/shared/Blank.vue';
-import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 
 const { openOverlay } = useOverlayManager()
 
@@ -33,12 +31,9 @@ onMounted(() => {
   load()
 })
 
-const payload = ref<UpdateEmployeePayload>({
+const payload = ref<UpdateEmployeePayloadByOwner>({
   id: props.data.id,
-  name: props.data.name,
-  email: props.data.email,
   role: props.data.role,
-  access: props.data.access,
   assigned_branch_id: props.data.assigned_branch?.map(b => b.id) ?? []
 })
 
@@ -53,7 +48,6 @@ const rules = {
 const isChanged = computed(() => {
   return (
     payload.value.role !== props.data.role ||
-    payload.value.access?.length !== props.data.access?.length ||
     payload.value.assigned_branch_id.length != props.data.assigned_branch?.length
   )
 })
@@ -65,32 +59,11 @@ watchEffect(() => {
   }
 })
 
-// Logika untuk toggle semua akses dalam 1 role
-const toggleAll = (role: string, features: typeof accessMatrix[keyof typeof accessMatrix]) => {
-  const allKeys = features.flatMap(f => f.actions) as AccessKey[]
-  const currentAccess = payload.value.access ?? []
-  const isFullySelected = allKeys.every(k => currentAccess.includes(k))
-
-  if (isFullySelected) {
-    payload.value.access = currentAccess.filter((k) => !allKeys.includes(k))
-  } else {
-    payload.value.access = Array.from(new Set([...currentAccess, ...allKeys]))
-  }
-}
-
-// Mengecek apakah semua akses dalam satu role sudah dicentang
-const isAllSelected = (role: string, features: typeof accessMatrix[keyof typeof accessMatrix]) => {
-  const allKeys = features.flatMap(f => f.actions)
-  return allKeys.every(k => payload.value.access?.includes(k as AccessKey))
-}
 
 function clearPayload() {
   payload.value = {
     id: props.data.id,
-    name: props.data.name,
-    email: props.data.email,
     role: props.data.role,
-    access: props.data.access,
     assigned_branch_id: props.data.assigned_branch?.map(b => b.id) ?? []
   }
 
@@ -156,13 +129,16 @@ function handleClose() {
     <v-form ref="formRef" v-model="isFormValid">
       
       <v-row class="justify-center" no-gutters>
-        <v-col cols="6">
-          <div class="text-subtitle-2 font-weigth-bold text-medium-emphasis pt-2">
-            <h4>{{ props.data.name }}</h4>
-            <i>{{ props.data.email }}</i>
+        <v-col cols="12" class="mb-6">
+          <div class="d-flex align-center text-subtitle-2 font-weigth-bold text-medium-emphasis pt-2">
+            <v-icon class="mr-2" size="30">mdi-account-circle</v-icon>
+            <div class="align-center">
+              <h4 class="text-h4 font-weight-bold">{{ props.data.name }}</h4>
+              <span class="text-subtitle-2 text-medium-emphasis">{{ props.data.email }}</span>
+            </div>
           </div>
-        </v-col>  
-        <v-col cols="6">
+        </v-col>
+        <v-col cols="12">
           <v-select
             v-model="payload.role"
             variant="underlined"
@@ -197,61 +173,6 @@ function handleClose() {
               </span>
             </template>
           </v-autocomplete>
-        </v-col>
-        <v-col cols="12">
-          <ScrollContainer :maxHeight="mdAndUp ? '32rem' : '27rem'">
-            
-            <div class="d-flex text-subtitle-1 font-weight-bold text-medium-emphasis py-2 align-end">
-              <v-icon class="me-2">mdi-lock</v-icon>
-              Akses: 
-            </div>
-            <v-expansion-panels multiple elevation="0">
-              <v-expansion-panel
-                v-for="(features, role) in accessMatrix"
-                :key="role"
-              >
-                <v-expansion-panel-title class="d-flex justify-space-between align-center">
-                  <span>{{ role }}</span>
-  
-                  <v-btn
-                    size="x-small"
-                    variant="text"
-                    @click.stop="toggleAll(role, features)"
-                  >
-                    {{ isAllSelected(role, features) ? 'Hapus Pilihan' : 'Pilih Semua' }}
-                  </v-btn>
-                </v-expansion-panel-title>
-  
-                <v-expansion-panel-text>
-                  <v-row>
-                    <v-col
-                      v-for="feature in features"
-                      :key="feature.feature"
-                      cols="12"
-                    >
-                      <strong class="text-subtitle-2">{{ feature.label }}</strong>
-                      <v-row>
-                        <v-col
-                          v-for="action in feature.actions"
-                          :key="action"
-                          cols="12"
-                          class="py-1"
-                        >
-                          <v-checkbox
-                            v-model="payload.access"
-                            :label="action"
-                            :value="action"
-                            density="compact"
-                            hide-details
-                          />
-                        </v-col>
-                      </v-row>
-                    </v-col>
-                  </v-row>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </ScrollContainer>
         </v-col>
       </v-row>
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, reactive, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 import { useDisplay } from 'vuetify'
 
-import { formatRupiah, formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
+import { formatRupiah } from '@/utils/helpers/currency'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
@@ -43,7 +43,7 @@ const isChanged = ref(false)
 const showCtg = ref(false)
 
 const currentDataUsers = computed(() => {
-  if (!props.branch || props.branch.id === '') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data_user;
   } else {
     return props.data_user.filter(
@@ -57,11 +57,11 @@ const currentDataBranch = computed(() => {
 })
 
 const currentDataMenu = computed(() => {
-  if (!props.branch || props.branch.id === '') {
+  if (!props.branch || props.branch.id === 'all') {
     return props.data_menu;
   } else {
     return props.data_menu.filter(
-      (tx) => tx.available_in_branch.some((branch) => branch.id === props.branch.id)
+      (tx) => tx.branch?.id === props.branch.id
     );
   }
 })

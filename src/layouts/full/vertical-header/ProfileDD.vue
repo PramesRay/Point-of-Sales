@@ -21,6 +21,7 @@ import Blank from '@/components/shared/Blank.vue';
 import Start from '@/views/pages/shift/Start.vue';
 import { useShift } from '@/composables/useShift';
 import type { ShiftCashier, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
+import UpdateProfile from '@/views/pages/user/UpdateProfile.vue';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -288,8 +289,22 @@ onMounted(() => {
 
       <v-divider></v-divider> -->
 
-      <v-list class="">
-        <v-list-item color="secondary" rounded="md">
+      <v-list>
+        <v-list-item 
+          color="secondary" 
+          rounded="md"
+          @click="
+            openOverlay({
+              component: UpdateProfile,
+              props: { 
+                data: userStore.me,
+                confirmBeforeClose: true,
+                isChanged,
+                refresh: userStore.fetchMe
+              },
+            })
+          "
+        >
           <template v-slot:prepend>
             <SettingsIcon size="20" class="mr-2" />
           </template>

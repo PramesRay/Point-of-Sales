@@ -1,6 +1,6 @@
 import api from "@/services/api";
 import dummyEmployee from "../employee/dummyEmployee";
-import type { CreateEmployeePayload, Employee, UpdateEmployeePayload } from "@/types/employee";
+import type { CreateEmployeePayload, Employee, UpdateEmployeeByEmployee, UpdateEmployeePayloadByOwner } from "@/types/employee";
 
 export async function fetchUsers(
   branchId?: string,
@@ -135,9 +135,9 @@ export async function createUser(payload: CreateEmployeePayload): Promise<Employ
   }
 }
 
-export async function updateUser(payload: UpdateEmployeePayload): Promise<Employee> {
+export async function updateUser(payload: UpdateEmployeePayloadByOwner | UpdateEmployeeByEmployee): Promise<Employee> {
   try {
-    const res = await api.put<Employee>(`/users/${payload.id}`, payload);
+    const res = await api.patch<Employee>(`/users/${payload.id}`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to update user:', error);

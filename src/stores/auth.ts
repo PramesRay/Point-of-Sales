@@ -5,7 +5,7 @@ import type { LoginPayload, RegisterPayload, UserAuth } from '@/types/auth';
 import {
   confirmPasswordReset,
   createUserWithEmailAndPassword,
-  onAuthStateChanged,
+  onIdTokenChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -13,52 +13,82 @@ import {
   signOut,
   updatePassword,
   updateProfile,
+  verifyBeforeUpdateEmail,
+  reauthenticateWithCredential,
+  type User,
+  EmailAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/plugins/firebase';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useAuthStore = defineStore({
   id: 'auth',
   state: () => ({
     // Sementara, nanti ubah menjadi null
-    user: null as UserAuth | null,
+    user: null as User | null,
     loading: false,
     returnUrl: null as string | null,
-    isAuthenticated: false
+    isAuthenticated: false,
+    _handlingToken: false,
+    _unsubscribeAuth: null as null | (() => void)
   }),
   actions: {
     async initialize() {
       this.loading = true;
-      return new Promise<void>((resolve) => {
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            const token = await user.getIdToken()
-            this.user = {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-            };
-            this.isAuthenticated = true;
-          } else {
-            this.user = null;
-            this.isAuthenticated = false;
+
+      this.detachAuthListener();
+
+      let firstResolveDone = false;
+      this._handlingToken = false;
+
+      await new Promise<void>((resolve) => {
+        this._unsubscribeAuth = onIdTokenChanged(auth, async (u) => {
+          if (this._handlingToken) return;
+          this._handlingToken = true;
+          try {
+            if (u) {
+              this.user = u;
+              this.isAuthenticated = true;
+
+              // // sinkron profil (tanpa menyentuh Firebase user)
+              // const newProfile = { email: u.email, name: u.displayName };
+              // const last = localStorage.getItem('lastSyncedProfile');
+              // const prev = last ? JSON.parse(last) : null;
+              // if (!prev || prev.email !== newProfile.email || prev.name !== newProfile.name) {
+              //   // await api.patch('/user/me', newProfile);
+              //   localStorage.setItem('lastSyncedProfile', JSON.stringify(newProfile));
+              // }
+            } else {
+              this.user = null;
+              this.isAuthenticated = false;
+            }
+          } finally {
+            this._handlingToken = false;
+            this.loading = false;
+            if (!firstResolveDone) {
+              firstResolveDone = true;
+              resolve();
+            }
           }
-          this.loading = false;
-          resolve();
         });
       });
     },
+
+    // panggil saat logout manual
+    detachAuthListener() {
+      if (this._unsubscribeAuth) {
+        this._unsubscribeAuth()
+        this._unsubscribeAuth = null
+      }
+    },
+    
     async loginWithGoogle(){
       this.loading = true
       try {
         const result = await signInWithPopup(auth, googleProvider);
         
-        this.user = {
-          uid: result.user.uid,
-          name: result.user.displayName,
-          email: result.user.email
-        };
+        this.user = result.user;
         this.isAuthenticated = true;
         
         const idToken = await result.user.getIdToken();
@@ -86,11 +116,7 @@ export const useAuthStore = defineStore({
         // DELETE SECTION ================================================
         
         // Simpan data pengguna dari API
-        this.user = {
-          uid: result.user.uid,
-          name: result.user.displayName,
-          email: result.user.email
-        };
+        this.user = result.user;
         this.isAuthenticated = true;
 
         // Reset returnUrl setelah login dan redirect
@@ -161,11 +187,15 @@ export const useAuthStore = defineStore({
         // });
   
         this.user = {
-          uid: result.user.uid,
-          name: payload.first_name + ' ' + payload.last_name,
-          email: result.user.email
+          ...result.user,
+          displayName: payload.first_name + ' ' + payload.last_name,
         };
         this.isAuthenticated = true;
+
+        localStorage.setItem('lastSyncedProfile', JSON.stringify({
+          name: this.user.displayName,
+          email: this.user.email
+        }));
         router.push('/');
         return result
       } catch (err: any) {
@@ -219,13 +249,45 @@ export const useAuthStore = defineStore({
         
       }
     },
-    async changePassword(newPassword: string) {
+    async updateUserProfile(name: string) {
       const user = auth.currentUser;
-      if (!user) throw new Error('User not logged in');
+      if (!user) throw new Error('User tidak ditemukan');
+  
+      try {
+        await updateProfile(user, { displayName: name });
+      } catch (error) {
+        console.error('Gagal memperbarui profil pengguna:', error);
+        throw error;
+      }
+    },
+
+    
+    async changeEmail(newEmail: string, oldPassword: string) {
+      if (!auth.currentUser) throw new Error('User tidak ditemukan');
+      try {
+        await reauthenticateWithCredential(auth.currentUser, EmailAuthProvider.credential(auth.currentUser.email!, oldPassword));
+        await verifyBeforeUpdateEmail(auth.currentUser!, newEmail);
+      } catch (err: any) {
+        if (err.code === 'auth/email-already-in-use') {
+          throw new Error('Email sudah terdaftar');
+        } else if (err.code === 'auth/invalid-credential') {
+          throw new Error('Kredensial tidak valid');
+        }
+        throw err.response?.data?.message || 'Ganti mengirim verifikasi email';
+      }
+    },
+    
+    async changePassword(oldPassword: string, newPassword: string) {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User tidak ditemukan');
 
       try {
+        await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email!, oldPassword));
         await updatePassword(user, newPassword);
       } catch (err: any) {
+        if (err.code === 'auth/invalid-credential') {
+          throw new Error('Kredensial tidak valid');
+        }
         throw err.response?.data?.message || 'Ganti password gagal';
       }
     },
@@ -309,6 +371,8 @@ export const useAuthStore = defineStore({
       this.loading = true
       try {
         await signOut(auth);
+        this.detachAuthListener();
+        localStorage.removeItem('lastSyncedProfile'); // Hapus setelah berhasil sync
         router.push('/login');
       } catch (error) {
         console.error('Logout failed:', error);

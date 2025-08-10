@@ -56,8 +56,5 @@ export const useUserStore = defineStore({
       
       return this.me?.role === role;
     },
-    hasAccess(keys: AccessKey[]): boolean {
-      return keys.some(key => this.me?.access?.includes(key));
-    }
   }
 });

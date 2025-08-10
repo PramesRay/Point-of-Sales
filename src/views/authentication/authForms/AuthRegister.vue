@@ -19,7 +19,6 @@ const registerPayload = ref<RegisterPayload>({
   first_name: '',
   last_name: '',
   email: '',
-  phone: '',
   password: ''
 });
 
@@ -33,6 +32,17 @@ const rules = {
   email: [(v: string) => /^$|^[\w\.-]+@[\w\.-]+\.[\w]{2,}$/.test(v) || 'Email tidak valid'],
   confrim_password: [(v: string) => v === registerPayload.value.password || 'Password tidak sama']
 };
+
+async function handleLoginWithGoogle() {
+  try {
+    isSubmitting.value = true;
+    await authStore.loginWithGoogle();
+  } catch (err: any) {
+    console.error(err);
+  } finally {
+    isSubmitting.value = false;
+  }
+}
 
 async function handleSubmit() {
   const { valid } = await Regform.value.validate();
@@ -51,7 +61,7 @@ async function handleSubmit() {
         }
         localStorage.setItem('email', registerPayload.value.email);
       } else {
-        alert.showAlert(`Proses Reset Password sedang berlangsung, tunggu hingga selesai`, 'info');
+        alert.showAlert(`Proses Verifikasi atau Reset Password sedang berlangsung, tunggu beberapa saat lagi`, 'info');
       }
       router.push('/verify-email?mode=verify');
     } else {
@@ -72,14 +82,14 @@ async function handleSubmit() {
 
 
 <template>
-  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn">
+  <v-btn block color="primary" variant="outlined" class="text-lightText googleBtn" @click="handleLoginWithGoogle">
     <img :src="Google" alt="google" />
     <span class="ml-2">Daftar dengan Akun Google</span></v-btn
   >
   <v-row>
     <v-col class="d-flex align-center">
       <v-divider class="custom-devider" />
-      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">OR</v-btn>
+      <v-btn variant="outlined" class="orbtn" rounded="md" size="small">atau</v-btn>
       <v-divider class="custom-devider" />
     </v-col>
   </v-row>
@@ -113,20 +123,6 @@ async function handleSubmit() {
       v-model="registerPayload.email"
       :rules="[...rules.required, ...rules.email]"
       label="Email"
-      class="mt-4 mb-4"
-      variant="outlined"
-      color="primary"
-      density="comfortable"
-      hide-details="auto"
-    />
-
-    <v-text-field
-      type="number"
-      hide-spin-buttons
-      v-model="registerPayload.phone"
-      :rules="[...rules.required, ...rules.phone]"
-      label="Nomor Telepon"
-      prefix="+62 |"
       class="mt-4 mb-4"
       variant="outlined"
       color="primary"

@@ -79,7 +79,6 @@ export interface Employee {
   name: string;
   email: string;
   role: UserRole | null;
-  access: AccessKey[] | null;
   assigned_branch: IdName[];
   activity: {
     shift_emp: Shift | null;
@@ -91,8 +90,12 @@ export interface Employee {
   meta: Meta
 }
 
-export type UpdateEmployeePayload = Omit<Employee, 'assigned_branch' | 'activity' | 'meta'> & {
+export type UpdateEmployeePayloadByOwner = Pick<Employee, 'id' | 'role'> & {
   assigned_branch_id: string[];
 }
 
-export type CreateEmployeePayload = Omit<UpdateEmployeePayload, 'id'>
+export type UpdateEmployeeByEmployee = Pick<Employee, 'id' | 'name' | 'email'>
+
+export type CreateEmployeePayload = Omit<Employee, 'assigned_branch' | 'activity' | 'meta'> & {
+  assigned_branch_id: string[];
+}

@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import { fetchUsers, createUser, updateUser, deleteUser } from '@/services/common/user/userService';
-import type { CreateEmployeePayload, Employee, UpdateEmployeePayload } from '@/types/employee';
+import type { CreateEmployeePayload, Employee, UpdateEmployeeByEmployee, UpdateEmployeePayloadByOwner } from '@/types/employee';
 import { ref } from 'vue';
 
 export function useUser() {
@@ -60,7 +60,7 @@ export function useUser() {
     }
   }
 
-  async function update(payload: UpdateEmployeePayload) {
+  async function update(payload: UpdateEmployeePayloadByOwner | UpdateEmployeeByEmployee) {
     try {
       loading.value = true;
       await updateUser(payload);
