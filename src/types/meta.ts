@@ -1,5 +1,5 @@
 import type { IdName } from "./common"
-import type { Employee } from "./employee"
+import type { Employee } from "./user"
 
 export interface Meta {
   created_at: Date

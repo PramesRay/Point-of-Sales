@@ -6,37 +6,6 @@ import sidebarItems from './sidebarItem';
 import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
-import Logo from '../logo/LogoMain.vue';
-
-import { useAuthStore } from '@/stores/auth';
-import { useUserStore } from '@/stores/authUser';
-
-const authStore = useAuthStore();
-const userStore = useUserStore();
-
-// Pastikan data pengguna sudah tersedia (fetch data jika perlu)
-if (authStore.isAuthenticated && !userStore.me) {
-  userStore.fetchMe();  // Ambil data pengguna jika belum ada
-}
-
-const user = computed(() => userStore.me);
-
-// Filter sidebar items berdasarkan role dan access pengguna
-const sidebarMenu = computed(() => {
-  return sidebarItems.filter(item => {
-    // Periksa apakah pengguna memiliki akses yang diperlukan
-    // const hasRequiredAccess = item.requiredAccess ? userStore.hasAccess(item.requiredAccess) : true;
-
-    // Periksa apakah pengguna memiliki role yang diperlukan
-    const hasRequiredRole = item.requiredRoles ? (user.value?.role ? item.requiredRoles.includes(user.value?.role) : false) : true;
-
-    // Tampilkan item jika pengguna memiliki akses atau role yang diperlukan
-    return (
-      // hasRequiredAccess || 
-      hasRequiredRole
-    );
-  });
-});
 
 const customizer = useCustomizerStore();
 </script>
@@ -71,7 +40,7 @@ const customizer = useCustomizerStore();
     <perfect-scrollbar class="scrollnavbar">
       <v-list class="pa-4">
         <!---Menu Loop -->
-        <template v-for="(item, i) in sidebarMenu" :key="i">
+        <template v-for="(item, i) in sidebarItems" :key="i">
           <!---Item Sub Header -->
           <NavGroup :item="item" v-if="item.header" :key="item.title" />
           <!---Item Divider -->

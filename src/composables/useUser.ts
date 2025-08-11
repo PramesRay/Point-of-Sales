@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import { fetchUsers, createUser, updateUser, deleteUser } from '@/services/common/user/userService';
-import type { CreateEmployeePayload, Employee, UpdateEmployeeByEmployee, UpdateEmployeePayloadByOwner } from '@/types/employee';
+import type { CreateEmployeePayload, Employee, UpdateEmployeeByEmployee, UpdateEmployeePayloadByOwner } from '@/types/user';
 import { ref } from 'vue';
 
 export function useUser() {

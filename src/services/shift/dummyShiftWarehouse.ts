@@ -1,5 +1,5 @@
 import type { ShiftWarehouse } from "@/types/shift";
-import dummyEmployee from "../common/employee/dummyEmployee";
+import dummyUser from "../common/user/dummyUser";
 
 export const dummyShiftWarehouse: ShiftWarehouse[] = [
   {

@@ -1,6 +1,6 @@
 import type { TimesheetData } from '@/types/timesheet'
 import dummyBranchList from '../common/branch/dummyBranchList';
-import dummyEmployee from '../common/employee/dummyEmployee';
+import dummyUser from '../common/user/dummyUser';
 
 const dummyTimesheetData: TimesheetData[] = [
   {
@@ -10,11 +10,11 @@ const dummyTimesheetData: TimesheetData[] = [
       operational: dummyBranchList[0].operational
     }, 
     employee: [
-      dummyEmployee[0],
-      dummyEmployee[1],
-      dummyEmployee[2],
-      dummyEmployee[3],
-      dummyEmployee[4],
+      dummyUser[0],
+      dummyUser[1],
+      dummyUser[2],
+      dummyUser[3],
+      dummyUser[4],
     ]
   },
   {    
@@ -24,11 +24,11 @@ const dummyTimesheetData: TimesheetData[] = [
       operational: dummyBranchList[1].operational
     }, 
     employee: [
-      dummyEmployee[5],
-      dummyEmployee[6],
-      dummyEmployee[7],
-      dummyEmployee[8],
-      dummyEmployee[9],
+      dummyUser[5],
+      dummyUser[6],
+      dummyUser[7],
+      dummyUser[8],
+      dummyUser[9],
     ]
   },
   {    
@@ -38,11 +38,11 @@ const dummyTimesheetData: TimesheetData[] = [
       operational: dummyBranchList[2].operational
     }, 
     employee: [
-      dummyEmployee[10],
-      dummyEmployee[11],
-      dummyEmployee[12],
-      dummyEmployee[13],
-      dummyEmployee[14],
+      dummyUser[10],
+      dummyUser[11],
+      dummyUser[12],
+      dummyUser[13],
+      dummyUser[14],
     ]
   },
   {    
@@ -52,12 +52,12 @@ const dummyTimesheetData: TimesheetData[] = [
       operational: dummyBranchList[3].operational
     }, 
     employee: [
-      dummyEmployee[15],
-      dummyEmployee[16],
-      dummyEmployee[17],
-      dummyEmployee[18],
-      dummyEmployee[19],
-      dummyEmployee[20],
+      dummyUser[15],
+      dummyUser[16],
+      dummyUser[17],
+      dummyUser[18],
+      dummyUser[19],
+      dummyUser[20],
     ]
   }
 ]

@@ -1,60 +1,55 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
-import { dummyUser } from '@/services/common/user/dummyUser';
-import type { AccessKey, Employee, UserRole } from '@/types/employee';
-import type { Shift, ShiftCashier, ShiftKitchen } from '@/types/shift';
-import { dummyShiftCashier } from '@/services/shift/dummyShiftCashier';
-import { dummyShiftKitchen } from '@/services/shift/dummyShiftKitchen';
-import { dummyShiftEmployee } from '@/services/shift/dummyShiftEmployee';
-import { auth } from '@/plugins/firebase';
+import dummyUser from '@/services/common/user/dummyUser';
+
+import type { CreateUser, UpdateUser, User } from '@/types/user';
 
 export const useUserStore = defineStore({
   id: 'user',
   state: () => ({
-    me: null as Employee | null,
-    shift: null as Shift | null,
+    me: (() => {
+      const userStr = localStorage.getItem('user');
+      try {
+        return userStr ? JSON.parse(userStr) as User : null;
+      } catch {
+        return null;
+      }
+    })(),
     loading: false,
   }),
   actions: {
-    async fetchMe() {
+    async createMe(payload: CreateUser) {
       this.loading = true;
       try {
-        const user = auth.currentUser;
-        if (!user) throw new Error('Pengguna belum login');
-        
-        await user.getIdToken(true);
-
-        // const response = await api.get('/employee/me');
-        // this.me = response.data;
-        this.me = dummyUser // hapus nanti
+        const user = await api.post('/users', { payload });
+        this.me = user.data;
+        localStorage.setItem('user', JSON.stringify(this.me));
       } catch (error: any) {
         console.error("Failed to fetch user data:", error);
+
+        // delete section ====================================
+        this.me = dummyUser[0];
+        localStorage.setItem('user', JSON.stringify(this.me));
+        // delete section ====================================
+
+        throw new Error("Gagal membuat user baru, menggunakan dummy user");
       } finally {
         this.loading = false;
       }
     },
 
-    async fetchShift() {
+    async updateMe(payload: UpdateUser) {
       this.loading = true;
       try {
-        const response = await api.get('/shifts/me');
-        this.shift = response.data;
+        const res = await api.put(`/users/${payload.id}`, payload);
+        this.me = res.data;
+        localStorage.setItem('user', JSON.stringify(this.me));
       } catch (error: any) {
-        console.error("Failed to fetch shift data:", error);
-        // using dummy data for temporary solution
-        this.shift = dummyShiftEmployee.find(shift => shift.meta.created_by.id === this.me?.id) ?? null
-        console.log('shift', this.shift)
+        console.error("Failed to update user data:", error);
+        throw new Error("Gagal memperbarui user");
       } finally {
         this.loading = false;
       }
-    },
-
-    hasRole(role: UserRole | UserRole[]): boolean {
-      if (Array.isArray(role)) {
-        return role.some(r => this.me?.role === r);
-      }
-      
-      return this.me?.role === role;
-    },
+    }
   }
 });

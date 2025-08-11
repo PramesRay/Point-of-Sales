@@ -1,7 +1,7 @@
 import { extend } from "lodash";
 import type { IdName } from "./common";
 import type { Meta, MetaDetail } from "./meta";
-import type { Employee } from "./employee";
+import type { Employee } from "./user";
 
 export interface Shift {
   id: string;

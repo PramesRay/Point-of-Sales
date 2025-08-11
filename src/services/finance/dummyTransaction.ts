@@ -1,5 +1,5 @@
 import type { Transaction } from '@/types/finance'
-import dummyEmployee from '../common/employee/dummyEmployee'
+import dummyUser from '../common/user/dummyUser'
 import dummyBranchList from '../common/branch/dummyBranchList'
 
 /**
@@ -9,7 +9,7 @@ const dummyTransactionData: Transaction[] = [
   // Cabang 1
   {
     id: 'trx-1',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: true,
     subject: 'Penjualan Makanan Siang',
     notes: 'Transaksi dari pelanggan regular',
@@ -20,7 +20,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-2',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: false,
     subject: 'Pembelian Bahan Sayuran',
     notes: 'Pasar tradisional Kramat Jati',
@@ -31,7 +31,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-3',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: false,
     subject: 'Biaya Transport Karyawan',
     notes: '',
@@ -42,7 +42,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-4',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: true,
     subject: 'Pembayaran Event Catering',
     notes: 'Paket nasi kotak 50 pax',
@@ -53,7 +53,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-5',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: false,
     subject: 'Perbaikan Kompor Dapur',
     notes: 'Servis burner utama',
@@ -66,7 +66,7 @@ const dummyTransactionData: Transaction[] = [
   // Cabang 2
   {
     id: 'trx-6',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: true,
     subject: 'Pesanan via GoFood',
     notes: 'Order malam hari',
@@ -77,7 +77,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-7',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: false,
     subject: 'Pembelian Minyak Goreng',
     notes: '2 jerigen ukuran 5L',
@@ -88,7 +88,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-8',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: false,
     subject: 'Uang Harian Staff Shift Malam',
     notes: '3 orang staf',
@@ -99,7 +99,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-9',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: true,
     subject: 'Pembayaran Catering Kantor',
     notes: 'Perusahaan ABC',
@@ -110,7 +110,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-10',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: false,
     subject: 'Servis AC Dapur',
     notes: 'Freon bocor, penggantian total',
@@ -123,7 +123,7 @@ const dummyTransactionData: Transaction[] = [
   // Cabang 3
   {
     id: 'trx-11',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: true,
     subject: 'Pembayaran Langganan Makanan Harian',
     notes: '20 pax/minggu',
@@ -134,7 +134,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-12',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: false,
     subject: 'Beli Gas Elpiji 12kg',
     notes: '',
@@ -145,7 +145,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-13',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: false,
     subject: 'Transport Kirim Makanan ke Event',
     notes: 'Mobil sewaan',
@@ -156,7 +156,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-14',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: true,
     subject: 'Pesanan dari Mitra Reseller',
     notes: '',
@@ -167,7 +167,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-15',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: false,
     subject: 'Biaya Listrik Outlet',
     notes: 'Pemakaian bulan Februari',
@@ -180,7 +180,7 @@ const dummyTransactionData: Transaction[] = [
   // Cabang 4
   {
     id: 'trx-16',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: true,
     subject: 'Donasi Pelanggan untuk CSR',
     notes: 'Ditransfer ke rekening CSR',
@@ -191,7 +191,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-17',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: false,
     subject: 'Beli Wadah Makanan Plastik',
     notes: '200 pcs',
@@ -202,7 +202,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-18',
-    employee: dummyEmployee[1],
+    employee: dummyUser[1],
     is_income: false,
     subject: 'Gaji Karyawan Harian',
     notes: 'Shift sore',
@@ -213,7 +213,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-19',
-    employee: dummyEmployee[2],
+    employee: dummyUser[2],
     is_income: true,
     subject: 'Penjualan via Marketplace',
     notes: 'ShopeeFood',
@@ -224,7 +224,7 @@ const dummyTransactionData: Transaction[] = [
   },
   {
     id: 'trx-20',
-    employee: dummyEmployee[0],
+    employee: dummyUser[0],
     is_income: false,
     subject: 'Pembelian Tisu & Kebersihan',
     notes: 'Untuk dapur & kasir',

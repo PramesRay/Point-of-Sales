@@ -11,11 +11,6 @@ export type TotalOrder = {
 
 export interface Order {
   id: string
-  shift: {
-    employee: string
-    cashier: string
-    kitchen: string
-  }
   branch: IdName
   table_number: string
   customer: Customer 
@@ -50,7 +45,7 @@ export type CreateDirectPaymentOrderPayload = CreateOrderPayload & {
   payment_method: string
 }
 
-export type UpdateOrderPayload = CreateOrderPayload & Pick<Order, 'id'>
+export type UpdateOrderPayload = Omit<CreateOrderPayload, 'branch_id'> & Pick<Order, 'id'>
 export type UpdateOrderStatusPayload = Pick<Order, 'status' | 'id'>
 export type UpdateOrderItemStatusPayload = Pick<Order, 'id'> & { items: Pick<OrderItem, 'id' | 'status'>[] }
 export type UpdateOrderPaymentPayload = Pick<Order, 'id'> & {

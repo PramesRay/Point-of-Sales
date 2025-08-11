@@ -8,11 +8,6 @@ import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueApexCharts from 'vue3-apexcharts';
 import VueTablerIcons from 'vue-tabler-icons';
 
-import { auth } from '@/plugins/firebase'
-import { onAuthStateChanged } from 'firebase/auth'
-import { useAuthStore } from '@/stores/auth'
-import { useUserStore } from './stores/authUser';
-
 import { fakeBackend } from '@/utils/helpers/fake-backend';
 
 // print
@@ -26,11 +21,6 @@ app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
 
-const authStore = useAuthStore()
-const userStore = useUserStore()
-
-await authStore.initialize()
-await userStore.fetchMe()
 app.use(router);
 
 app.use(vuetify).mount('#app');

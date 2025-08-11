@@ -1,6 +1,6 @@
 import type { IdName } from "./common"
 import type { Branch } from "./branch";
-import type { Employee } from "./employee";
+import type { Employee } from "./user";
 import type { Meta, MetaDetail } from "./meta";
 
 export interface StockRequestSummary {

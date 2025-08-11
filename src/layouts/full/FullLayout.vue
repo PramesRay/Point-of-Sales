@@ -5,7 +5,9 @@ import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
 import Customizer from './customizer/CustomizerPanel.vue';
 import FooterPanel from './footer/FooterPanel.vue';
 import { useCustomizerStore } from '../../stores/customizer';
+import { useUserStore } from '@/stores/authUser';
 const customizer = useCustomizerStore();
+const userStore = useUserStore();
 </script>
 
 <template>
@@ -14,6 +16,9 @@ const customizer = useCustomizerStore();
       theme="PurpleTheme"
       :class="[customizer.fontTheme, customizer.mini_sidebar ? 'mini-sidebar' : '', customizer.inputBg ? 'inputWithbg' : '']"
     >
+      <div v-if="userStore.loading" class="fill-height d-flex justify-center align-center">
+        <v-progress-circular size="64" indeterminate color="primary" />
+      </div>
       <Customizer />
       <VerticalSidebarVue />
       <VerticalHeaderVue />

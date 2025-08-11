@@ -1,5 +1,5 @@
 import type { Shift } from "@/types/shift";
-import dummyEmployee from "../common/employee/dummyEmployee";
+import dummyUser from "../common/user/dummyUser";
 import dummyBranchList from "../common/branch/dummyBranchList";
 
 export const dummyShiftEmployee: Shift[] = [

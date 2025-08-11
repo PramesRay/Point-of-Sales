@@ -1,35 +1,101 @@
 <script setup lang="ts">
-import { useUser } from '@/composables/useUser';
-import { computed, onMounted } from 'vue';
-import { hasRole } from '@/utils/helpers/user';
-import { defineAsyncComponent } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useDisplay } from 'vuetify';
+const { mdAndUp } = useDisplay()
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
-// Ambil data pengguna
-const { data: me, loading: lu, fetchMe } = useUser();
+import { useUserStore } from '@/stores/authUser';
+import { useAlertStore } from '@/stores/alert';
+const userStore = useUserStore();
+const alertStore = useAlertStore();
 
-// Ambil role pengguna dari data `me`
+// imported components
+// import CreateOrder from './components/CreateOrder.vue';
+// import CurrentOrderQue from './components/CurrentOrderQue.vue';
+
+// imported composables
+import { useCurrentOrders } from '@/composables/useCurrentOrder';
+import { useMenuItems } from '@/composables/useMenuItems';
+import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
+import ProfileDD from '@/layouts/full/vertical-header/ProfileDD.vue';
+
+// Data Loading
+const { openOverlay } = useOverlayManager();
+const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
+const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+
+const visibleComponent = computed(() => {
+  return route.query['show-only'] as string | undefined
+})
+
+const isChanged = ref(false);
+const loadParams = {
+  filter: {
+    'meta.created_by.id': userStore.me?.id,
+  },
+  sortBy: 'meta.updated_at',
+  sortDesc: true
+}
+
 onMounted(() => {
-  fetchMe();
-});
-
-// Berdasarkan role, tentukan halaman yang akan ditampilkan
-const selectedComponent = computed(() => {
-  // Ganti dengan logika peran pengguna yang sesuai
-  if (me.value && hasRole(me.value, ['admin'])) {
-    return defineAsyncComponent(() => import('@/views/dashboards/owner/OwnerDashboard.vue'));
-  } else if (me.value && hasRole(me.value, ['cashier'])) {
-    return defineAsyncComponent(() => import('@/views/pages/cashier/CashierPage.vue'));
-  } else if (me.value && hasRole(me.value, ['inventory'])) {
-    return defineAsyncComponent(() => import('@/views/pages/inventory/InventoryPage.vue'));
-  } else if (me.value && hasRole(me.value, ['kitchen'])) {
-    return defineAsyncComponent(() => import('@/views/pages/kitchen/KitchenPage.vue'));
-  } else {
-    return defineAsyncComponent(() => import('@/views/StarterPage.vue')); // Default pag)e
+  if (!userStore.me) { 
+    openOverlay({
+      component: ProfileDD,
+      props: {
+        is_create: true,
+        confirmBeforeClose: true,
+        isChanged,
+        onIsChangedUpdate: (val: boolean) => {
+          isChanged.value = val;
+        },
+        refresh: () => {
+          loadCurrentOrder(loadParams);
+          loadItemSales(userStore.me?.branch.id);
+        }
+      }
+    });
+    return
   }
-});
+
+  loadCurrentOrder(loadParams);
+  loadItemSales(userStore.me?.branch.id);
+})
 </script>
 
 <template>
-  <v-progress-circular v-if="lu" indeterminate color="primary" class="mx-auto my-auto"></v-progress-circular>
-  <!-- <component v-else :is="selectedComponent" /> -->
+  <v-row>
+    <v-col cols="12" md="6" v-if="(!visibleComponent || visibleComponent === 'pesanan')">
+      <v-row>
+        <v-col cols="12">
+          <CreateOrder 
+            :data_menu="menuSales"
+            :categories="categories"
+            :refresh="loadCurrentOrder"
+            class="flex-grow-1" 
+          />
+        </v-col>
+        <v-col cols="12">
+          <CurrentOrderQue
+            :data="currentOrder.data"
+            :branch="userStore.me?.branch"
+            :loading="lco"
+          
+            :load="loadCurrentOrder"
+            :refresh="loadCurrentOrder"
+            class="flex-grow-1" 
+          />
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <!-- Kolom Kanan: Create Order + Current Order Que -->
+    <v-col cols="12" md="6">
+      <v-row>
+        <v-col cols="12" v-if="(!visibleComponent || visibleComponent === 'reservasi')">
+          
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
 </template>

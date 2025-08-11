@@ -2,20 +2,41 @@
 import { ref } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 // Icon Imports
-import { BellIcon, SettingsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
+import { BellIcon, SettingsIcon, Menu2Icon } from 'vue-tabler-icons';
 
-// dropdown imports
-import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
-import { useRoute } from 'vue-router';
-// import Searchbar from './SearchBarPanel.vue';
-const route = useRoute();
+import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
+import { useUserStore } from '@/stores/authUser';
+
+const { openOverlay } = useOverlayManager()
+const userStore = useUserStore();
+const isChanged = ref(false);
 
 const customizer = useCustomizerStore();
-const showSearch = ref(false);
-function searchbox() {
-  showSearch.value = !showSearch.value;
+
+function getGreeting() {
+  const currentHour = new Date().getHours();
+  console.log('currentHour', currentHour);
+  if (currentHour >= 0 && currentHour < 12) {
+    return 'Pagi';
+  } else if (currentHour >= 12 && currentHour < 15) {
+    return 'Siang';
+  } else if (currentHour >= 15 && currentHour < 18) {
+    return 'Sore';
+  } else {
+    return 'Malam';
+  }
 }
+function getUserFromLocalStorage() {
+  const userStr = localStorage.getItem('user');
+  try {
+    return userStr ? JSON.parse(userStr) : {};
+  } catch {
+    return {};
+  }
+}
+
+const user = getUserFromLocalStorage();
 </script>
 
 <template>
@@ -42,72 +63,36 @@ function searchbox() {
     >
       <Menu2Icon size="20" stroke-width="1.5" />
     </v-btn>
-
-    <v-toolbar-title class="text-h3 text-medium-emphasis">{{ route.name }}</v-toolbar-title>
-
-    <!-- search mobile -->
-    <!-- <v-btn
-      class="hidden-lg-and-up text-secondary ml-3"
-      color="lightsecondary"
-      icon
-      rounded="sm"
-      variant="flat"
-      size="small"
-      @click="searchbox"
-    >
-      <SearchIcon size="17" stroke-width="1.5" />
-    </v-btn>
-
-    <v-sheet v-if="showSearch" class="search-sheet v-col-12">
-      <Searchbar :closesearch="searchbox" />
-    </v-sheet> -->
-
-    <!-- ---------------------------------------------- -->
-    <!-- Search part -->
-    <!-- ---------------------------------------------- -->
-    <!-- <v-sheet class="mx-3 v-col-3 v-col-xl-2 v-col-lg-4 d-none d-lg-block">
-      <Searchbar />
-    </v-sheet> -->
-
-    <!---/Search part -->
-
-    <v-spacer />
-    <!-- ---------------------------------------------- -->
-    <!---right part -->
-    <!-- ---------------------------------------------- -->
-
-    <!-- ---------------------------------------------- -->
-    <!-- Notification -->
-    <!-- ---------------------------------------------- -->
-    <!-- <v-menu :close-on-content-click="false">
-      <template v-slot:activator="{ props }">
-        <v-btn icon class="text-secondary mx-3" color="lightsecondary" rounded="sm" size="small" variant="flat" v-bind="props">
-          <BellIcon stroke-width="1.5" size="22" />
-        </v-btn>
-      </template>
-      <v-sheet rounded="md" width="330" elevation="12">
-        <NotificationDD />
-      </v-sheet>
-    </v-menu> -->
+    
+    <v-toolbar-title class="text-h3 text-medium-emphasis">
+      Hai, {{ userStore.me?.name.split(' ')[0] || 'Sobat' }}
+    </v-toolbar-title>
 
     <!-- ---------------------------------------------- -->
     <!-- User Profile -->
     <!-- ---------------------------------------------- -->
-    <v-menu :close-on-content-click="false">
-      <template v-slot:activator="{ props }">
-        <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
-          <v-icon
-            size="30"
-            class="mr-2 py-2"
-          >mdi-account-circle</v-icon>
-          <!-- <v-avatar size="30" class="mr-2 py-2">
-          </v-avatar> -->
-          <SettingsIcon stroke-width="1.5" />
-        </v-btn>
-      </template>
-      <v-sheet rounded="md" width="330" elevation="12">
-        <ProfileDD />
-      </v-sheet>
-    </v-menu>
+      
+    <v-btn
+      class="profileBtn text-primary"
+      color="lightprimary"
+      variant="flat"
+      rounded="pill"
+      @click="
+      openOverlay({
+        component: ProfileDD,
+        props: {
+          confirmBeforeClose: true,
+          isChanged
+        }
+      })"
+    >
+      <v-icon
+        size="30"
+        class="mr-2 py-2"
+      >mdi-account-circle</v-icon>
+      <!-- <v-avatar size="30" class="mr-2 py-2">
+      </v-avatar> -->
+      <SettingsIcon stroke-width="1.5" />
+    </v-btn>
   </v-app-bar>
 </template>
