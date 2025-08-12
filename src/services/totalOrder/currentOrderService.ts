@@ -1,6 +1,6 @@
 import api from '../api';
 import dummyOrderQue from './dummyOrderQueList';
-import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
+import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderPayload, UpdateOrderPaymentPayload } from '@/types/order'
 import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
 
@@ -83,40 +83,48 @@ export async function fetchCurrentOrder({
                 return value.includes(itemValue);
               }
 
-              // Jika value berupa object, gunakan deep comparison
-              if (typeof value === 'object') {
-                return JSON.stringify(itemValue) === JSON.stringify(value);
-              }
-
               // Jika value berupa date, gunakan perbandingan tanggal saja
-              if ((value instanceof Date && !isNaN(value.getTime())) || typeof value === 'string') {
+              if (
+                (value instanceof Date && !isNaN(value.getTime())) ||
+                (typeof value === 'string' && !isNaN(Date.parse(value)))
+              ) {
                 // Jika value adalah string, kita konversi menjadi Date
                 const parsedValue = typeof value === 'string' ? new Date(value) : value;
 
-                if ((itemValue instanceof Date && !isNaN(itemValue.getTime())) || typeof itemValue === 'string') {
+                if (
+                  (itemValue instanceof Date && !isNaN(itemValue.getTime())) ||
+                  (typeof itemValue === 'string' && !isNaN(Date.parse(itemValue)))
+                ) {
                   // Jika itemValue adalah string, kita konversi menjadi Date
                   const parsedItemValue = typeof itemValue === 'string' ? new Date(itemValue) : itemValue;
 
                   // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
                   const itemDate = parsedItemValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-                  console.log('itemDate', itemDate);
+                  // console.log('itemDate', itemDate);
 
                   const filterDate = parsedValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-                  console.log('filterDate', filterDate);
+                  // console.log('filterDate', filterDate);
 
                   return itemDate === filterDate;  // Bandingkan tanggal tanpa waktu
                 } else {
-                  console.log("itemValue is not a valid Date or string.");
+                  // console.log("itemValue is not a valid Date or string.");
+                  return false;
                 }
-              } else {
-                console.log("value is not a valid Date or string.");
               }
 
+              // Jika value berupa object (dan bukan array atau date), gunakan deep comparison
+              if (
+                typeof value === 'object' &&
+                value !== null &&
+                !Array.isArray(value) &&
+                !(value instanceof Date)
+              ) {
+                return JSON.stringify(itemValue) === JSON.stringify(value);
+              }
 
-              // Jika bukan array, gunakan perbandingan biasa
+              // Jika bukan array, object, atau date, gunakan perbandingan biasa
               return itemValue === value;
             });
-            console.log('dummy', dummy);
           }
         }
       }
@@ -163,13 +171,13 @@ export async function fetchCurrentOrder({
           })
         )
       }
-  
+      
       const total = dummy.length
       return { data: dummy, total }
     }
 }
 
-export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload): Promise<Order> {
+export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderPayload): Promise<Order> {
   try {
     const res = await api.put(`/order/${payload.id}`, { payload });
     alertStore.showAlert('Data Order telah berubah!', 'success');

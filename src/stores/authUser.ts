@@ -23,7 +23,7 @@ export const useUserStore = defineStore({
       try {
         const user = await api.post('/users', { payload });
         this.me = user.data;
-        localStorage.setItem('user', JSON.stringify(this.me));
+        // localStorage.setItem('user', JSON.stringify(this.me));
       } catch (error: any) {
         console.error("Failed to fetch user data:", error);
 
@@ -43,9 +43,13 @@ export const useUserStore = defineStore({
       try {
         const res = await api.put(`/users/${payload.id}`, payload);
         this.me = res.data;
-        localStorage.setItem('user', JSON.stringify(this.me));
+        // localStorage.setItem('user', JSON.stringify(this.me));
       } catch (error: any) {
         console.error("Failed to update user data:", error);
+        this.me = dummyUser[0]; // Fallback to dummy user
+        // delete section ====================================
+        localStorage.setItem('user', JSON.stringify(this.me));
+        // delete section ====================================
         throw new Error("Gagal memperbarui user");
       } finally {
         this.loading = false;

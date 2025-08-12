@@ -11,16 +11,27 @@ const userStore = useUserStore();
 const alertStore = useAlertStore();
 
 // imported components
-// import CreateOrder from './components/CreateOrder.vue';
-// import CurrentOrderQue from './components/CurrentOrderQue.vue';
+import CreateOrder from './components/CreateOrder.vue';
+import CurrentOrderQue from './components/CurrentOrderQue.vue';
 
 // imported composables
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useMenuItems } from '@/composables/useMenuItems';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import ProfileDD from '@/layouts/full/vertical-header/ProfileDD.vue';
+import type { UpdateUser, User } from '@/types/user';
+
+function getUserFromLocalStorage() {
+  const userStr = localStorage.getItem('user');
+  try {
+    return userStr ? JSON.parse(userStr) : {};
+  } catch {
+    return {};
+  }
+}
 
 // Data Loading
+const userData = getUserFromLocalStorage();
 const { openOverlay } = useOverlayManager();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
 const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
@@ -32,14 +43,14 @@ const visibleComponent = computed(() => {
 const isChanged = ref(false);
 const loadParams = {
   filter: {
-    'meta.created_by.id': userStore.me?.id,
+    'meta.created_by.id': userData.id,
   },
   sortBy: 'meta.updated_at',
   sortDesc: true
 }
 
 onMounted(() => {
-  if (!userStore.me) { 
+  if (!userData) { 
     openOverlay({
       component: ProfileDD,
       props: {
@@ -51,7 +62,7 @@ onMounted(() => {
         },
         refresh: () => {
           loadCurrentOrder(loadParams);
-          loadItemSales(userStore.me?.branch.id);
+          loadItemSales(userData?.branch.id);
         }
       }
     });
@@ -59,8 +70,21 @@ onMounted(() => {
   }
 
   loadCurrentOrder(loadParams);
-  loadItemSales(userStore.me?.branch.id);
+  loadItemSales(userData?.branch.id);
 })
+
+const branchId = computed(() => route.query.branch_id as string | undefined);
+const table = computed(() => route.query.table as string | undefined);
+
+// Save branchId and table to localStorage 'user' if present in query
+if (branchId.value || table.value) {
+  const payload: UpdateUser = { 
+    ...userData, 
+    branch_id: branchId.value ? branchId.value : userData.branch?.id || '',
+    table: table.value ? table.value : userData.table || '' 
+  };
+  userStore.updateMe(payload);
+}
 </script>
 
 <template>
@@ -71,18 +95,18 @@ onMounted(() => {
           <CreateOrder 
             :data_menu="menuSales"
             :categories="categories"
-            :refresh="loadCurrentOrder"
+            :refresh="() => loadCurrentOrder(loadParams)"
             class="flex-grow-1" 
           />
         </v-col>
         <v-col cols="12">
           <CurrentOrderQue
             :data="currentOrder.data"
-            :branch="userStore.me?.branch"
+            :data_menu="menuSales"
+            :branch="userData?.branch"
             :loading="lco"
           
-            :load="loadCurrentOrder"
-            :refresh="loadCurrentOrder"
+            :refresh="() => loadCurrentOrder(loadParams)"
             class="flex-grow-1" 
           />
         </v-col>

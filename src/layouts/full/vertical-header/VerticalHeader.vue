@@ -14,19 +14,6 @@ const isChanged = ref(false);
 
 const customizer = useCustomizerStore();
 
-function getGreeting() {
-  const currentHour = new Date().getHours();
-  console.log('currentHour', currentHour);
-  if (currentHour >= 0 && currentHour < 12) {
-    return 'Pagi';
-  } else if (currentHour >= 12 && currentHour < 15) {
-    return 'Siang';
-  } else if (currentHour >= 15 && currentHour < 18) {
-    return 'Sore';
-  } else {
-    return 'Malam';
-  }
-}
 function getUserFromLocalStorage() {
   const userStr = localStorage.getItem('user');
   try {
@@ -36,7 +23,7 @@ function getUserFromLocalStorage() {
   }
 }
 
-const user = getUserFromLocalStorage();
+const userData = getUserFromLocalStorage();
 </script>
 
 <template>
@@ -81,6 +68,7 @@ const user = getUserFromLocalStorage();
       openOverlay({
         component: ProfileDD,
         props: {
+          user: userData,
           confirmBeforeClose: true,
           isChanged
         }

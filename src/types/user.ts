@@ -6,11 +6,12 @@ export interface User {
   name: string;
   phone: string;
   branch: IdName;
+  table: string;
   meta: Meta
 }
 
 export type CreateUser = Omit<User, 'id' | 'branch' | 'meta'> & {
-  branch_id?: string;
+  branch_id: string;
 }
 
 export type UpdateUser = CreateUser & {

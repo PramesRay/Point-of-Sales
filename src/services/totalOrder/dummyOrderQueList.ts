@@ -17,7 +17,7 @@ const dummyOrdersQue: Order[] = [
       price: dummyMenuSale[0].price,
       note: '',
       quantity: 2,
-      status: 'Pending'
+      status: 'Diproses'
     },
     {
       id: dummyMenuSale[2].id,
@@ -41,7 +41,7 @@ const dummyOrdersQue: Order[] = [
       price: dummyMenuSale[4].price,
       note: '',
       quantity: 2,
-      status: 'Pending'
+      status: 'Diproses'
     }
   ],
   status: "Diproses",
