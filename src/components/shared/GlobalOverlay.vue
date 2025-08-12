@@ -75,7 +75,14 @@ function handleCloseConfirmDialog() {
     >
       <v-card class="pa-3">
         <v-card-title class="text-h3">{{ confirmOptions.title }}</v-card-title>
-        <v-card-text class="py-2 text-subtitle-1 text-medium-emphasis">
+        <div class="d-flex justify-center my-2" v-if="confirmOptions.image">
+          <img
+            :src="confirmOptions.image"
+            alt="Reminder Mascot"
+            style="max-width: 200px; max-height: 200px;"
+          />
+        </div>
+        <v-card-text class="py-2 text-subtitle-1 text-medium-emphasis" :class="confirmOptions.image ? 'text-center' : ''">
           {{ confirmOptions.message }}
         </v-card-text>
         <v-card-actions>
@@ -86,7 +93,7 @@ function handleCloseConfirmDialog() {
           <v-btn
             :loading="currentOverlay.props.loading"
             variant="flat"
-            color="error"
+            :color="confirmOptions.color"
             @click="() => {
               confirmOptions.onConfirm?.()
               closeConfirmDialog()

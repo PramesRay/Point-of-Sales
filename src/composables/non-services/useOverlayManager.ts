@@ -4,6 +4,8 @@ import type { Component } from 'vue'
 interface ConfirmOptions {
   title: string
   message: string
+  color?: string
+  image?: string
   confirmText?: string
   cancelText?: string
   onConfirm?: () => void
@@ -31,6 +33,7 @@ function createOverlayManager() {
     message: '',
     confirmText: 'Ya',
     cancelText: 'Tidak',
+    color: 'error',
     onConfirm: undefined,
     persistent: true,
     maxWidth: 320
@@ -53,10 +56,12 @@ function createOverlayManager() {
 
     if (props.confirmToContinue) {
       confirmOptions.value = {
-        title: 'Konfirmasi Aksi',
+        title: props.confirmTitle || 'Konfirmasi Aksi',
         message: props.confirmMessage || 'Apakah Anda yakin ingin melanjutkan aksi ini?',
         confirmText: 'Ya',
         cancelText: 'Batal',
+        color: props.confirmColor || 'error',
+        image: props.confirmImage || null,
         onConfirm: () => {
           props.onConfirm?.(); 
           forceCloseOverlay();
@@ -84,6 +89,7 @@ function createOverlayManager() {
         message: 'Perubahan belum disimpan. Yakin ingin menutup?',
         confirmText: 'Ya, Tutup',
         cancelText: 'Kembali',
+        color: 'error',
         onConfirm: () => {
           forceCloseOverlay()
         },
