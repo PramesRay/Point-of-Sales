@@ -1,6 +1,6 @@
 import api from '../api';
 import dummyOrderQue from './dummyOrderQueList';
-import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
+import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, RefundOrderItemPayload, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
 
@@ -169,7 +169,7 @@ export async function fetchCurrentOrder({
     }
 }
 
-export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload): Promise<Order> {
+export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload | RefundOrderItemPayload): Promise<Order> {
   try {
     const res = await api.put(`/order/${payload.id}`, { payload });
     alertStore.showAlert('Data Order telah berubah!', 'success');

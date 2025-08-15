@@ -29,6 +29,7 @@ export interface Order {
 
 export interface OrderItem {
   id: string
+  item_id: string
   quantity: number
   note: string | null
   status: 'Pending' | 'Diproses' | 'Tersaji' | 'Refund'
@@ -55,4 +56,10 @@ export type UpdateOrderStatusPayload = Pick<Order, 'status' | 'id'>
 export type UpdateOrderItemStatusPayload = Pick<Order, 'id'> & { items: Pick<OrderItem, 'id' | 'status'>[] }
 export type UpdateOrderPaymentPayload = Pick<Order, 'id'> & {
   payment_method: string
+}
+
+export type RefundOrderItemPayload = UpdateOrderItemStatusPayload & {
+  amount: number
+  reason: string
+  method: 'Cash' | 'Digital' | 'Other'
 }

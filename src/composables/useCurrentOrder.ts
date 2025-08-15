@@ -1,6 +1,6 @@
 import { ref, watchEffect } from 'vue'
 import { fetchCurrentOrder, updateOrderData, createOrderData, processDirectPaymentOrder } from '@/services/totalOrder/currentOrderService'
-import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
+import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, RefundOrderItemPayload, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 
 export function useCurrentOrders() {
   const data      = ref<{ data: Order[]; total: number; }>({ data: [], total: 0 });
@@ -53,6 +53,18 @@ export function useCurrentOrders() {
     }
   }
 
+  async function refundOrderItem(payload: RefundOrderItemPayload) {
+    loading.value = true;
+    try {
+      await updateOrderData(payload);
+      // await load();
+    } catch (e) {
+      console.error("Gagal refund item:", e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function create(payload: CreateOrderPayload) {
     loading.value = true;
     try {
@@ -82,6 +94,7 @@ export function useCurrentOrders() {
   return {
     load,
     update,
+    refundOrderItem,
     create,
     createDirectPaymentOrder,
     data,

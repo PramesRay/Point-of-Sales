@@ -20,7 +20,8 @@ const dummyOrdersQue: Order[] = [
   is_take_away: false,
   items: [
     {
-      id: dummyMenuSale[0].id,
+      id: 'ord-itm-wiaugd87g9',
+      item_id: dummyMenuSale[0].id,
       name: dummyMenuSale[0].name,
       price: dummyMenuSale[0].price,
       note: '',
@@ -28,7 +29,8 @@ const dummyOrdersQue: Order[] = [
       status: 'Pending'
     },
     {
-      id: dummyMenuSale[2].id,
+      id: 'ord-itm-idj1892dh2',
+      item_id: dummyMenuSale[2].id,
       name: dummyMenuSale[2].name,
       price: dummyMenuSale[2].price,
       note: '',
@@ -36,7 +38,8 @@ const dummyOrdersQue: Order[] = [
       status: 'Diproses'
     },
     {
-      id: dummyMenuSale[0].id,
+      id: 'ord-itm-012jd1nu9e',
+      item_id: dummyMenuSale[0].id,
       name: dummyMenuSale[0].name,
       price: dummyMenuSale[0].price,
       note: '',
@@ -44,7 +47,8 @@ const dummyOrdersQue: Order[] = [
       status: 'Tersaji'
     },
     {
-      id: dummyMenuSale[4].id,
+      id: 'ord-itm-jf9u40jdaf',
+      item_id: dummyMenuSale[4].id,
       name: dummyMenuSale[4].name,
       price: dummyMenuSale[4].price,
       note: '',
@@ -78,19 +82,39 @@ const dummyOrdersQue: Order[] = [
   is_take_away: true,
   items: [
     {
-      id: "menu-1",
-      name: "Nasi Uduk",
-      quantity: 3,
-      note: "Level 2",
-      price: 15000,
+      id: 'ord-itm-091j20fj1ioew',
+      item_id: dummyMenuSale[0].id,
+      name: dummyMenuSale[0].name,
+      price: dummyMenuSale[0].price,
+      note: '',
+      quantity: 2,
       status: 'Pending'
     },
     {
-      id: "menu-1",
-      name: "Nasi Uduk",
+      id: 'ord-itm-190dj28d9iuow',
+      item_id: dummyMenuSale[1].id,
+      name: dummyMenuSale[1].name,
+      price: dummyMenuSale[1].price,
+      note: '',
+      quantity: 3,
+      status: 'Diproses'
+    },
+    {
+      id: 'ord-itm-d1piowndmpq',
+      item_id: dummyMenuSale[2].id,
+      name: dummyMenuSale[2].name,
+      price: dummyMenuSale[2].price,
+      note: 'Goreng Garing',
       quantity: 2,
-      note: "Tanpa sambal",
-      price: 15000,
+      status: 'Tersaji'
+    },
+    {
+      id: 'ord-itm-10ouinowe',
+      item_id: dummyMenuSale[4].id,
+      name: dummyMenuSale[4].name,
+      price: dummyMenuSale[4].price,
+      note: '',
+      quantity: 2,
       status: 'Pending'
     }
   ],
@@ -120,29 +144,32 @@ const dummyOrdersQue: Order[] = [
   is_take_away: true,
   items: [
     {
-      id: "menu-2",
-      name: "Ayam Goreng",
-      quantity: 1,
-      note: "Tanpa sambal",
-      price: 15000,
-      status: 'Pending'
-    },
-    {
-      id: "menu-2",
-      name: "Ayam Goreng",
-      quantity: 1,
-      note: "Level 2",
-      price: 15000,
-      status: 'Pending'
-    },
-    {
-      id: "menu-2",
-      name: "Ayam Goreng",
-      quantity: 1,
+      id: 'ord-itm-awocklnap',
+      item_id: dummyMenuSale[0].id,
+      name: dummyMenuSale[0].name,
+      price: dummyMenuSale[0].price,
       note: '',
-      price: 15000,
+      quantity: 2,
       status: 'Pending'
-    }
+    },
+    {
+      id: 'ord-itm-j9iucw0sdc',
+      item_id: dummyMenuSale[5].id,
+      name: dummyMenuSale[5].name,
+      price: dummyMenuSale[5].price,
+      note: '',
+      quantity: 3,
+      status: 'Diproses'
+    },
+    {
+      id: 'ord-itm-kjioncjsapa',
+      item_id: dummyMenuSale[6].id,
+      name: dummyMenuSale[6].name,
+      price: dummyMenuSale[6].price,
+      note: '',
+      quantity: 2,
+      status: 'Tersaji'
+    },
   ],
   status: "Pending",
   amount: 30000,
@@ -170,29 +197,23 @@ const dummyOrdersQue: Order[] = [
   is_take_away: false,
   items: [
     {
-      id: "menu-1",
-      name: "Nasi Uduk",
-      quantity: 3,
+      id: 'ord-itm-c910inowcd',
+      item_id: dummyMenuSale[0].id,
+      name: dummyMenuSale[0].name,
+      price: dummyMenuSale[0].price,
       note: '',
-      price: 15000,
+      quantity: 2,
       status: 'Pending'
     },
     {
-      id: "menu-4",
-      name: "Teh Manis",
-      quantity: 1,
-      note: "Tanpa sambal",
-      price: 15000,
+      id: 'ord-itm-jcnoidiojacl',
+      item_id: dummyMenuSale[2].id,
+      name: dummyMenuSale[2].name,
+      price: dummyMenuSale[2].price,
+      note: '',
+      quantity: 3,
       status: 'Diproses'
     },
-    {
-      id: "menu-2",
-      name: "Ayam Goreng",
-      quantity: 2,
-      note: '',
-      price: 15000,
-      status: 'Tersaji'
-    }
   ],
   status: "Diproses",
   amount: 60000,
@@ -220,28 +241,40 @@ const dummyOrdersQue: Order[] = [
   is_take_away: false,
   items: [
     {
-      id: "menu-2",
-      name: "Ayam Goreng",
+      id: 'ord-itm-djihoqwjkdq',
+      item_id: dummyMenuSale[0].id,
+      name: dummyMenuSale[0].name,
+      price: dummyMenuSale[0].price,
+      note: '',
+      quantity: 2,
+      status: 'Pending'
+    },
+    {
+      id: 'ord-itm-acjpionspka',
+      item_id: dummyMenuSale[2].id,
+      name: dummyMenuSale[2].name,
+      price: dummyMenuSale[2].price,
+      note: 'Digoreng Garing',
       quantity: 3,
-      note: "Tanpa sambal",
-      price: 15000,
+      status: 'Diproses'
+    },
+    {
+      id: 'ord-itm-casiojnclka',
+      item_id: dummyMenuSale[2].id,
+      name: dummyMenuSale[2].name,
+      price: dummyMenuSale[2].price,
+      note: 'Digoreng Sebentar',
+      quantity: 2,
       status: 'Tersaji'
     },
     {
-      id: "menu-2",
-      name: "Ayam Goreng",
-      quantity: 3,
+      id: 'ord-itm-c19iwonkjqlmd',
+      item_id: dummyMenuSale[10].id,
+      name: dummyMenuSale[10].name,
+      price: dummyMenuSale[10].price,
       note: '',
-      price: 15000,
-      status: 'Tersaji'
-    },
-    {
-      id: "menu-4",
-      name: "Teh Manis",
-      quantity: 3,
-      note: '',
-      price: 15000,
-      status: 'Refund'
+      quantity: 2,
+      status: 'Pending'
     }
   ],
   status: "Selesai",

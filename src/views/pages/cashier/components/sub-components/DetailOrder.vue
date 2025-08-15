@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { defineProps, ref } from 'vue';
 
-import type { Order } from '@/types/order';
+import type { Order, OrderItem, UpdateOrderItemStatusPayload } from '@/types/order';
 
 import { formatRupiah } from '@/utils/helpers/currency';
 import { getTimeDiff } from "@/utils/helpers/time";
@@ -13,6 +13,7 @@ import { useUserStore } from '@/stores/authUser';
 import UpdateOrder from './UpdateOrder.vue';
 import Blank from '@/components/shared/Blank.vue';
 import Payment from './Payment.vue'
+import RefundOrder from './RefundOrder.vue';
 
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
@@ -32,6 +33,25 @@ const copied = ref(false)
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
   copied.value = true
+}
+
+const refund_item = ref<UpdateOrderItemStatusPayload & { amount_refund: number}>()
+
+const addRefundItem = (item: OrderItem) => {
+  if(!refund_item.value) refund_item.value = {
+    id: props.data_order.id,
+    items: [],
+    amount_refund: 0,
+  }
+  
+  if(!refund_item.value.items) refund_item.value.items = []
+
+  refund_item.value.items.push({
+    id: item.id,
+    status: 'Refund',
+  })
+
+  refund_item.value.amount_refund += item.price * item.quantity
 }
 </script>
 
@@ -158,6 +178,7 @@ const copyToClipboard = (text: string) => {
           <!-- Add Item Button -->
           <span class="text-subtitle-2 text-medium-emphasis">
             <v-btn
+              v-if="props.data_order?.status !== 'Selesai' && props.data_order?.status !== 'Batal' && props.data_order.payment_status === 'Pending'"
               append-icon="mdi-pencil"
               class="text-disabled"
               variant="plain"
@@ -175,6 +196,23 @@ const copyToClipboard = (text: string) => {
               "
             >
               Ubah Item
+            </v-btn>
+            <v-btn
+              v-if="props.data_order?.status === 'Selesai' && props.data_order?.payment_status === 'Selesai' && refund_item?.items && refund_item.items.length > 0"
+              color="error"
+              variant="tonal"
+              size="small"
+              @click="
+                openOverlay({
+                  component: RefundOrder,
+                  props: {
+                    payload: refund_item,
+                    refresh: () => props.refresh(),
+                  },
+                })
+              "
+            >
+              {{refund_item.items.length}} item refund
             </v-btn>
           </span>
         </div>
@@ -207,8 +245,9 @@ const copyToClipboard = (text: string) => {
                   </div>
                   <div v-else>
                     <v-btn
+                      v-if="!(refund_item?.items.find(i => i.id === item.id))"
                       class="px-0"
-                      append-icon="mdi-refresh"
+                      append-icon="mdi-keyboard-backspace"
                       density="compact"
                       color="error"
                       variant="plain"
@@ -220,14 +259,25 @@ const copyToClipboard = (text: string) => {
                           props: {
                             confirmToContinue: true,
                             confirmMessage: 'Apakah anda yakin ingin refund item ini?',
-                            onConfirm: () => {
-                              props.refresh()
-                            }
+                            onConfirm: () => addRefundItem(item)
                           },
                         })
                       "
                     >
                       Refund
+                    </v-btn>
+                    <v-btn
+                      v-else
+                      class="px-0 text-disabled"
+                      append-icon="mdi-refresh"
+                      density="compact"
+                      variant="plain"
+                      size="small"
+                      @click="
+                        refund_item.items = refund_item.items.filter(i => i.id !== item.id)
+                      "
+                    >
+                      Batal Refund
                     </v-btn>
                     {{ formatRupiah(item.price) }}
                   </div>
