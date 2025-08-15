@@ -1,4 +1,5 @@
 import {
+  BookIcon,
   ShoppingCartIcon,
   ReservedLineIcon
 } from 'vue-tabler-icons';
@@ -21,15 +22,23 @@ export interface menu {
 
 const sidebarItem: menu[] = [
   {
-    title: 'Pesanan Anda',
-    icon: ShoppingCartIcon,
-    to: '/halaman/pesanan',
+    title: 'Halaman',
+    icon: BookIcon,
+    to: '/',
+    children: [
+      {
+        title: 'Pesanan Anda',
+        icon: ShoppingCartIcon,
+        to: '?show-only=pesanan',
+      },
+      {
+        title: 'Reservasi',
+        icon: ReservedLineIcon,
+        to: '?show-only=reservasi',
+      }
+    ]
   },
-  {
-    title: 'Reservasi',
-    icon: ReservedLineIcon,
-    to: '/halaman/reservasi',
-  }
+
 ];
 
 export default sidebarItem;

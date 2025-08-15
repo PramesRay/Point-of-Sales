@@ -5,6 +5,7 @@ import { useBranchList } from '@/composables/useBranchList';
 import { useUserStore } from '@/stores/authUser';
 import type { User } from '@/types/user';
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
+import { useRoute } from 'vue-router';
 import { useDisplay } from 'vuetify'
 
 const { mdAndUp } = useDisplay()
@@ -12,10 +13,12 @@ const { openOverlay } = useOverlayManager()
 
 const {data: branchData, load: loadBranch, loading: lb} = useBranchList()
 const userStore = useUserStore()
+const route = useRoute()
 
 onMounted(() => {
   loadBranch()
 })
+
 
 const props = defineProps<{
   user?: User
@@ -194,7 +197,7 @@ function submitForm() {
             <v-select
               v-model="payload.branch_id"
               :items="branchData"
-              :disabled="lb"
+              :disabled="lb || (!!route.query.branch_id && route.query.branch_id !== '') || (!!route.query.table && route.query.table !== '')"
               prepend-icon="mdi-home"
               item-title="name"
               item-value="id"
@@ -211,6 +214,7 @@ function submitForm() {
               label="Meja"
               variant="underlined"
               prepend-icon="mdi-select-place"
+              :disabled="lb || (!!route.query.branch_id && route.query.branch_id !== '') || (!!route.query.table && route.query.table !== '')"
               :rules="[...rules.required]"
             />
           </v-col>

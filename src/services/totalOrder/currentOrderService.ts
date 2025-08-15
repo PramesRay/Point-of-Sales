@@ -179,7 +179,7 @@ export async function fetchCurrentOrder({
 
 export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderPayload): Promise<Order> {
   try {
-    const res = await api.put(`/order/${payload.id}`, { payload });
+    const res = await api.put(`/order-customer/${payload.id}`, { payload });
     alertStore.showAlert('Data Order telah berubah!', 'success');
     return res.data;
   } catch (error) {
@@ -191,7 +191,7 @@ export async function updateOrderData(payload: UpdateOrderPaymentPayload | Updat
 
 export async function createOrderData(payload: CreateOrderPayload): Promise<Order> {
   try {
-    const res = await api.post('/order', { payload });
+    const res = await api.post('/order-customer', { payload });
     alertStore.showAlert('Order baru telah dibuat!', 'success');
     return res.data;
   } catch (error) {
@@ -201,9 +201,10 @@ export async function createOrderData(payload: CreateOrderPayload): Promise<Orde
   }
 }
 
+// Soon akan dihapus karena customer pasti akan melakukan pembayaran langsung dan cukup pakai API createOrderData
 export async function processDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload): Promise<Order> {
   try {
-    const res = await api.post('/order/process-direct-payment', { payload });
+    const res = await api.post('/order-customer/process-direct-payment', { payload });
     alertStore.showAlert('Order baru telah dibuat!', 'success');
     return res.data;
   } catch (error) {

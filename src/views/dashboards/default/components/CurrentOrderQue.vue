@@ -10,7 +10,7 @@ import type { Order, OrderItem } from '@/types/order';
 import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
-import DetailOrder from './sub-components/DetailOrder.vue';
+import DetailOrder from './sub-components/order/DetailOrder.vue';
 import { useMenuItems } from '@/composables/useMenuItems';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';

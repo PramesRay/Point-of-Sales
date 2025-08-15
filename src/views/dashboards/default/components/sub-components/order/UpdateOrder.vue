@@ -53,7 +53,7 @@ const showDetailOrder = ref(false)
 
 const payload = ref<CreateOrderPayload>({
   branch_id: userStore.me?.branch?.id || '',
-  table_number: props.data_order ? props.data_order.table_number : '',
+  table_number: props.data_order ? props.data_order.table_number : userStore.me?.table || '',
   customer: props.data_order ? props.data_order.customer : {
     name: userStore.me?.name || '',
     phone: userStore.me?.phone || '',
@@ -82,9 +82,9 @@ const currentData = computed(() => {
 const isChanged = computed(() => {
   if (props.is_create) {
     return (
-      payload.value.table_number !== '' ||
-      payload.value.customer?.name != userStore.me?.name ||
-      payload.value.customer?.phone != userStore.me?.phone ||
+      payload.value.table_number !== (userStore.me?.table || '') ||
+      payload.value.customer?.name != (userStore.me?.name || '') ||
+      payload.value.customer?.phone != (userStore.me?.phone || '') ||
       payload.value.is_take_away !== false ||
       itemInChart.value.length > 0
     )
@@ -594,15 +594,6 @@ watch(
           <!-- Tombol -->
           <v-divider class="my-4"></v-divider>
           <v-row >
-            <v-col cols="12" class="pa-2" v-if="!props.data_order">
-              <v-btn 
-                block
-                color="success"
-                :disabled="!isFormValid || itemInChart.length === 0 || lo"
-                :loading="lo"
-                @click="handleDirectPayment()"
-              >Langsung Bayar</v-btn>
-            </v-col>
             <v-col cols="6" class="pa-2">
               <v-btn 
                 block
@@ -614,11 +605,11 @@ watch(
             <v-col cols="6" class="pa-2">
               <v-btn 
                 block
-                color="primary"
+                color="success"
                 :disabled="!isFormValid || itemInChart.length === 0 || lo"
                 :loading="lo"
-                @click="submitForm()"
-              >Simpan</v-btn>
+                @click="handleDirectPayment()"
+              >Bayar</v-btn>
             </v-col>
           </v-row>
         </div>

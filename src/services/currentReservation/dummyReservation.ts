@@ -1,34 +1,35 @@
 import type { Reservation } from '@/types/reservation'
+import dummyUser from '../common/user/dummyUser'
 
 const dummyReservationData: Reservation[] = [
   {
     id: 'rsv-001',
     branch: { id: 'branch-1', name: 'Restoran 1' },
     customer: { name: "Khodijah", phone: "08123456789" },
-    time: new Date("2025-05-29T18:00:00"),
+    time: new Date("2025-10-29T18:30:00"),
     status: "Pending",
     people: 4,
     notes: '',
     meta: {
-      created_at: new Date('2025-05-29T14:00:00'),
-      created_by: { id: 'khodijah', name: 'Khodijah' },
-      updated_at: new Date('2025-05-29T14:00:00'),
-      last_updated_by: { id: 'khodijah', name: 'Khodijah' }
+      created_at: new Date(),
+      created_by: dummyUser[0],
+      updated_at: new Date(),
+      last_updated_by: dummyUser[0]
     }
   },
   {
     id: 'rsv-002',
     branch: { id: 'branch-1', name: 'Restoran 1' },
     customer: { name: "Siti", phone: "081212121212" },
-    time: new Date("2025-05-29T20:00:00"),
+    time: new Date("2025-10-29T20:00:00"),
     status: "Pending",
     people: 6,
     notes: '',
     meta: {
-      created_at: new Date('2025-05-29T14:00:00'),
-      created_by: { id: 'khodijah', name: 'Khodijah' },
-      updated_at: new Date('2025-05-29T14:00:00'),
-      last_updated_by: { id: 'khodijah', name: 'Khodijah' }
+      created_at: new Date(),
+      created_by: dummyUser[0],
+      updated_at: new Date(),
+      last_updated_by: dummyUser[0]
     }
   },
   {

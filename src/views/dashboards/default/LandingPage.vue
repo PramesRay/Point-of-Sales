@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useDisplay } from 'vuetify';
-const { mdAndUp } = useDisplay()
 import { useRoute } from 'vue-router'
-const route = useRoute()
 
 import { useUserStore } from '@/stores/authUser';
 import { useAlertStore } from '@/stores/alert';
-const userStore = useUserStore();
-const alertStore = useAlertStore();
 
 // imported components
 import CreateOrder from './components/CreateOrder.vue';
 import CurrentOrderQue from './components/CurrentOrderQue.vue';
+import CurrentReservation from './components/CurrentReservation.vue';
+
+const route = useRoute()
+const userStore = useUserStore();
+const { mdAndUp } = useDisplay()
+const alertStore = useAlertStore();
 
 // imported composables
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
@@ -20,6 +22,8 @@ import { useMenuItems } from '@/composables/useMenuItems';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import ProfileDD from '@/layouts/full/vertical-header/ProfileDD.vue';
 import type { UpdateUser, User } from '@/types/user';
+import { useReservation } from '@/composables/useReservation';
+import { useBranchList } from '@/composables/useBranchList';
 
 function getUserFromLocalStorage() {
   const userStr = localStorage.getItem('user');
@@ -33,7 +37,9 @@ function getUserFromLocalStorage() {
 // Data Loading
 const userData = getUserFromLocalStorage();
 const { openOverlay } = useOverlayManager();
+const { load: loadBranch, data: branchData } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
+const { data: reservationData, loading: lr, load: loadReservation } = useReservation()
 const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 
 const visibleComponent = computed(() => {
@@ -63,14 +69,17 @@ onMounted(() => {
         refresh: () => {
           loadCurrentOrder(loadParams);
           loadItemSales(userData?.branch.id);
+          loadReservation(loadParams);
         }
       }
     });
     return
   }
 
+  loadBranch();
   loadCurrentOrder(loadParams);
   loadItemSales(userData?.branch.id);
+  loadReservation(loadParams);
 })
 
 const branchId = computed(() => route.query.branch_id as string | undefined);
@@ -117,7 +126,14 @@ if (branchId.value || table.value) {
     <v-col cols="12" md="6">
       <v-row>
         <v-col cols="12" v-if="(!visibleComponent || visibleComponent === 'reservasi')">
-          
+          <CurrentReservation
+            :data="reservationData" 
+            :branch="userData?.branch"
+            :branch_option="branchData"
+            :loading="lr"
+            :refresh="loadReservation"
+            class="flex-grow-1"
+          />
         </v-col>
       </v-row>
     </v-col>

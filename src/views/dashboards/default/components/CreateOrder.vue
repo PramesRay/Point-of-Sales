@@ -3,7 +3,7 @@ import type { Category } from '@/types/inventory';
 import type { MenuSale } from '@/types/menu'
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import UpdateOrder from './sub-components/UpdateOrder.vue';
+import UpdateOrder from './sub-components/order/UpdateOrder.vue';
 import { ref } from 'vue';
 
 const { openOverlay } = useOverlayManager()

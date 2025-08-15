@@ -50,7 +50,7 @@ export async function fetchReservationData({
   } catch (error) {
     console.warn(`Fetch reservation failed, using dummy data.`, error);
     let dummy = dummyReservation;
-
+      
     // 2. Optional: pagination
     if (typeof page === 'number' && typeof limit === 'number') {
       const start = (page - 1) * limit
@@ -84,42 +84,52 @@ export async function fetchReservationData({
               return value.includes(itemValue);
             }
 
-            // Jika value berupa object, gunakan deep comparison
-            if (typeof value === 'object') {
-              return JSON.stringify(itemValue) === JSON.stringify(value);
-            }
-
             // Jika value berupa date, gunakan perbandingan tanggal saja
-            if ((value instanceof Date && !isNaN(value.getTime())) || typeof value === 'string') {
+            if (
+              (value instanceof Date && !isNaN(value.getTime())) ||
+              (typeof value === 'string' && !isNaN(Date.parse(value)))
+            ) {
               // Jika value adalah string, kita konversi menjadi Date
               const parsedValue = typeof value === 'string' ? new Date(value) : value;
 
-              if ((itemValue instanceof Date && !isNaN(itemValue.getTime())) || typeof itemValue === 'string') {
+              if (
+                (itemValue instanceof Date && !isNaN(itemValue.getTime())) ||
+                (typeof itemValue === 'string' && !isNaN(Date.parse(itemValue)))
+              ) {
                 // Jika itemValue adalah string, kita konversi menjadi Date
                 const parsedItemValue = typeof itemValue === 'string' ? new Date(itemValue) : itemValue;
 
                 // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
                 const itemDate = parsedItemValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-                console.log('itemDate', itemDate);
+                // console.log('itemDate', itemDate);
 
                 const filterDate = parsedValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-                console.log('filterDate', filterDate);
+                // console.log('filterDate', filterDate);
 
                 return itemDate === filterDate;  // Bandingkan tanggal tanpa waktu
               } else {
-                console.log("itemValue is not a valid Date or string.");
+                // console.log("itemValue is not a valid Date or string.");
+                return false;
               }
-            } else {
-              console.log("value is not a valid Date or string.");
             }
 
-            // Jika bukan array, gunakan perbandingan biasa
+            // Jika value berupa object (dan bukan array atau date), gunakan deep comparison
+            if (
+              typeof value === 'object' &&
+              value !== null &&
+              !Array.isArray(value) &&
+              !(value instanceof Date)
+            ) {
+              return JSON.stringify(itemValue) === JSON.stringify(value);
+            }
+
+            // Jika bukan array, object, atau date, gunakan perbandingan biasa
             return itemValue === value;
           });
-          console.log('dummy', dummy);
         }
       }
     }
+
     
     // 4. Optional: sort
     if (sortBy && dummy.length > 0) {
@@ -162,7 +172,7 @@ export async function fetchReservationData({
         })
       )
     }
-
+    
     const total = dummy.length
     return { data: dummy, total }
   }
