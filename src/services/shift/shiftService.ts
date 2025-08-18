@@ -69,7 +69,7 @@ export async function fetchShiftEmployee({
 
     // 1. Filter by branch
     if (branchId) {
-      dummy = dummy.filter(item => item.branch.id === branchId)
+      dummy = dummy.filter(item => item.branch?.id === branchId)
     }
     
     // 2. Optional: pagination
@@ -381,7 +381,7 @@ export async function fetchShiftCashier({
 
     // 1. Filter by branch
     if (branchId) {
-      dummy = dummy.filter(item => item.branch.id === branchId)
+      dummy = dummy.filter(item => item.branch?.id === branchId)
     }
     
     // 2. Optional: pagination
@@ -545,7 +545,7 @@ export async function fetchShiftKitchen({
 
     // 1. Filter by branch
     if (branchId) {
-      dummy = dummy.filter(item => item.branch.id === branchId)
+      dummy = dummy.filter(item => item.branch?.id === branchId)
     }
     
     // 2. Optional: pagination

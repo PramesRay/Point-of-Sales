@@ -17,7 +17,6 @@ import { useBranchList } from '@/composables/useBranchList';
 import { useUser } from '@/composables/useUser';
 import { useEmployeeActive } from '@/composables/useEmployeeActive';
 import { useFinanceDashboard } from '@/composables/useFinanceSummary';
-import { useTimesheet } from '@/composables/useTimesheet';
 import { useReservation } from '@/composables/useReservation';
 import { useUserStore } from '@/stores/authUser';
 import { useMenuItems } from '@/composables/useMenuItems';
@@ -29,12 +28,11 @@ import { useShift } from '@/composables/useShift';
 const userStore = useUserStore();
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadEmployeeActive, data: employeeActiveData, loading: lea } = useEmployeeActive();
-// const { data: timesheetData, loading: lt, load: loadTimesheet } = useTimesheet()
 const { data: reservationData, loading: lr, load: loadReservation } = useReservation()
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
+const { load: loadMenu, loadCategory, dataItemSales: menuData, categories: menuCategories, loading: lm } = useMenuItems();
 const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
-const { init: loadMenu, loadCategory, data: menuData, categories: menuCategories, loading: lm } = useMenuItems();
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
@@ -47,7 +45,6 @@ onMounted(() => {
   loadBranch()
   loadUser()
   loadSummary()
-  // loadTimesheet()
   loadReservation()
   loadEmployeeActive()
   loadCashier()
@@ -64,6 +61,8 @@ const selectedBranchObject = computed(() => {
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
+  loadUser()
+  loadMenu()
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
   // loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
   loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
@@ -73,7 +72,7 @@ watch(selectedBranch, () => {
   loadKitchen({ filter: { 'branch.id': selectedBranch.value } })
 });
 
-const pinBranch = ref(false)
+const pinBranch = ref(true)
 </script>
 
 <template>
@@ -192,7 +191,7 @@ const pinBranch = ref(false)
         </v-col>
         <v-col cols="6" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
-            :branch="selectedBranchObject!"
+            :branch="selectedBranchObject ?? branchOptions[0]"
             :data_user="userData"
             :data_branch="branches"
             :data_menu="menuData"
@@ -226,7 +225,7 @@ const pinBranch = ref(false)
         </v-col>
         <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
-            :branch="selectedBranchObject!"
+            :branch="selectedBranchObject ?? branchOptions[0]"
             :data_user="userData"
             :data_branch="branches"
             :data_menu="menuData"

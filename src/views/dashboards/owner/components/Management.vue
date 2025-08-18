@@ -9,7 +9,7 @@ import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import type { Employee } from '@/types/employee'
 import type { IdName } from '@/types/common'
 import type { Branch } from '@/types/branch'
-import type { Menu } from '@/types/menu'
+import type { MenuSale } from '@/types/menu'
 import DetailAccount from './sub-components/DetailAccount.vue'
 import DetailBranch from './sub-components/DetailBranch.vue'
 import DetailMenu from './sub-components/DetailMenu.vue'
@@ -24,7 +24,7 @@ const emit = defineEmits(['menu-updated'])
 const props = defineProps<{
   data_user: Employee[]
   data_branch: Branch[] 
-  data_menu: Menu[]
+  data_menu: MenuSale[]
   menu_categories: Category[]
   branch: IdName
   loading_user: boolean
@@ -57,13 +57,9 @@ const currentDataBranch = computed(() => {
 })
 
 const currentDataMenu = computed(() => {
-  if (!props.branch || props.branch.id === 'all') {
-    return props.data_menu;
-  } else {
-    return props.data_menu.filter(
-      (tx) => tx.branch?.id === props.branch.id
-    );
-  }
+  return props.data_menu.filter(
+    (tx) => tx.branch?.id === props.branch?.id
+  );
 })
 
 const categories = computed(() => [{ id: 'all', name: 'Semua' }, ...props.menu_categories])
@@ -147,7 +143,7 @@ function handleAddNew() {
 
         <div v-else>
           <v-row class="justify-center align-center">
-            <v-col cols="12" class="text-center mt-2 mb-4">
+            <v-col cols="12" class="text-center my-2">
               <v-btn-toggle
                 v-model="tab"
                 variant="outlined"
@@ -190,7 +186,7 @@ function handleAddNew() {
                   })
                 "
               >
-                <v-divider v-if="i > 0"></v-divider>
+                <v-divider v-if="i > 0" class="mb-4"></v-divider>
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <!-- <span class="text-subtitle-2 text-medium-emphasis">{{ (data.assigned_branch.map(branch => branch.name).join(', ')) }}</span> -->
@@ -231,6 +227,7 @@ function handleAddNew() {
                   })
                 "
               >
+                <v-divider v-if="index > 0" class="mb-1"></v-divider>
                 <v-row no-gutters class="py-2 align-center">
                   <v-col cols="7">
                     <h4 class="text-h4 text-medium-emphasis font-weight-bold">
@@ -262,9 +259,13 @@ function handleAddNew() {
               <v-progress-circular indeterminate color="warning" height="1"></v-progress-circular>
               </div>
               <div v-else-if="!props.loading_menu && !showCtg">
+                <div class="d-flex justify-end text-subtitle-2 text-medium-emphasis font-weight-bold mr-2">
+                  {{ props.branch?.name || 'Semua Restoran' }}
+                </div>
                 <v-select
                   color="primary"
                   variant="outlined"
+                  class="mb-2"
                   hide-details
                   v-model="selectedCtg"
                   :items="categories"
@@ -291,6 +292,7 @@ function handleAddNew() {
                     })
                   "
                 >
+                  <v-divider v-if="index > 0" class="mb-1"></v-divider>
                   <v-row no-gutters class="py-2 align-center">
                     <v-col cols="7">
                       <h4 class="text-h4 text-medium-emphasis font-weight-bold">

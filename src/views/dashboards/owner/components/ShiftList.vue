@@ -23,11 +23,11 @@ import type { Branch } from '@/types/branch';
 import DetailShiftKitchen from './sub-components/shift/DetailShiftKitchen.vue';
 import DetailShiftWarehouse from './sub-components/shift/DetailShiftWarehouse.vue';
 
-const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { load, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 const { openOverlay } = useOverlayManager()
 
 onMounted(() => {
-  loadItemSales()
+  load()
 })
 
 const props = defineProps<{

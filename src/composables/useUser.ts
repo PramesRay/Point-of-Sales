@@ -8,17 +8,32 @@ export function useUser() {
   const loading = ref<boolean>(false);
   const error = ref<Error | null>(null);
 
-  async function load(
-    id?: string,
-    page?: number,
-    limit?: number,
-    search?: string,
+  async function load({
+    page,
+    limit,
+    search,
+    sortBy,
+    sortDesc,
+    filter
+  }: {
+    page?: number
+    limit?: number
+    search?: string
     sortBy?: string
-    ) {
+    sortDesc?: boolean
+    filter?: Record<string, any>
+  } = {}) {
     loading.value = true;
     error.value   = null;
     try {
-      data.value = (await fetchUsers(id, page, limit, search, sortBy)).data;
+      data.value = (await fetchUsers({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortDesc,
+        filter
+      })).data;
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -38,7 +53,14 @@ export function useUser() {
     error.value   = null;
     try {
       const { page, limit, search, sortBy, sortDesc, filters } = params;
-      const { data, total } = await fetchUsers(undefined, page, limit, search, sortBy, sortDesc, filters);
+      const { data, total } = await fetchUsers({
+        page,
+        limit,
+        search,
+        sortBy,
+        sortDesc,
+        filter: filters
+      });
     return { data, total };
     } catch (e: any) {
       error.value = e;

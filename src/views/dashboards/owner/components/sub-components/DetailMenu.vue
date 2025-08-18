@@ -23,12 +23,12 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const { data: branchData, load, loading: lb } = useBranchList()
-const { init, create, update, remove, categories, loading: lm } = useMenuItems()
+const { data: branchData, load: loadBranch, loading: lb } = useBranchList()
+const { loadCategory: loadCategory, create, update, remove, categories, loading: lm } = useMenuItems()
 
 onMounted(() => {
-  load()
-  init()
+  loadBranch()
+  loadCategory()
 })
 
 const payload = ref<{[K in keyof CreateMenuPayload]: CreateMenuPayload[K] | null}>({
@@ -36,7 +36,7 @@ const payload = ref<{[K in keyof CreateMenuPayload]: CreateMenuPayload[K] | null
   description: props.is_create ? null : props.data?.description ?? null,
   price: props.is_create ? null : props.data?.price ?? null,
   category_id: props.is_create ? null : props.data?.category.id ?? null,
-  available_in_branch_id: props.is_create ? null : props.data?.available_in_branch.map((item) => item.id) ?? null,
+  branch: props.is_create ? null : props.data?.branch.id ? [props.data.branch.id] : null,
 })
 
 const formRef = ref()
@@ -56,7 +56,7 @@ const isChanged = computed(() => {
       payload.value.description !== null ||
       payload.value.price !== null ||
       payload.value.category_id !== null ||
-      payload.value.available_in_branch_id?.length !== null
+      payload.value.branch?.length !== null
     )
   } else {
     return (
@@ -64,7 +64,7 @@ const isChanged = computed(() => {
       payload.value.description !== props.data?.description ||
       payload.value.price !== props.data?.price ||
       payload.value.category_id !== props.data?.category.id ||
-      payload.value.available_in_branch_id?.length !== props.data?.available_in_branch.length
+      (payload.value.branch && payload.value.branch[0]?.toString() !== props.data?.branch.id)
     )
   }
 })
@@ -83,7 +83,7 @@ function clearPayload() {
       description: null,
       price: null,
       category_id: null,
-      available_in_branch_id: null
+      branch: null
     }
   } else {
     payload.value = {
@@ -91,7 +91,7 @@ function clearPayload() {
       description: props.data?.description ?? null,
       price: props.data?.price ?? null,
       category_id: props.data?.category.id ?? null,
-      available_in_branch_id: props.data?.available_in_branch.map((item) => item.id) ?? null
+      branch: props.data?.branch.id ? [props.data.branch.id] : null
     }
   }
 
@@ -114,7 +114,11 @@ async function processSubmit() {
     else {
       const updatePayload: UpdateMenuPayload = {
         id: props.data!.id,
-        ...payload.value as CreateMenuPayload
+        name: payload.value.name!,
+        description: payload.value.description!,
+        price: payload.value.price!,
+        category_id: payload.value.category_id!,
+        branch_id: payload.value.branch![0]
       }
       await update(updatePayload)
       props.refresh()
@@ -154,7 +158,7 @@ function handleClose() {
     class="rounded-lg pa-6 mt-8 bg-white" 
     style="width: clamp(0px, 90dvw, 400px); overflow-y: auto; max-height: 90vh;"
   >
-    <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="handleClose()">
+    <v-btn icon class="position-absolute" variant="text" style="top: 8px; right: 12px;" @click="emit('close')">
       <v-icon>mdi-close</v-icon>
     </v-btn>
     <div class="d-flex align-center">
@@ -200,6 +204,8 @@ function handleClose() {
         <v-col cols="6">
           <v-select
             v-model="payload.category_id"
+            :loading="lm"
+            :disabled="lm"
             :items="categories"
             item-title="name"
             item-value="id"
@@ -212,26 +218,27 @@ function handleClose() {
         </v-col>
         <v-col cols="12">
           <v-autocomplete
-            v-model="payload.available_in_branch_id"
+            v-model="payload.branch"
             label="Cabang"
             variant="underlined"
             prepend-icon="mdi-home"
             :items="branchData"
+            :loading="lb"
+            :disabled="lb"
             item-title="name"
             item-value="id"
-            multiple
+            :multiple="props.data?.branch.id ? false : true"
             :rules="[...rules.required, ...rules.required_array]"
-            :loading="lb"
             :return-object="false"
           >
-            <template v-slot:selection="{ item, index }">
+            <template v-slot:selection="{ item, index }" v-if="!props.data?.branch.id">
               <v-chip v-if="index < 2" :text="item.title"></v-chip>
 
               <span
-                v-if="payload.available_in_branch_id && index === 2"
+                v-if="payload.branch && index === 2"
                 class="text-grey text-caption align-self-center"
               >
-                (+{{ payload.available_in_branch_id?.length - 2 }} lainnya)
+                (+{{ payload.branch?.length - 2 }} lainnya)
               </span>
             </template>
           </v-autocomplete>

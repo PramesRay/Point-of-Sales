@@ -1,4 +1,4 @@
-import { createCategoryMenu, createMenu, deleteCategoryMenu, deleteMenu, fetchCategorMenu, fetchMenuItems, fetchMenuSales, qtyMenuUpdate, updateCategoryMenu, updateMenu } from '@/services/menu/menuItemService';
+import { createCategoryMenu, createMenu, deleteCategoryMenu, deleteMenu, fetchCategorMenu, fetchMenuSales, qtyMenuUpdate, updateCategoryMenu, updateMenu } from '@/services/menu/menuItemService';
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/inventory';
 import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, UpdateMenuPayload } from '@/types/menu';
 import { ref } from 'vue';
@@ -10,20 +10,7 @@ export function useMenuItems() {
   const dataItemSales = ref<MenuSale[]>([]);
   const categories= ref<Category[]>([]);
   
-  async function init(id?: string) {
-    loading.value = true;
-    error.value = null;
-    try {
-      data.value = (await fetchMenuItems(id)).data;
-      categories.value = await fetchCategorMenu()
-    } catch (e: any) {
-      error.value = e;
-    } finally {
-      loading.value = false;
-    }
-  }
-  
-  async function loadItemSales(id?: string) {
+  async function load(id?: string) {
     try {
       loading.value = true;
       error.value = null;
@@ -53,7 +40,7 @@ export function useMenuItems() {
     branchId?: string
   } = {}) {
     try {
-      const { data, total } = await fetchMenuItems(
+      const { data, total } = await fetchMenuSales(
         branchId,
         page,
         itemsPerPage,
@@ -159,8 +146,7 @@ export function useMenuItems() {
   }
 
   return {
-    init,
-    loadItemSales,
+    load,
     create,
     update,
     qtyUpdate,

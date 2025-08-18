@@ -20,7 +20,7 @@ export interface MenuSale extends Menu {
 
 export type CreateMenuPayload = Omit<Menu, "id" | "category" | "branch" | "meta"> & {
   category_id: string
-  available_in_branch_id: string[]
+  branch: string[]
 }
 
 export type UpdateMenuPayload = Omit<Menu, "category" | "branch" | "meta"> & {
