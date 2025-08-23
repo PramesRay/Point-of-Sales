@@ -79,7 +79,7 @@ const filteredByBranchData = computed(() => {
     return props.data_menu;
   }
   return props.data_menu.filter(
-    (tx) => tx.available_in_branch.some((b) => b.id === branch?.id)
+    (tx) => tx.branch.id === branch.id
   );
 });
 
@@ -247,6 +247,7 @@ function addItemToCart(data: OrderItem) {
     const menu = props.data_menu.find(item => item.id === data.id)
     itemInChart.value.push({
       id: data.id,
+      item_id: data.item_id,
       name: menu?.name ?? '',
       description: menu?.description ?? '',
       price: menu?.price ?? 0,

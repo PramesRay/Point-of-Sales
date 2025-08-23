@@ -21,7 +21,7 @@ export interface Branch {
   meta: MetaDetail
 }
 
-export type UpdateBranchPayload = Omit<Branch, 'operational'> & {
+export type UpdateBranchPayload = Omit<Branch, 'operational' | 'meta'> & {
   open_time: string
   close_time: string
 }

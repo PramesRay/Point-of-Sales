@@ -15,11 +15,11 @@ import { useMenuItems } from '@/composables/useMenuItems';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 
-const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { load, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 const { openOverlay } = useOverlayManager()
 
 onMounted(() => {
-  loadItemSales()
+  load()
 })
 
 const props = defineProps<{

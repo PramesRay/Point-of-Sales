@@ -23,7 +23,7 @@ import { useMenuItems } from '@/composables/useMenuItems';
 // Data Loading
 const { data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, update: updateOrder, create: createOrder } = useCurrentOrders();
-const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { load: loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
@@ -46,7 +46,7 @@ onMounted(() => {
   } else {
     loadCurrentOrder({
       filter: {
-        'shift_cashier_id': userStore.me?.activity?.shift_op_id
+        'shift_cashier_id': userStore.me?.activity?.shift_op?.id
       },
       sortBy: 'meta.updated_at',
       sortDesc: true
