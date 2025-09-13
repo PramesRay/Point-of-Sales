@@ -37,8 +37,10 @@ async function handleLoginWithGoogle() {
   try {
     isSubmitting.value = true;
     await authStore.loginWithGoogle();
+    router.push('/');
   } catch (err: any) {
     console.error(err);
+    alert.showAlert(err.message, 'error');
   } finally {
     isSubmitting.value = false;
   }

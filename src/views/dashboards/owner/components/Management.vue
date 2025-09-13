@@ -9,31 +9,33 @@ import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import type { Employee } from '@/types/employee'
 import type { IdName } from '@/types/common'
 import type { Branch } from '@/types/branch'
-import type { MenuSale } from '@/types/menu'
+import type { Menu } from '@/types/menu'
 import DetailAccount from './sub-components/DetailAccount.vue'
 import DetailBranch from './sub-components/DetailBranch.vue'
 import DetailMenu from './sub-components/DetailMenu.vue'
 import DetailCategory from './sub-components/DetailCategory.vue'
 import type { Category } from '@/types/inventory'
+import { useUserStore } from '@/stores/authUser'
 
 const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
+const user = useUserStore()
 
 const emit = defineEmits(['menu-updated'])
 
 const props = defineProps<{
   data_user: Employee[]
   data_branch: Branch[] 
-  data_menu: MenuSale[]
+  data_menu: Menu[]
   menu_categories: Category[]
-  branch: IdName
+  branch: IdName | undefined | null
   loading_user: boolean
   loading_branch: boolean
   loading_menu: boolean
 
   refresh_user: () => void
   refresh_branch: () => void
-  refresh_menu: () => void
+  refresh_menu: (id: string) => void
   refresh_category: () => void
 }>()
 
@@ -44,10 +46,10 @@ const showCtg = ref(false)
 
 const currentDataUsers = computed(() => {
   if (!props.branch || props.branch.id === 'all') {
-    return props.data_user;
+    return props.data_user.filter((tx) => tx.uid !== user.me?.uid);
   } else {
     return props.data_user.filter(
-      (tx) => tx.assigned_branch?.some((branch) => branch.id === props.branch.id)
+      (tx) => tx.assigned_branch?.id == props.branch?.id && tx.uid !== user.me?.uid
     );
   }
 })
@@ -57,12 +59,17 @@ const currentDataBranch = computed(() => {
 })
 
 const currentDataMenu = computed(() => {
-  return props.data_menu.filter(
-    (tx) => tx.branch?.id === props.branch?.id
-  );
+  return props.data_menu
 })
 
-const categories = computed(() => [{ id: 'all', name: 'Semua' }, ...props.menu_categories])
+const currentDataCategories = computed(() => {
+  return props.menu_categories
+})
+
+const categories = computed(() => {
+  if (!props.menu_categories.length) return []
+  return [{ id: 'all', name: 'Semua' }, ...props.menu_categories]
+})
 
 function handleAddNew() {
   if (tab.value === 'branch') {
@@ -86,16 +93,17 @@ function handleAddNew() {
           refresh: props.refresh_category
         },
       })
+    } else {
+      openOverlay({
+        component: DetailMenu,
+        props: {
+          is_create: true,
+          confirmBeforeClose: true,
+          isChanged,
+          refresh: props.refresh_menu
+        },
+      })
     }
-    openOverlay({
-      component: DetailMenu,
-      props: {
-        is_create: true,
-        confirmBeforeClose: true,
-        isChanged,
-        refresh: props.refresh_menu
-      },
-    })
   }
 }
 
@@ -109,6 +117,7 @@ function handleAddNew() {
           <v-col cols="7">
             <div>
               <h4 class="text-h4">Manajemen</h4>
+              <span v-if="!props.loading_branch" class="text-subtitle-2 text-medium-emphasis">{{ (props.branch && tab !== 'branch') ? props.branch?.name : (tab === 'menu') ? props.branch?.name || currentDataBranch[0].name  : 'Semua Cabang' }}</span>
             </div>
           </v-col>
           <v-col cols="5" class="d-flex justify-end align-center" v-if="!(props.loading_user || props.loading_branch || props.loading_menu)">
@@ -124,7 +133,7 @@ function handleAddNew() {
               </v-btn>
               <v-btn
                 v-if="tab !== 'user'"
-                :color="tab === 'branch' ? 'success' : showCtg ? '' :'warning'"
+                :color="tab === 'branch' ? 'success' : showCtg ? 'lightwarning' :'warning'"
                 @click="handleAddNew()"
               >
                 Tambah
@@ -187,21 +196,27 @@ function handleAddNew() {
                 "
               >
                 <v-divider v-if="i > 0" class="mb-4"></v-divider>
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div>
-                    <!-- <span class="text-subtitle-2 text-medium-emphasis">{{ (data.assigned_branch.map(branch => branch.name).join(', ')) }}</span> -->
-                    <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                      {{ data.name }}
-                    </h6>
-                    <i class="text-subtitle-2 text-medium-emphasis">{{ data?.email }}</i>
+                <v-row no-gutters class="align-center">
+                  <v-col cols="auto">
+                    <div class="d-flex justify-center">
+                      <v-btn
+                      v-if="!data.role"
+                      size="small"
+                      variant="outlined"
+                      class="text-subtitle-2 text-medium-emphasis"
+                      >
+                      Perlu Verifikasi
+                    </v-btn>
                   </div>
-                  <div>
-                    <div class="d-flex justify-end">
-                      <span class="text-subtitle-2 text-medium-emphasis" v-if="data.role">{{ data.role }}</span>
-                      <span class="text-subtitle-2 text-medium-emphasis" v-else>Perlu Verifikasi</span>
-                    </div>
-                  </div>
-                </div>
+                </v-col>
+                <v-col cols="auto" class="pr-2">
+                  <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
+                    {{ data.name }}
+                  </h6>
+                  <span class="text-subtitle-2 text-medium-emphasis" v-if="data.role">{{ data.role }}</span>
+                  <i class="text-subtitle-2 text-medium-emphasis">{{ data?.email }}</i>
+                  </v-col>
+                </v-row>
               </v-list-item>
               <div v-if="!currentDataUsers.length" class="text-center text-subtitle-2 text-disabled py-4">Tidak ada Akun</div>
             </v-list>
@@ -259,10 +274,8 @@ function handleAddNew() {
               <v-progress-circular indeterminate color="warning" height="1"></v-progress-circular>
               </div>
               <div v-else-if="!props.loading_menu && !showCtg">
-                <div class="d-flex justify-end text-subtitle-2 text-medium-emphasis font-weight-bold mr-2">
-                  {{ props.branch?.name || 'Semua Restoran' }}
-                </div>
                 <v-select
+                  v-if="props.menu_categories.length > 0"
                   color="primary"
                   variant="outlined"
                   class="mb-2"
@@ -313,11 +326,11 @@ function handleAddNew() {
                     </v-col>
                   </v-row>
                 </v-list-item>
-                <div v-if="!currentDataBranch.length" class="text-center text-subtitle-2 text-disabled py-4">Tidak ada Restoran</div>
+                <div v-if="!currentDataMenu.length" class="text-center text-subtitle-2 text-disabled py-4">Tidak ada Menu</div>
               </div>
               <div v-else>
                 <v-list-item
-                  v-for="(data, i) in props.menu_categories"
+                  v-for="(data, i) in currentDataCategories"
                   :key="i"
                   :value="data"
                   rounded="sm"
@@ -347,6 +360,7 @@ function handleAddNew() {
                     </div>
                   </div>
                 </v-list-item>
+                <div v-if="!categories.length" class="text-center text-subtitle-2 text-disabled py-4">Tidak ada Kategori</div>
               </div>
             </v-list>
           </ScrollContainer>

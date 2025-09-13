@@ -43,7 +43,7 @@ const payload = ref<{
   }[]
   note: string
 }>({
-  branch_id: userStore.hasRole(['Admin', 'Pemilik']) ? props.branch : userStore.me?.activity?.branch?.id!,
+  branch_id: userStore.hasRole(['admin', 'pemilik']) ? props.branch : userStore.me?.activity?.branch?.id!,
   items: props.data ? props.data.items.map(item => ({
     id: item.item.id,
     name: item.item.name,
@@ -180,7 +180,7 @@ function handleSubmit() {
           :rules="rules.required"
           :items="branches"
           :loading="lb"
-          :disabled="lb || userStore.hasRole('Dapur')"
+          :disabled="lb || userStore.hasRole('dapur')"
           variant="underlined"
           item-title="name"
           item-value="id"

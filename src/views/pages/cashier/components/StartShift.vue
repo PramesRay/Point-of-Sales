@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watchEffect, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import { formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
@@ -7,15 +7,22 @@ import { useUserStore } from '@/stores/authUser'
 import { useShift } from '@/composables/useShift'
 
 import type { StartShiftCashierPayload } from '@/types/shift'
+import { useBranchList } from '@/composables/useBranchList'
 
 const { mdAndUp } = useDisplay()
 const userStore = useUserStore()
 const { startCashier, loading } = useShift()
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
+
+onMounted(() => {
+  loadBranch()
+})
 
 const props = defineProps<{
   confirmBeforeClose: boolean
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
+  refresh: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -70,12 +77,14 @@ async function processSubmit() {
       branch_id: payload.value.branch_id!,
       cash: payload.value.cash!
     })
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 
 }
@@ -105,8 +114,9 @@ async function processSubmit() {
           <v-col cols="12">
             <v-select
               v-model="payload.branch_id"
-              :items="userStore.me?.assigned_branch!"
-              disabled
+              :items="branches"
+              :disabled="lb || !userStore.hasRole(['admin', 'pemilik'])"
+              :loading=lb
               prepend-icon="mdi-home"
               item-title="name"
               item-value="id"

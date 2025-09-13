@@ -19,6 +19,7 @@ import {
   EmailAuthProvider
 } from 'firebase/auth';
 import { auth, googleProvider } from '@/plugins/firebase';
+import { useUserStore } from './authUser';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -88,11 +89,25 @@ export const useAuthStore = defineStore({
       try {
         const result = await signInWithPopup(auth, googleProvider);
         
+        const response = await api.get('/employee/me').catch(error => {
+          if (error.status === 404) {
+            return api.post(`${baseUrl}/auth/register`, { 
+              name: result.user.displayName,
+              email: result.user.email,
+              uid: result.user.uid,
+            })
+          }
+          throw error;
+        });
+        
+        if (response.data.data.role == null) {
+          await signOut(auth); // Logout paksa
+          throw new Error('Email belum dikonfirmasi oleh pemilik');
+        }
+        
         this.user = result.user;
         this.isAuthenticated = true;
         
-        const idToken = await result.user.getIdToken();
-        // await api.post(`${baseUrl}/auth/google`, {idToken})
         router.push('/');
       } catch (error) {
         console.error('Gagal login dengan Google:', error);
@@ -105,16 +120,18 @@ export const useAuthStore = defineStore({
       this.loading = true;
       try {
         const result = await signInWithEmailAndPassword(auth, payload.email, payload.password);
-        if (!result.user.emailVerified) {
-          await signOut(auth); // Logout paksa
-          throw new Error('Email belum diverifikasi');
-        }
-        // const idToken = await result.user.getIdToken();
+        const response = await api.get('/employee/me');
 
-        // DELETE SECTION ================================================
-        // const session = await api.post(`${baseUrl}/auth/login`, {idToken})
-        // DELETE SECTION ================================================
-        
+        if (!result.user.emailVerified) {
+          // await signOut(auth); // Logout paksa
+          localStorage.setItem('email', payload.email);
+          router.push('/verify-email');
+          throw new Error('Email belum diverifikasi');
+        } else if (response.data.data.role == null) {
+          // await signOut(auth); // Logout paksa
+          throw new Error('Email belum dikonfirmasi oleh pemilik');
+        }
+
         // Simpan data pengguna dari API
         this.user = result.user;
         this.isAuthenticated = true;
@@ -130,33 +147,22 @@ export const useAuthStore = defineStore({
         }
 
         return result
-      } catch (error: any) {
-        // Tangani error lebih baik dengan pesan yang jelas (HAPUS KALAU BE SUDAH TERSEDIA)
-        // const mockUser: UserAuth = {
-        //   uid: 'mock-user-id',
-        //   name: 'mock-user',
-        //   email: 'mock-email@example.com',
-        // }
-        // // this.accessToken = 'mock-access-token';
-        // this.user = mockUser
-        // this.isAuthenticated = true;
-
-        // localStorage.setItem('user', JSON.stringify(mockUser));
-        
+      } catch (error: any) {        
         console.error("Login failed:", error);
-        // (UNCOMMENT KALAU BE SUDAH TERSEDIA)
         this.isAuthenticated = false
         this.user = null
         localStorage.removeItem('user')
         
         if (error.code === 'auth/invalid-password') {
-          throw new Error('Password tidak valid. Minimal 8 karakter.');
+          throw new Error('Password tidak valid. Minimal 6 karakter.');
         } else if (error.code === 'auth/user-not-found') {
           throw new Error('Email tidak ditemukan.');
         } else if (error.code === 'auth/too-many-requests') {
           throw new Error('Terlalu banyak permintaan. Silakan coba lagi dalam beberapa saat.');
         } else if (error.code === 'auth/invalid-credential') {
           throw new Error('Credensial tidak valid.');
+        } else if (error.message) {
+          throw new Error(error.message);
         } else {
           throw new Error('Login gagal');
         }
@@ -176,19 +182,20 @@ export const useAuthStore = defineStore({
 
         // untuk mengirim ke backend
         await updateProfile(result.user, {
-          displayName: payload.first_name + ' ' + payload.last_name,
+          displayName: (payload.first_name + ' ' + payload.last_name).trim(),
         });
         
         await sendEmailVerification(result.user);
-
-        // await api.post(`${baseUrl}/auth/register`, { 
-        //   name: payload.first_name + ' ' + payload.last_name,
-        //   idToken 
-        // });
+        
+        await api.post(`${baseUrl}/auth/register`, { 
+          name: (payload.first_name + ' ' + payload.last_name).trim(),
+          email: payload.email,
+          uid: result.user.uid,
+        });
   
         this.user = {
           ...result.user,
-          displayName: payload.first_name + ' ' + payload.last_name,
+          displayName: (payload.first_name + ' ' + payload.last_name).trim(),
         };
         this.isAuthenticated = true;
 
@@ -196,8 +203,8 @@ export const useAuthStore = defineStore({
           name: this.user.displayName,
           email: this.user.email
         }));
-        router.push('/');
-        return result
+
+        // await signOut(auth); // Logout paksa
       } catch (err: any) {
         // error handling untuk semua skenario yang memungkinkan
         if (err.code === 'auth/email-already-in-use') {
@@ -210,31 +217,7 @@ export const useAuthStore = defineStore({
         this.loading = false
       }
     },
-    async verifySessionAfterEmail(idToken: string) {
-      if (!idToken) return;
-      this.loading = true;
-      try {
-        const session = await api.post(`${baseUrl}/auth/verify-email`, { idToken });
-  
-        // this.user = {
-        //   uid: session.data.uid,
-        //   name: session.data.name,
-        //   email: session.data.email
-        // };
-      } catch (error) {
-        // Sementara (HAPUS SETELAH BACKEND TERSEDIA!!!)
-        // const mockUser: UserAuth = {
-        //   uid: 'mock-user-id',
-        //   name: 'mock-user',
-        //   email: 'mock-email@example.com',
-        // }
-        // this.user = mockUser;
-        // localStorage.setItem('user', JSON.stringify(mockUser));
-        throw error || 'Email belum diverifikasi';
-      } finally {
-        this.loading = false
-      }
-    },
+    
     async resendVerification() {
       const user = auth.currentUser
       if (!user) throw new Error('User tidak ditemukan.')
@@ -255,6 +238,7 @@ export const useAuthStore = defineStore({
   
       try {
         await updateProfile(user, { displayName: name });
+        await api.put(`/employee/me`, { name });
       } catch (error) {
         console.error('Gagal memperbarui profil pengguna:', error);
         throw error;
@@ -372,14 +356,15 @@ export const useAuthStore = defineStore({
       try {
         await signOut(auth);
         this.detachAuthListener();
+        this.user = null;
+        this.isAuthenticated = false;
+        useUserStore().setNull();
         localStorage.removeItem('lastSyncedProfile'); // Hapus setelah berhasil sync
         router.push('/login');
       } catch (error) {
         console.error('Logout failed:', error);
       } finally {
         this.loading = false
-        this.user = null;
-        this.isAuthenticated = false;
       }
     },
     // Memeriksa apakah sudah login saat aplikasi dimulai

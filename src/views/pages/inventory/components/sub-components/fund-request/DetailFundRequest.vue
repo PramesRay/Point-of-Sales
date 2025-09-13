@@ -103,7 +103,7 @@ const handleSubmit = () => {
 const handleUpdate = () => {
   if (userStore.me?.id !== props.data.meta.created_by.id) {
     alertStore.showAlert('Data permintaan hanya dapat diubah oleh yang membuat', 'warning')
-  } else if (userStore.me?.activity?.shift_op_id !== props.data.shift_warehouse_id) {
+  } else if (userStore.me?.activity?.shift_op?.id !== props.data.shift_warehouse_id) {
     alertStore.showAlert('Data permintaan sudah tidak dapat diubah', 'warning')
   } else {
     openOverlay({
@@ -208,7 +208,7 @@ const handleUpdate = () => {
               <div class="text-caption text-disabled">Jumlah: {{ item.quantity }} {{ item.item.unit }}</div>
             </v-col>
             <v-col cols="5" class="text-right">
-              <div v-if="props.data.status === 'Pending' && userStore.hasRole(['Admin', 'Pemilik', 'Bendahara']) && item.approved === null">
+              <div v-if="props.data.status === 'Pending' && userStore.hasRole(['admin', 'pemilik', 'bendahara']) && item.approved === null">
                 <v-btn
                   icon  
                   variant="text"
@@ -245,7 +245,7 @@ const handleUpdate = () => {
         </template>
       </div>
       <!-- Input catatan tambahan -->
-      <div v-if="props.data.status === 'Pending' && userStore.hasRole(['Admin', 'Pemilik', 'Bendahara'])">
+      <div v-if="props.data.status === 'Pending' && userStore.hasRole(['admin', 'pemilik', 'bendahara'])">
         <v-divider class="mb-5"></v-divider>
         <div class="text-caption text-medium-emphasis">
           Catatan Bendahara: 

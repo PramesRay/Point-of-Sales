@@ -19,7 +19,7 @@ export async function fetchUsers({
   filter?: Record<string, any>
 }): Promise<{data: Employee[]; total: number}> {
   try {
-    const url = `/users`;
+    const url = `/employees`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -58,7 +58,7 @@ export async function fetchUsers({
 
 export async function createUser(payload: CreateEmployeePayload): Promise<Employee> {
   try {
-    const res = await api.post<Employee>('/users', payload);
+    const res = await api.post<Employee>('/employee', payload);
     return res.data;
   } catch (error) {
     console.error('Failed to create user:', error);
@@ -68,7 +68,7 @@ export async function createUser(payload: CreateEmployeePayload): Promise<Employ
 
 export async function updateUser(payload: UpdateEmployeePayloadByOwner | UpdateEmployeeByEmployee): Promise<Employee> {
   try {
-    const res = await api.patch<Employee>(`/users/${payload.id}`, payload);
+    const res = await api.put<Employee>(`/employee/${payload.uid}`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to update user:', error);
@@ -78,7 +78,7 @@ export async function updateUser(payload: UpdateEmployeePayloadByOwner | UpdateE
 
 export async function deleteUser(id: string): Promise<void> {
   try {
-    await api.delete(`/users/${id}`);
+    await api.delete(`/employee/${id}`);
   } catch (error) {
     console.error('Failed to delete user:', error);
     throw error;

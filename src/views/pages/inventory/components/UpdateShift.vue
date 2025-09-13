@@ -19,6 +19,7 @@ const props = defineProps<{
   confirmBeforeClose: boolean
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
+  refresh: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -27,7 +28,7 @@ const currentData = ref(cloneDeep(props.data))
 
 const payload = ref<UpdateShiftWarehousePayload>({
   id: currentData.value.id,
-  notes: null,
+  notes: currentData.value.notes,
 })
 
 const formRef = ref()
@@ -40,7 +41,7 @@ const rules = {
 }
 
 const isChanged = computed(() => {
-  return (payload.value.notes !== null && currentData.value.notes !== null && payload.value.notes as string !== currentData.value.notes as string)
+  return (currentData.value.notes === null ? !(payload.value.notes === null || payload.value.notes === '') : payload.value.notes !== currentData.value.notes)
 })
 
 watchEffect(() => {
@@ -72,24 +73,28 @@ async function processSubmit() {
       id: payload.value.id,
       notes: payload.value.notes
     })
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 }
 
 async function handleEndShift() {
   try {
     await endWarehouse(payload.value.id)
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 }
 </script>

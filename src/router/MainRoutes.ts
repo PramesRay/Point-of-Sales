@@ -1,4 +1,5 @@
 import { useUserStore } from '@/stores/authUser';
+import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 
 const MainRoutes = {
   path: '/main',
@@ -12,29 +13,23 @@ const MainRoutes = {
       name: 'LandingPage',
       path: '/',
       component: () => import('@/views/dashboards/default/LandingPage.vue'), //sementara seperti ini, perlu diganti agar yang di render page sesuai role mereka.
-      beforeEnter: async (to, from, next) => {
+      beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
         const userStore = useUserStore();
-        
-        // Periksa apakah data pengguna sudah ada (mencegah akses sebelum fetching selesai)
-        if (!userStore.me) {
-          // Redirect ke login jika pengguna tidak ditemukan
-          await userStore.fetchMe();
-          console.log('Fetching pengguna di router.');
-        }
+        if (!userStore.me) await userStore.fetchMe();
 
         if (!userStore.me) {
           // Redirect ke login jika pengguna tidak ditemukan
-          next('/login');
           console.log('Pengguna tidak ditemukan, arahkan ke halaman login.');
+          return next('/login');
         } else {
           // Berdasarkan role, arahkan pengguna ke halaman yang sesuai
-          if (userStore.hasRole('Admin')) {
+          if (userStore.hasRole(['admin', 'pemilik'])) {
             next({name:'Pemilik'});
-          } else if (userStore.hasRole('Kasir')) {
+          } else if (userStore.hasRole('kasir')) {
             next({name:'Kasir'});
-          } else if (userStore.hasRole('Gudang')) {
+          } else if (userStore.hasRole('gudang')) {
             next({name:'Gudang'});
-          } else if (userStore.hasRole('Dapur')) {
+          } else if (userStore.hasRole('dapur')) {
             next({name:'Dapur'});
           } else {
             next({name:'Starter'});  // Default halaman jika role tidak ditemukan
@@ -46,7 +41,7 @@ const MainRoutes = {
       name: 'Bendahara',
       path: '/dashboard/bendahara',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik', 'Bendahara']
+        requiredRoles: ['admin', 'pemilik', 'bendahara']
       },
       component: () => import('@/views/dashboards/finance/FinanceDashboard.vue')
     },
@@ -54,7 +49,7 @@ const MainRoutes = {
       name: 'Transaksi',
       path: '/dashboard/bendahara/transaksi',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik', 'Bendahara']
+        requiredRoles: ['admin', 'pemilik', 'bendahara']
       },
       component: () => import('@/views/dashboards/finance/components/sub-component/TableTransaction.vue')
     },
@@ -63,7 +58,7 @@ const MainRoutes = {
       name: 'Pemilik',
       path: '/dashboard/pemilik',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik']
+        requiredRoles: ['admin', 'pemilik']
       },
       component: () => import('@/views/dashboards/owner/OwnerDashboard.vue')
     },
@@ -71,7 +66,7 @@ const MainRoutes = {
       name: 'Kasir',
       path: '/halaman/kasir',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik', 'Kasir']
+        requiredRoles: ['admin', 'pemilik', 'kasir']
       },
       component: () => import('@/views/pages/cashier/CashierPage.vue')
     },
@@ -79,7 +74,7 @@ const MainRoutes = {
       name: 'Gudang',
       path: '/halaman/gudang',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik', 'Gudang']
+        requiredRoles: ['admin', 'pemilik', 'gudang']
       },
       component: () => import('@/views/pages/inventory/InventoryPage.vue')
     },
@@ -87,7 +82,7 @@ const MainRoutes = {
       name: 'Dapur',
       path: '/halaman/dapur',
       meta: {
-        requiredRoles: ['Admin', 'Pemilik', 'Dapur']
+        requiredRoles: ['admin', 'pemilik', 'dapur']
       },
       component: () => import('@/views/pages/kitchen/KitchenPage.vue')
     },

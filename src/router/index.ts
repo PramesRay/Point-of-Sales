@@ -17,34 +17,32 @@ export const router = createRouter({
   ]
 });
 
-// interface User {
-//   // Define the properties and their types for the user data here
-//   // For example:
-//   id: number;
-//   name: string;
-// }
-
-// // Assuming you have a type/interface for your authentication store
-// interface AuthStore {
-//   user: User | null;
-//   returnUrl: string | null;
-//   login(username: string, password: string): Promise<void>;
-//   logout(): void;
-// }
-
-router.beforeEach(async (to, from, next) => {
+router.beforeEach((to, from, next) => {
   const publicPages = ['/login', '/register', '/starter'];
   const isPublicPage = publicPages.includes(to.path);
   const auth = useAuthStore();
   const userStore = useUserStore();
+  const alertStore = useAlertStore();
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
 
-  const user = auth.user;
+  const user = auth.user || null;
   const userRole = userStore.me?.role;
+  
+  // Logout jika email belum diverifikasi
+  if (userStore.me && user?.emailVerified == false) {
+    console.log('Email belum diverifikasi');
+    auth.logout()
+    alertStore.showAlert('Email Anda belum diverifikasi', 'error');
+  } else if (userStore.me && userStore.me.role == null) {
+    console.log('Email belum dikonfirmasi oleh pemilik');
+    auth.logout()
+    alertStore.showAlert('Email Anda belum dikonfirmasi oleh pemilik', 'error');
+  } else if (userStore.me && (to.path === '/login' || to.path === '/register')) {
+    return next('/');
+  }
 
-  // Redirect jika sudah login tapi ke halaman login/register
-  if (user && (to.path === '/login' || to.path === '/register')) {
-    return next({ name: 'LandingPage' });
+  if (userStore.me && (to.path === '/login' || to.path === '/register')) {
+    return next('/');
   }
 
   // Redirect jika butuh auth tapi belum login
@@ -52,27 +50,16 @@ router.beforeEach(async (to, from, next) => {
     auth.returnUrl = to.fullPath;
     return next('/login');
   }
-
   
   // Cek role-based access
   const allowedRoles = to.meta.requiredRoles as string[] | undefined;
   console.log('allowedRoles', allowedRoles);
-  if (allowedRoles && userRole && !allowedRoles.includes(userRole)) {
-    useAlertStore().showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
+  if ((allowedRoles && userRole && !allowedRoles.includes(userRole))) {
+    alertStore.showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
     // Arahkan pengguna ke halaman yang sesuai dengan perannya
-    if (userRole === 'Admin') {
-      return next({ name: 'Pemilik' });
-    } else if (userRole === 'Kasir') {
-      return next({ name: 'Kasir' });
-    } else if (userRole === 'Gudang') {
-      return next({ name: 'Gudang' });
-    } else if (userRole === 'Dapur') {
-      return next({ name: 'Dapur' });
-    } else {
-      return next({ name: 'Starter' }); // Default halaman jika role tidak ditemukan
-    }
+    return next('/'); // Default halaman jika role tidak ditemukan
   }
 
   // Lanjutkan
-  next();
+  return next();
 });

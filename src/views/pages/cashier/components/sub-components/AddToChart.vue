@@ -16,7 +16,8 @@ const props = defineProps<{
 }>()
 
 const payload = ref<OrderItem>({
-  id: props.menu.id,
+  id: props.data!.id,
+  item_id: props.menu.id,
   name: props.menu.name,
   quantity: props.data ? props.data.quantity : 1,
   note: props.data ? props.data.note || '' : '',

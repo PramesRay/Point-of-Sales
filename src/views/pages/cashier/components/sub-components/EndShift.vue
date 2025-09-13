@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref } from 'vue'
 import { useDisplay } from 'vuetify'
 
 import { formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
 import { useUserStore } from '@/stores/authUser'
 import { useShift } from '@/composables/useShift'
 
-import type { UpdateShiftCashierPayload } from '@/types/shift'
+import type { EndShiftCashierPayload, UpdateShiftCashierPayload } from '@/types/shift'
 
 const { mdAndUp } = useDisplay()
 const userStore = useUserStore()
@@ -19,9 +19,9 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const payload = ref<UpdateShiftCashierPayload>({
-  ...props.payload,
-  actual_cash: props.payload.actual_cash ?? 0,
+const payload = ref<EndShiftCashierPayload>({
+  id: props.payload.id,
+  actual_cash: 0,
 })
 
 const formRef = ref()
@@ -36,8 +36,8 @@ const rules = {
 
 function clearPayload() {
   payload.value = {
-    ...props.payload,
-    actual_cash: props.payload.actual_cash ?? 0
+    id: props.payload.id,
+    actual_cash: 0,
   }
   cashRaw.value = ''
   formRef.value?.resetValidation()
@@ -57,8 +57,7 @@ async function processSubmit() {
     clearPayload()
     emit('close')
   } catch (error) {
-    props.close()
-    emit('close')
+    console.log(error)
   }
 
 }

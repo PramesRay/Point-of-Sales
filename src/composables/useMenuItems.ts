@@ -15,7 +15,7 @@ export function useMenuItems() {
       loading.value = true;
       error.value = null;
       dataItemSales.value = (await fetchMenuSales(id)).data;
-      categories.value = await fetchCategorMenu()
+      categories.value = await fetchCategorMenu(id)
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -99,11 +99,11 @@ export function useMenuItems() {
     }
   }
 
-  async function loadCategory() {
+  async function loadCategory(id?: string) {
     loading.value = true;
     error.value   = null;
     try {
-      categories.value = await fetchCategorMenu()
+      categories.value = await fetchCategorMenu(id)
     } catch (e: any) {
       error.value = e;
     } finally {

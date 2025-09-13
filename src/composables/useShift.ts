@@ -22,7 +22,7 @@ import {
   type Shift,
   type ShiftWarehouse,
   type UpdateShiftWarehousePayload,
-  type UpdateAndEndShiftCashierPayload
+  type EndShiftCashierPayload
 } from '@/types/shift'
 
 const alert = useAlertStore()
@@ -53,7 +53,7 @@ export function useShift() {
     try {
       loading.value = true
       const branchId = userStore.me?.activity?.branch?.id;
-      if (userStore.hasRole('Kasir')) {
+      if (userStore.hasRole('kasir')) {
         const { data, total } = await fetchShiftCashier({
           page,
           limit,
@@ -61,11 +61,11 @@ export function useShift() {
           sortBy,
           sortDesc,
           filter:{
-            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+            'branch_id': branchId
           }
         });
         shiftCashier.value = { data, total };
-      } else if (userStore.hasRole('Dapur')) {
+      } else if (userStore.hasRole('dapur')) {
         const { data, total } = await fetchShiftKitchen({
           page,
           limit,
@@ -73,11 +73,11 @@ export function useShift() {
           sortBy,
           sortDesc,
           filter:{
-            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+            'branch_id': branchId
           }
         });
         shiftKitchen.value = { data, total };
-      } else if (userStore.hasRole('Gudang')) {
+      } else if (userStore.hasRole('gudang')) {
         const { data, total } = await fetchShiftWarehouse({
           page,
           limit,
@@ -87,7 +87,7 @@ export function useShift() {
           filter
         });
         shiftWarehouse.value = { data, total };
-      } else if (userStore.hasRole(['Admin', 'Pemilik'])) {
+      } else if (userStore.hasRole(['admin', 'pemilik'])) {
         const cashier = await fetchShiftCashier({
           page,
           limit,
@@ -95,7 +95,7 @@ export function useShift() {
           sortBy,
           sortDesc,
           filter:{
-            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+            'branch_id': branchId
           }
         });
         const kitchen = await fetchShiftKitchen({
@@ -105,7 +105,7 @@ export function useShift() {
           sortBy,
           sortDesc,
           filter:{
-            'branch.id': branchId //nanti ubah jadi branch-id kalo di menggunakan dot menambah kompleksitas di BE
+            'branch_id': branchId
           }
         });
         const warehouse = await fetchShiftWarehouse({
@@ -164,10 +164,10 @@ export function useShift() {
     }
   }
 
-  async function startEmployee(branch_id: string) {
+  async function startEmployee() {
     try {
       loading.value = true
-      const res = await startShiftEmployee(branch_id)
+      const res = await startShiftEmployee()
       alert.showAlert('Shift pegawai dimulai.', 'success')
       return res
     } catch (err) {
@@ -178,30 +178,32 @@ export function useShift() {
     }
   }
   
-  async function endEmployee(id: string) {
+  async function endEmployee() {
     try {
       loading.value = true
 
-      const shiftEmployee = await fetchShiftEmployee({
-        filter: { 
-          branch_id: userStore.me?.activity?.branch?.id,
-          end: null
-        },
-        sortBy: 'created_at',
-        sortDesc: true
-      })
+      // const shiftEmployee = await fetchShiftEmployee({
+      //   filter: { 
+      //     branch_id: userStore.me?.activity?.branch?.id,
+      //     end: null
+      //   },
+      //   sortBy: 'created_at',
+      //   sortDesc: true
+      // })
 
-      if (userStore.hasRole('Admin')) {
-        const res = await endShiftEmployee(id)
-        alert.showAlert('Shift pegawai berakhir.', 'success')
-        return res
-      }
+      // if (userStore.hasRole('Admin')) {
+      //   const res = await endShiftEmployee(id)
+      //   alert.showAlert('Shift pegawai berakhir.', 'success')
+      //   return res
+      // }
 
-      if ((shiftKitchen.value.data.length > 0 || shiftCashier.value.data.length > 0) && shiftEmployee.data.length === 1) {
-        return alert.showAlert('Restoran perlu ditutup terlebih dahulu.', 'warning')
-      }
-      const res = await endShiftEmployee(id)
-      alert.showAlert('Shift pegawai berakhir.', 'success')
+      // if ((shiftKitchen.value.data.length > 0 || shiftCashier.value.data.length > 0) && shiftEmployee.data.length === 1) {
+      //   return alert.showAlert('Restoran perlu ditutup terlebih dahulu.', 'warning')
+      // }
+      // const res = await endShiftEmployee(id)
+      // alert.showAlert('Shift pegawai berakhir.', 'success')
+      const res = await endShiftEmployee()
+      alert.showAlert('Shift pegawai berhasil diakhiri.', 'success')
       return res
     } catch (err) {
       alert.showAlert('Gagal mengakhiri shift pegawai.', 'error')
@@ -277,19 +279,21 @@ export function useShift() {
     try {
       loading.value = true
 
-      const shiftWarehouse = await fetchShiftWarehouse()
+      // const shiftWarehouse = await fetchShiftWarehouse()
 
-      if (userStore.hasRole('Admin')) {
-        const res = await endShiftWarehouse(id)
-        alert.showAlert('Shift pegawai berakhir.', 'success')
-        return res
-      }
+      // if (userStore.hasRole('Admin')) {
+      //   const res = await endShiftWarehouse(id)
+      //   alert.showAlert('Shift pegawai berakhir.', 'success')
+      //   return res
+      // }
 
-      if ((shiftEmployee.value?.total === 1) && shiftWarehouse.data.length > 0) {
-        return alert.showAlert('Shift gudang perlu ditutup terlebih dahulu.', 'warning')
-      }
+      // if ((shiftEmployee.value?.total === 1) && shiftWarehouse.data.length > 0) {
+      //   return alert.showAlert('Shift gudang perlu ditutup terlebih dahulu.', 'warning')
+      // }
+      // const res = await endShiftWarehouse(id)
+      // alert.showAlert('Shift gudang berakhir.', 'success')
       const res = await endShiftWarehouse(id)
-      alert.showAlert('Shift gudang berakhir.', 'success')
+      alert.showAlert('Shift gudang berhasil diakhiri.', 'success')
       return res
     } catch (err) {
       alert.showAlert('Gagal mengakhiri shift gudang.', 'error')
@@ -361,7 +365,7 @@ export function useShift() {
     }
   }
 
-  async function endCashier(payload: UpdateAndEndShiftCashierPayload) {
+  async function endCashier(payload: EndShiftCashierPayload) {
     try {
       loading.value = true
       const res = await endShiftCashier(payload)
@@ -438,10 +442,10 @@ export function useShift() {
     }
   }
 
-  async function endKitchen(payload: UpdateShiftKitchenPayload) {
+  async function endKitchen(id: string) {
     try {
       loading.value = true
-      const res = await endShiftKitchen(payload)
+      const res = await endShiftKitchen(id)
       alert.showAlert('Shift dapur berhasil diakhiri.', 'success')
       return res
     } catch (err) {

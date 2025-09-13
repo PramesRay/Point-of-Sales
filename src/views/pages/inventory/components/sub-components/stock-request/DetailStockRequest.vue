@@ -202,7 +202,7 @@ const handleFinish = () => {
               <div class="text-caption text-disabled">Jumlah: {{ item.item.quantity }} {{ item.item.unit }}</div>
             </v-col>
             <v-col cols="5" class="text-right">
-              <div v-if="props.data.status === 'Pending' && userStore.hasRole(['Admin', 'Pemilik', 'Gudang']) && item.approved === null">
+              <div v-if="props.data.status === 'Pending' && userStore.hasRole(['admin', 'pemilik', 'gudang']) && item.approved === null">
                 <v-btn
                   icon  
                   variant="text"
@@ -240,7 +240,7 @@ const handleFinish = () => {
       </div>
 
       <!-- Input catatan tambahan -->
-      <div v-if="props.data.status === 'Pending' && userStore.hasRole(['Admin', 'Pemilik', 'Gudang'])">
+      <div v-if="props.data.status === 'Pending' && userStore.hasRole(['admin', 'pemilik', 'gudang'])">
         <div class="text-caption text-medium-emphasis">
           Catatan Gudang: 
         </div>
@@ -268,7 +268,7 @@ const handleFinish = () => {
       </div>
       
       <v-btn 
-        v-if="props.data.status === 'Siap' && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
+        v-if="props.data.status === 'Siap' && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
         class="mt-2"
         block
         color="success" 

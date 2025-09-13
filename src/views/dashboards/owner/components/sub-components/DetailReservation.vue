@@ -34,19 +34,20 @@ const copyToClipboard = (text: string) => {
 }
 
 const handleUpdate = () => {
-  if (userStore.me?.id !== props.data.meta.created_by.id) {
-    alertStore.showAlert('Data Reservasi hanya dapat diubah oleh yang membuat', 'warning')
-  } else if (props.data.time < new Date()) {
-    alertStore.showAlert('Data Reservasi sudah tidak dapat diubah', 'warning')
-  } else {
+  // if (userStore.me?.id !== props.data.meta.created_by.id) {
+  //   alertStore.showAlert('Data Reservasi hanya dapat diubah oleh yang membuat', 'warning')
+  // } else if (props.data.time < new Date()) {
+  //   alertStore.showAlert('Data Reservasi sudah tidak dapat diubah', 'warning')
+  // } else {
     openOverlay({
       component: UpdateReservation,
       props: {
         data: props.data,
+        branches: props.branches,
         refresh: props.refresh
       }
     })
-  }
+  // }
 }
 </script>
 
@@ -67,7 +68,7 @@ const handleUpdate = () => {
       <div class="d-flex align-center">
         <h4 class="text-h4">Detail Reservasi</h4>
         <v-btn 
-          v-if="props.data.status === 'Pending'"
+          v-if="props.data?.status === 'Pending'"
           icon
           variant="plain"
           size="x-small"
@@ -180,12 +181,12 @@ const handleUpdate = () => {
         </v-row>
         
         <!-- Tombol untuk Role Kasir -->
-        <div v-if="(userStore.hasRole(['Admin', 'Pemilik'])) && props.data?.status === 'Pending'">
+        <div v-if="(userStore.hasRole(['admin', 'pemilik'])) && props.data?.status === 'Pending'">
           <v-divider class="my-3"></v-divider>
           <v-row class="d-flex justify-space-between align-center">
             <v-col>
               <v-btn 
-                v-if="userStore.hasRole(['Admin', 'Pemilik'])"
+                v-if="userStore.hasRole(['admin', 'pemilik'])"
                 color="error"
                 block
                 prepend-icon="mdi-close-circle"
@@ -213,7 +214,7 @@ const handleUpdate = () => {
             </v-col>
             <v-col>
               <v-btn
-                v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])"
+                v-if="userStore.hasRole(['admin', 'pemilik'])"
                 color="success"
                 block
                 prepend-icon="mdi-check-circle"

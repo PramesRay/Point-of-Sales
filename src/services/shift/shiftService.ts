@@ -9,7 +9,7 @@ import type {
   Shift,
   ShiftWarehouse,
   UpdateShiftWarehousePayload,
-  UpdateAndEndShiftCashierPayload
+  EndShiftCashierPayload
 } from '@/types/shift'
 
 // Dummy fallback (opsional, bisa kamu isi nanti)
@@ -40,7 +40,7 @@ export async function fetchShiftEmployee({
   filter?: Record<string, any>
 } = {}): Promise<{data: Shift[]; total: number}> {
   try {
-    const url = `/shift/employee`;
+    const url = `/shift/employees`;
     const query = new URLSearchParams();
     
     if (branchId) query.append('branch', branchId)
@@ -153,9 +153,9 @@ export async function fetchShiftEmployee({
   }
 }
 
-export async function startShiftEmployee(branch_id: string): Promise<Shift> {
+export async function startShiftEmployee(): Promise<Shift> {
   try {
-    const res = await api.post<Shift>('/shift/employee', branch_id)
+    const res = await api.post<Shift>('/shift/employee/start')
     return res.data
   } catch (error) {
     console.warn('Start shift employee failed.', error)
@@ -163,9 +163,9 @@ export async function startShiftEmployee(branch_id: string): Promise<Shift> {
   }
 }
 
-export async function endShiftEmployee(id: string): Promise<Shift> {
+export async function endShiftEmployee(): Promise<Shift> {
   try {
-    const res = await api.put<Shift>(`/shift/employee/end/${id}`)
+    const res = await api.put<Shift>(`/shift/employee/end`)
     return res.data
   } catch (error) {
     console.warn('End shift employee failed.', error)
@@ -193,7 +193,7 @@ export async function fetchShiftWarehouse({
   filter?: Record<string, any>
 } = {}): Promise<{data: ShiftWarehouse[]; total: number}> {
   try {
-    const url = `/shift/warehouse`;
+    const url = `/shift/warehouses`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -302,7 +302,7 @@ export async function fetchShiftWarehouse({
 
 export async function startShiftWarehouse(): Promise<ShiftWarehouse> {
   try {
-    const res = await api.post<ShiftWarehouse>('/shift/warehouse')
+    const res = await api.post<ShiftWarehouse>('/shift/warehouse/start')
     return res.data
   } catch (error) {
     console.warn('Start shift warehouse failed.', error)
@@ -322,7 +322,7 @@ export async function updateShiftWarehouse(payload: UpdateShiftWarehousePayload)
 
 export async function endShiftWarehouse(id: string): Promise<ShiftWarehouse> {
   try {
-    const res = await api.put<ShiftWarehouse>(`/shift/warehouse/end/${id}`)
+    const res = await api.put<ShiftWarehouse>(`/shift/warehouse/${id}/end`)
     return res.data
   } catch (error) {
     console.warn('End shift warehouse failed.', error)
@@ -352,7 +352,7 @@ export async function fetchShiftCashier({
   filter?: Record<string, any>
 } = {}): Promise<{data: ShiftCashier[]; total: number}> {
   try {
-    const url = `/shift/cashier`;
+    const url = `/shift/cashiers`;
     const query = new URLSearchParams();
     
     if (branchId) query.append('branch', branchId)
@@ -466,7 +466,7 @@ export async function fetchShiftCashier({
 
 export async function startShiftCashier(payload: StartShiftCashierPayload): Promise<ShiftCashier> {
   try {
-    const res = await api.post<ShiftCashier>('/shift/cashier', payload)
+    const res = await api.post<ShiftCashier>(`/shift/cashier/${payload.branch_id}/start`, payload)
     return res.data
   } catch (error) {
     console.warn('Start shift kasir failed, fallback dummy.', error)
@@ -484,9 +484,9 @@ export async function updateShiftCashier(payload: UpdateShiftCashierPayload): Pr
   }
 }
 
-export async function endShiftCashier(payload: UpdateAndEndShiftCashierPayload): Promise<ShiftCashier> {
+export async function endShiftCashier(payload: EndShiftCashierPayload): Promise<ShiftCashier> {
   try {
-    const res = await api.put<ShiftCashier>(`/shift/cashier/end/${payload.id}`, payload)
+    const res = await api.put<ShiftCashier>(`/shift/cashier/${payload.id}/end`, payload)
     return res.data
   } catch (error) {
     console.warn('Gagal mengakhiri shift kasir', error)
@@ -516,7 +516,7 @@ export async function fetchShiftKitchen({
   filter?: Record<string, any>
 } = {}): Promise<{data: ShiftKitchen[]; total: number}> {
   try {
-    const url = `/shift/kitchen`;
+    const url = `/shift/kitchens`;
     const query = new URLSearchParams();
     
     if (branchId) query.append('branch', branchId)
@@ -631,7 +631,7 @@ export async function fetchShiftKitchen({
 
 export async function startShiftKitchen(payload: StartShiftKitchenPayload): Promise<ShiftKitchen> {
   try {
-    const res = await api.post<ShiftKitchen>('/shift/kitchen', payload)
+    const res = await api.post<ShiftKitchen>(`/shift/kitchen/${payload.branch_id}/start`, payload)
     return res.data
   } catch (error) {
     console.warn('Start shift dapur failed, fallback dummy.', error)
@@ -649,9 +649,9 @@ export async function updateShiftKitchen(payload: UpdateShiftKitchenPayload): Pr
   }
 }
 
-export async function endShiftKitchen(payload: UpdateShiftKitchenPayload): Promise<ShiftKitchen> {
+export async function endShiftKitchen(id: string): Promise<ShiftKitchen> {
   try {
-    const res = await api.put<ShiftKitchen>(`/shift/kitchen/end/${payload.id}`, payload)
+    const res = await api.put<ShiftKitchen>(`/shift/kitchen/${id}/end`)
     return res.data
   } catch (error) {
     console.warn('End shift dapur failed, fallback dummy.', error)

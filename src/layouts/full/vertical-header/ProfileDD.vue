@@ -22,11 +22,21 @@ import Start from '@/views/pages/shift/Start.vue';
 import { useShift } from '@/composables/useShift';
 import type { ShiftCashier, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
 import UpdateProfile from '@/views/pages/user/UpdateProfile.vue';
+import { useBranchList } from '@/composables/useBranchList';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
-const { endEmployee, loadShiftbyRole, startWarehouse, shiftCashier, shiftKitchen, shiftEmployee, shiftWarehouse, loading } = useShift()
+const { 
+  startEmployee, 
+  endEmployee, 
+  loadShiftbyRole, 
+  startWarehouse, 
+  shiftCashier, 
+  shiftKitchen, 
+  shiftWarehouse, 
+  loading 
+} = useShift()
 
 const isChanged = ref(false)
 const hover = ref(false)
@@ -51,7 +61,6 @@ onMounted(() => {
     userStore.fetchMe();
     userStore.fetchShift();
   }
-
   if (userStore.me?.activity?.is_active) {
     loadShiftbyRole()
   }
@@ -93,10 +102,16 @@ onMounted(() => {
             @touchstart="hover = !hover"
             @click="
               openOverlay({
-                component: Start,
+                component: Blank,
                 props: {
-                  confirmBeforeClose: true,
-                  isChanged
+                  confirmToContinue: true,
+                  confirmMessage: 'Apakah anda yakin ingin memulai aktifitas?',
+                  loading,
+                  onConfirm: async () => {
+                    await startEmployee().then(() => {
+                      loadShiftbyRole()
+                    })
+                  }
                 }
               })
             "
@@ -114,19 +129,19 @@ onMounted(() => {
           <div>
             <span class="text-subtitle-2 text-disabled">
               <v-icon size="x-small">mdi-clock-outline</v-icon>
-              {{ getTimeDiff(userStore.me?.activity.last_active || new Date(), false) }}
+              {{ getTimeDiff(userStore.me?.activity?.last_active || new Date(), false) }}
             </span>
             <v-divider class="mx-1" vertical/>
             <span class="text-subtitle-2 text-disabled">
               <v-icon size="x-small">mdi-store</v-icon>
-              {{ userStore.hasRole('Gudang') ? 'Gudang' : userStore.me?.activity.branch?.name }}
+              {{ userStore.hasRole('gudang') ? 'Gudang' : userStore.me?.activity?.branch?.name }}
             </span>
           </div>
         </h4>
         <h6 class="text-subtitle-2 text-disabled mr-11 pr-11 mt-2">
           Dimulai pada:
         </h6>
-        <h5 class="text-h5 font-weight-medium text-medium-emphasis mb-2">{{ formatDate(userStore.me?.activity.last_active || new Date()).replace(' pukul', ': ') }}</h5>
+        <h5 class="text-h5 font-weight-medium text-medium-emphasis mb-2">{{ formatDate(userStore.me?.activity?.last_active || new Date()).replace(' pukul', ': ') }}</h5>
         <div class="mr-2">
           <v-btn
             :ripple="false"
@@ -144,8 +159,10 @@ onMounted(() => {
                   confirmToContinue: true,
                   confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
                   loading,
-                  onConfirm: () => {
-                    endEmployee(userStore.me?.activity?.branch?.id || '')
+                  onConfirm: async () => {
+                    await endEmployee().then(() => {
+                      loadShiftbyRole()
+                    })
                   }
                 }
               })
@@ -158,9 +175,8 @@ onMounted(() => {
           </span>
         </div>
         <v-progress-circular v-if="loading" indeterminate color="warning" height="1"/>
-        <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur', 'Kasir', 'Gudang']) && !loading">
-          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])">
-            <!-- Mekanisme kondisional rendering perlu ditingkatkan? -->
+        <div v-if="userStore.hasRole(['admin', 'pemilik', 'dapur', 'kasir', 'gudang']) && !loading">
+          <div v-if="userStore.hasRole(['admin', 'pemilik', 'kasir'])">
             <v-btn 
               v-if="shiftCashier?.total == 0"
               elevation="1"
@@ -169,7 +185,8 @@ onMounted(() => {
                 component: StartShiftCashier,
                 props: {
                   confirmBeforeClose: true,
-                  isChanged: isChanged
+                  isChanged: isChanged,
+                  refresh: () => loadShiftbyRole()
                 }
               })"
             > 
@@ -186,7 +203,8 @@ onMounted(() => {
                 props: {
                   data: shiftCashier.data[0] as ShiftCashier,
                   confirmBeforeClose: true,
-                  isChanged: isChanged
+                  isChanged: isChanged,
+                  refresh: () => loadShiftbyRole()
                 }
               })"
             > 
@@ -194,7 +212,7 @@ onMounted(() => {
             </v-btn>
           </div>
 
-          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])">
+          <div v-if="userStore.hasRole(['admin', 'pemilik', 'dapur'])">
             <v-btn 
               v-if="shiftKitchen?.total == 0"
               elevation="1"
@@ -203,7 +221,8 @@ onMounted(() => {
                 component: StartShiftKitchen,
                 props: {
                   confirmBeforeClose: true,
-                  isChanged: isChanged
+                  isChanged: isChanged,
+                  refresh: () => loadShiftbyRole()
                 }
               })"
             > 
@@ -220,7 +239,8 @@ onMounted(() => {
                 props: {
                   data: shiftKitchen.data[0] as ShiftKitchen,
                   confirmBeforeClose: true,
-                  isChanged: isChanged
+                  isChanged: isChanged,
+                  refresh: () => loadShiftbyRole()
                 }
               })
               "
@@ -229,7 +249,7 @@ onMounted(() => {
             </v-btn>
           </div>
           <!-- shift warehouse -->
-          <div v-if="userStore.hasRole(['Admin', 'Pemilik', 'Gudang'])">
+          <div v-if="userStore.hasRole(['admin', 'pemilik', 'gudang'])">
             <v-btn 
               v-if="shiftWarehouse?.total == 0"
               elevation="1"
@@ -240,8 +260,10 @@ onMounted(() => {
                   confirmToContinue: true,
                   confirmMessage: 'Apakah anda yakin ingin memulai shift gudang?',
                   loading,
-                  onConfirm: () => {
-                    startWarehouse()
+                  onConfirm: async () => {
+                    await startWarehouse().then(() => {
+                      loadShiftbyRole()
+                    })
                   }
                 }
               })"
@@ -259,7 +281,8 @@ onMounted(() => {
                 props: {
                   data: shiftWarehouse.data[0] as ShiftWarehouse,
                   confirmBeforeClose: true,
-                  isChanged: isChanged
+                  isChanged: isChanged,
+                  refresh: () => loadShiftbyRole()
                 }
               })
               "
@@ -300,7 +323,7 @@ onMounted(() => {
                 data: userStore.me,
                 confirmBeforeClose: true,
                 isChanged,
-                refresh: userStore.fetchMe
+                refresh: userStore.fetchMe()
               },
             })
           "

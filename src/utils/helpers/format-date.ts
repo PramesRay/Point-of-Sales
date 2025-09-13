@@ -1,6 +1,9 @@
+import { normalizeToDate, type AnyDateLike } from "./time";
+
 // src/helpers/dateHelper.ts
-export function formatDate(date: Date): string {
-  return date.toLocaleDateString('id-ID', {
+export function formatDate(dateInput: AnyDateLike): string {
+  const date = normalizeToDate(dateInput);
+  return date!.toLocaleDateString('id-ID', {
     timeZone: 'Asia/Jakarta',
     weekday: 'long',
     year: 'numeric',

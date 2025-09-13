@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import { useUser } from '@/composables/useUser';
+import { useUserStore } from '@/stores/authUser';
 import { computed, onMounted } from 'vue';
-import { hasRole } from '@/utils/helpers/user';
 import { defineAsyncComponent } from 'vue';
 
 // Ambil data pengguna
-const { data: me, loading: lu, fetchMe } = useUser();
+const userStore = useUserStore();
 
 // Ambil role pengguna dari data `me`
 onMounted(() => {
-  fetchMe();
+  userStore.fetchMe();
 });
 
 // Berdasarkan role, tentukan halaman yang akan ditampilkan
 const selectedComponent = computed(() => {
   // Ganti dengan logika peran pengguna yang sesuai
-  if (me.value && hasRole(me.value, ['admin'])) {
+  if (userStore.me && userStore.hasRole(['admin', 'pemilik'])) {
     return defineAsyncComponent(() => import('@/views/dashboards/owner/OwnerDashboard.vue'));
-  } else if (me.value && hasRole(me.value, ['cashier'])) {
+  } else if (userStore.me && userStore.hasRole('kasir')) {
     return defineAsyncComponent(() => import('@/views/pages/cashier/CashierPage.vue'));
-  } else if (me.value && hasRole(me.value, ['inventory'])) {
+  } else if (userStore.me && userStore.hasRole('gudang')) {
     return defineAsyncComponent(() => import('@/views/pages/inventory/InventoryPage.vue'));
-  } else if (me.value && hasRole(me.value, ['kitchen'])) {
+  } else if (userStore.me && userStore.hasRole('dapur')) {
     return defineAsyncComponent(() => import('@/views/pages/kitchen/KitchenPage.vue'));
   } else {
     return defineAsyncComponent(() => import('@/views/StarterPage.vue')); // Default pag)e
@@ -30,6 +29,5 @@ const selectedComponent = computed(() => {
 </script>
 
 <template>
-  <v-progress-circular v-if="lu" indeterminate color="primary" class="mx-auto my-auto"></v-progress-circular>
-  <!-- <component v-else :is="selectedComponent" /> -->
+  <component :is="selectedComponent" />
 </template>

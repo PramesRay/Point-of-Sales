@@ -2,7 +2,7 @@ import type { IdName } from "./common";
 import type { Meta } from "./meta";
 import type { Shift, ShiftCashier, ShiftKitchen, ShiftWarehouse } from "./shift";
 
-export type UserRole = 'Admin' | 'Pemilik' | 'Bendahara' | 'Gudang' | 'Kasir' | 'Dapur' ;
+export type UserRole = 'admin' | 'pemilik' | 'bendahara' | 'gudang' | 'dapur' | 'kasir';
 
 export type AccessKey =
 // owner
@@ -76,10 +76,11 @@ export type AccessKey =
 
 export interface Employee {
   id: string;
+  uid: string;
   name: string;
   email: string;
   role: UserRole | null;
-  assigned_branch: IdName[];
+  assigned_branch: IdName;
   activity: {
     shift_emp: Shift | null;
     shift_op: ShiftCashier | ShiftKitchen | ShiftWarehouse | null;
@@ -90,12 +91,12 @@ export interface Employee {
   meta: Meta
 }
 
-export type UpdateEmployeePayloadByOwner = Pick<Employee, 'id' | 'role'> & {
-  assigned_branch_id: string[];
+export type UpdateEmployeePayloadByOwner = Pick<Employee, 'uid' | 'role'> & {
+  assigned_branch_id: string;
 }
 
-export type UpdateEmployeeByEmployee = Pick<Employee, 'id' | 'name' | 'email'>
+export type UpdateEmployeeByEmployee = Pick<Employee, 'uid' | 'name' | 'email'>
 
 export type CreateEmployeePayload = Omit<Employee, 'assigned_branch' | 'activity' | 'meta'> & {
-  assigned_branch_id: string[];
+  assigned_branch_id: string;
 }

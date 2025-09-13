@@ -13,10 +13,10 @@ export async function fetchMenuSales(
   sortDesc: boolean = false
 ): Promise<{ data: MenuSale[]; total: number }> {
   try {
-    const url = '/kitchen/menu-sales'
+    const url = `/menus`
     const query = new URLSearchParams()
 
-    if (branchId) query.append('branch', branchId)
+    if (branchId) query.append('branch_id', branchId)
     if (search) query.append('search', search)
     if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
     if (typeof page === 'number') query.append('page', page.toString())
@@ -84,7 +84,7 @@ export async function fetchMenuSales(
 
 export async function createMenu(menu: CreateMenuPayload): Promise<Menu> {
   try {
-    const res = await api.post<Menu>('/kitchen/menus', menu);
+    const res = await api.post<Menu>('/menu', menu);
     return res.data;
   } catch (error) {
     console.error('Failed to create menu:', error);
@@ -94,7 +94,7 @@ export async function createMenu(menu: CreateMenuPayload): Promise<Menu> {
 
 export async function updateMenu(menu: UpdateMenuPayload): Promise<Menu> {
   try {
-    const res = await api.put<Menu>(`/kitchen/menus/${menu.id}`, menu);
+    const res = await api.put<Menu>(`/menu/${menu.id}`, menu);
     return res.data;
   } catch (error) {
     console.error('Failed to update menu:', error);
@@ -104,7 +104,7 @@ export async function updateMenu(menu: UpdateMenuPayload): Promise<Menu> {
 
 export async function qtyMenuUpdate(payload: RestockMenuSalesPayload): Promise<Menu> {
   try {
-    const res = await api.patch<Menu>(`/kitchen/menus/manage-qty`, payload);
+    const res = await api.patch<Menu>(`/menu/manage-qty`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to restock menu:', error);
@@ -114,17 +114,21 @@ export async function qtyMenuUpdate(payload: RestockMenuSalesPayload): Promise<M
 
 export async function deleteMenu(id: string): Promise<void> {
   try {
-    await api.delete(`/kitchen/menus/${id}`);
+    await api.delete(`/menu/${id}`);
   } catch (error) {
     console.error('Failed to delete menu:', error);
     throw error;
   }
 }
 
-export async function fetchCategorMenu(): Promise<Category[]> {
+export async function fetchCategorMenu(id?: string): Promise<Category[]> {
   try {
-    const res = await api.get<Category[]>(`/kitchen/menu/category`);
-    return res.data;
+    const query = new URLSearchParams();
+
+    if (id) query.append('branch_id', id);
+    query.append('type', 'menu');
+    const res = await api.get(`/categories?${query.toString()}`);
+    return res.data.data;
   } catch (error) {
     console.warn(`Fetch Menu Item's Category failed, using dummy.`, error);
     return dummyMenuCategories; // Gunakan data dummy jika gagal
@@ -134,7 +138,7 @@ export async function fetchCategorMenu(): Promise<Category[]> {
 // create category
 export async function createCategoryMenu(payload: CreateCategoryPayload): Promise<Category> {
   try {
-    const res = await api.post<Category>(`/kitchen/menu/category`, payload);
+    const res = await api.post<Category>(`/category?type=menu`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to create category:', error);
@@ -145,7 +149,7 @@ export async function createCategoryMenu(payload: CreateCategoryPayload): Promis
 // update category
 export async function updateCategoryMenu(payload: UpdateCategoryPayload): Promise<Category> {
   try {
-    const res = await api.put<Category>(`/kitchen/menu/category`, payload);
+    const res = await api.put<Category>(`/category/${payload.id}`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to update category:', error);
@@ -156,7 +160,7 @@ export async function updateCategoryMenu(payload: UpdateCategoryPayload): Promis
 // delete category
 export async function deleteCategoryMenu(id: string): Promise<void> {
   try {
-    await api.delete(`/kitchen/menu/category/${id}`);
+    await api.delete(`/category/${id}`);
   } catch (error) {
     console.error('Failed to delete category:', error);
     throw error;

@@ -23,12 +23,7 @@ import type { Branch } from '@/types/branch';
 import DetailShiftKitchen from './sub-components/shift/DetailShiftKitchen.vue';
 import DetailShiftWarehouse from './sub-components/shift/DetailShiftWarehouse.vue';
 
-const { load, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 const { openOverlay } = useOverlayManager()
-
-onMounted(() => {
-  load()
-})
 
 const props = defineProps<{
   shift_employee: Shift[];
@@ -54,12 +49,12 @@ const selectedEmployee = computed<Employee[]>(() => {
   if (!props.branch || props.branch.id === 'all') {
     console.log('props.data_employee', props.data_employee)
     return props.data_employee.filter((tx) => 
-      (selectedTab.value === 3 ? tx.role === 'Gudang' : ['Kasir', 'Dapur', 'Gudang'].includes(tx.role!))
+      (selectedTab.value === 3 ? tx.role === 'gudang' : ['kasir', 'dapur', 'gudang'].includes(tx.role!))
     );
   }
   return props.data_employee.filter((tx) => 
-    (selectedTab.value === 3 ? tx.role === 'Gudang' : ['Kasir', 'Dapur', 'Gudang'].includes(tx.role!)) && 
-    tx.assigned_branch?.some((branch) => branch.id === props.branch?.id)
+    (selectedTab.value === 3 ? tx.role === 'gudang' : ['kasir', 'dapur', 'gudang'].includes(tx.role!)) && 
+    tx.assigned_branch.id === props.branch?.id
   );
 })
 

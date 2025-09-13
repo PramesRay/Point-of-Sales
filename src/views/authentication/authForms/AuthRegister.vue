@@ -55,20 +55,14 @@ async function handleSubmit() {
       const start = Number(localStorage.getItem('countdown')!);
       const elapsed = Math.floor((Date.now() - start) / 1000);
       if (elapsed > 60) {
-        const result = await authStore.register(registerPayload.value);
-        if (result.user.emailVerified){
-          router.push('/')
-        }
+        await authStore.register(registerPayload.value);
         localStorage.setItem('email', registerPayload.value.email);
       } else {
         alert.showAlert(`Proses Verifikasi atau Reset Password sedang berlangsung, tunggu beberapa saat lagi`, 'info');
       }
       router.push('/verify-email?mode=verify');
     } else {
-      const result = await authStore.register(registerPayload.value);
-      if (result.user.emailVerified){
-        router.push('/')
-      }
+      await authStore.register(registerPayload.value);
       localStorage.setItem('email', registerPayload.value.email);
       router.push('/verify-email?mode=verify');
     }

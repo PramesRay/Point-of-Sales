@@ -81,7 +81,7 @@ function openDetail(request: StockRequest) {
             </v-col>
             <v-col cols="4" class="mt-auto text-right">
               <v-btn
-                v-if="!loading && userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
+                v-if="!loading && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
                 color="primary"
                 @click="openAddRequest"
               >

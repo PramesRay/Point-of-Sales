@@ -35,7 +35,7 @@ onMounted(() => {
     return
   }
 
-  if (userStore.hasRole(['Admin', 'Pemilik'])) {
+  if (userStore.hasRole(['admin', 'pemilik'])) {
     loadCurrentOrder({
       filter: {
         'meta.created_at': new Date().toISOString().split('T')[0]
@@ -60,7 +60,7 @@ const branchOptions = computed(() => [
   ...branches.value
 ]);
 const selectedBranch = ref<string | undefined>( 
-  userStore.hasRole(['Admin', 'Pemilik']) 
+  userStore.hasRole(['admin', 'pemilik']) 
   ? undefined
   : userStore.me?.activity?.branch?.id 
     ? userStore.me.activity.branch.id 

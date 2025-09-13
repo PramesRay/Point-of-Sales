@@ -65,7 +65,7 @@ onMounted(() => {
 })
 
 const payload = ref<UpdateEmployeeByEmployee>({
-  id: authStore.user?.uid!,
+  uid: authStore.user?.uid!,
   name: authStore.user?.displayName!,
   email: authStore.user?.email!
 })
@@ -117,7 +117,7 @@ watchEffect(() => {
 
 function clearPayload() {
   payload.value = {
-    id: authStore.user?.uid!,
+    uid: authStore.user?.uid!,
     name: authStore.user?.displayName!,
     email: authStore.user?.email!
   }
@@ -156,7 +156,6 @@ async function processSubmit() {
     if (isChangePassword.value) {
       await authStore.changePassword(oldPassword.value, newPassword.value)
     }
-    await update(payload.value)
     props.refresh()
     handleClose()
   } catch (error: any) {
@@ -242,7 +241,7 @@ async function handleVerification() {
     </v-btn>
     <div>
       <h4 class="text-h4 mt-1"> Detail Akun </h4>
-      <i class="text-subtitle-2 text-disabled">ID: {{ payload.id }}</i>
+      <i class="text-subtitle-2 text-disabled">ID: {{ payload.uid }}</i>
     </div>
 
     <v-divider class="my-3" />
@@ -273,8 +272,8 @@ async function handleVerification() {
                   class="mb-2"
                 ></v-progress-circular>
                 <ol v-else class="text-subtitle-1 text-disabled">
-                  <li v-for="branch in props.data.assigned_branch" class="mb-1">
-                    {{ branchData.find(b => b.id === branch.id)?.name }}
+                  <li v-for="id in props.data.assigned_branch" class="mb-1">
+                    {{ branchData.find(b => b.id === id)?.name }}
                   </li>
                 </ol>
               </div>

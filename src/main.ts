@@ -19,7 +19,7 @@ import { fakeBackend } from '@/utils/helpers/fake-backend';
 import print from 'vue3-print-nb';
 
 const app = createApp(App);
-fakeBackend();
+// fakeBackend();
 app.use(PerfectScrollbarPlugin);
 app.use(createPinia());
 app.use(VueTablerIcons);

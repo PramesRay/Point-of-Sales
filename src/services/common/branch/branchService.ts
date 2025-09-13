@@ -11,7 +11,7 @@ export async function fetchBranches(
   filter?: Record<string, any>
 ): Promise<{data: Branch[]; total: number}> {
   try {
-    const url = `/branches`;
+    const url = `/branch`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -120,7 +120,7 @@ export async function fetchBranches(
 
 export async function createBranch(payload: CreateBranchPayload): Promise<Branch> {
   try {
-    const res = await api.post<Branch>('/branches', payload);
+    const res = await api.post('/branch', payload);
     return res.data;
   } catch (error) {
     console.error('Failed to create branch:', error);
@@ -130,7 +130,7 @@ export async function createBranch(payload: CreateBranchPayload): Promise<Branch
 
 export async function updateBranch(payload: UpdateBranchPayload): Promise<Branch> {
   try {
-    const res = await api.put<Branch>(`/branches/${payload.id}`, payload);
+    const res = await api.put(`/branch/${payload.id}`, payload);
     return res.data;
   } catch (error) {
     console.error('Failed to update branch:', error);
@@ -140,7 +140,7 @@ export async function updateBranch(payload: UpdateBranchPayload): Promise<Branch
 
 export async function deleteBranch(id: string): Promise<void> {
   try {
-    await api.delete(`/branches/${id}`);
+    await api.delete(`/branch/${id}`);
   } catch (error) {
     console.error('Failed to delete branch:', error);
     throw error;

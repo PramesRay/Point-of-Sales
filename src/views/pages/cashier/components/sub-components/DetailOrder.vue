@@ -350,7 +350,7 @@ const addRefundItem = (item: OrderItem) => {
         </perfect-scrollbar>
         
         <!-- Tombol proses -->
-        <!-- <v-row v-if="(userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])) && props.data_order?.payment_status === 'Pending'">
+        <!-- <v-row v-if="(userStore.hasRole(['admin', 'pemilik', 'dapur'])) && props.data_order?.payment_status === 'Pending'">
           <v-col cols="12" v-if="props.data_order.status === 'Pending'">
             <v-btn 
               color="warning" 
@@ -405,13 +405,13 @@ const addRefundItem = (item: OrderItem) => {
           </v-col>
         </v-row> -->
         
-        <!-- Tombol untuk Role Kasir -->
-        <div v-if="(userStore.hasRole(['Admin', 'Pemilik', 'Kasir', 'Dapur'])) && props.data_order?.payment_status === 'Pending'">
+        <!-- Tombol untuk Role kasir -->
+        <div v-if="(userStore.hasRole(['admin', 'pemilik', 'kasir', 'dapur'])) && props.data_order?.payment_status === 'Pending'">
           <v-divider class="my-3"></v-divider>
           <v-row class="d-flex justify-space-between align-center">
             <v-col cols="auto">
               <v-btn 
-                v-if="userStore.hasRole(['Admin', 'Pemilik', 'Dapur'])"
+                v-if="userStore.hasRole(['admin', 'pemilik', 'dapur'])"
                 color="error"
                 block
                 variant="plain"
@@ -441,7 +441,7 @@ const addRefundItem = (item: OrderItem) => {
             </v-col>
             <v-col cols="auto">
               <v-btn
-                v-if="userStore.hasRole(['Admin', 'Pemilik', 'Kasir'])"
+                v-if="userStore.hasRole(['admin', 'pemilik', 'kasir'])"
                 color="success"
                 block
                 :disabled="loading"

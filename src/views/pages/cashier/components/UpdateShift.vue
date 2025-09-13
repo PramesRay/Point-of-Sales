@@ -22,6 +22,7 @@ const props = defineProps<{
   confirmBeforeClose: boolean
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
+  refresh: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -31,9 +32,11 @@ const currentData = ref(cloneDeep(props.data))
 const payload = ref<UpdateShiftCashierPayload>({
   id: currentData.value.id,
   cash: currentData.value.initial_cash,
-  cash_in: [...currentData.value.cash_in],
-  cash_out: [...currentData.value.cash_out],
-  notes: null,
+  cash_in: [],
+  delete_cash_in: [],
+  cash_out: [],
+  delete_cash_out: [],
+  notes: currentData.value.notes,
 })
 
 const formRef = ref()
@@ -49,28 +52,20 @@ const rules = {
 
 const isChanged = computed(() => {
   return (
-    payload.value.cash_out.length != currentData.value.cash_out.length ||
-    payload.value.cash_in.length != currentData.value.cash_in.length ||
-    (payload.value.notes !== null && currentData.value.notes !== null && payload.value.notes as string !== currentData.value.notes as string)
+    payload.value.cash_out.length !== 0 ||
+    payload.value.delete_cash_out.length !== 0 ||
+    payload.value.cash_in.length !== 0 ||
+    payload.value.delete_cash_in.length !== 0 ||
+    (currentData.value.notes === null ? !(payload.value.notes === null || payload.value.notes === '') : payload.value.notes !== currentData.value.notes)
   )
 })
 
 const amountCashIn = computed(() => {
-  return payload.value.cash_in.reduce((acc, curr) => {
-    if (curr && typeof curr.amount === 'number') {
-      return acc + curr.amount;
-    }
-    return acc;
-  }, 0);
+  return currentData.value.cash_in.reduce((acc, curr) => acc + curr.amount, 0) + payload.value.cash_in.reduce((acc, curr) => acc + curr.amount, 0);
 });
 
 const amountCashOut = computed(() => {
-  return payload.value.cash_out.reduce((acc, curr) => {
-    if (curr && typeof curr.unit_price === 'number' && typeof curr.quantity === 'number') {
-      return acc + curr.unit_price * curr.quantity;
-    }
-    return acc;
-  }, 0);
+  return currentData.value.cash_out.reduce((acc, curr) => acc + curr.unit_price * curr.quantity, 0) + payload.value.cash_out.reduce((acc, curr) =>  acc + curr.unit_price * curr.quantity, 0);
 });
 
 const amountCash = computed(() => {
@@ -102,8 +97,10 @@ function clearPayload() {
   payload.value = {
     id: currentData.value.id,
     cash: currentData.value.initial_cash ?? 0,
-    cash_in: [...currentData.value.cash_in],
-    cash_out: [...currentData.value.cash_out],
+    cash_in: [],
+    delete_cash_in: [],
+    cash_out: [],
+    delete_cash_out: [],
     notes: null,
   }
   cashRaw.value = ''
@@ -123,15 +120,19 @@ async function processSubmit() {
       id: payload.value.id,
       cash: payload.value.cash,
       cash_in: payload.value.cash_in,
+      delete_cash_in: payload.value.delete_cash_in,
       cash_out: payload.value.cash_out,
+      delete_cash_out: payload.value.delete_cash_out,
       notes: payload.value.notes,
     })
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -243,7 +244,7 @@ function openInputOverlay(isCashIn: boolean) {
                     </div>
                     <template v-slot:actions>
                       <div class="text-caption text-disabled">
-                        {{ formatRupiah(payload.cash) }}
+                        {{ formatRupiah(currentData.initial_cash) }}
                       </div>
                     </template>
                   </v-expansion-panel-title>
@@ -271,7 +272,7 @@ function openInputOverlay(isCashIn: boolean) {
                       </v-btn>
                     </div>
                       <v-list>
-                        <v-list-item v-for="(item, index) in payload.cash_in" :key="index">
+                        <v-list-item v-for="(item, index) in currentData.cash_in" :key="index">
                           <v-divider v-if="index > 0"></v-divider>
                           <v-row no-gutters class="py-2 align-center">
                             <v-col cols="7">
@@ -284,7 +285,8 @@ function openInputOverlay(isCashIn: boolean) {
                                   variant="text"
                                   class="mb-1"
                                   @click="
-                                    payload.cash_in.splice(index, 1)
+                                    payload.delete_cash_in.push(item.id),
+                                    currentData.cash_in.splice(index, 1)
                                   "
                                 ></v-btn>
                                 {{ item.subject }}
@@ -297,7 +299,7 @@ function openInputOverlay(isCashIn: boolean) {
                             </v-col>
                           </v-row>
                         </v-list-item>
-                        <div v-if="!payload.cash_in.length" class="text-center text-subtitle-2 text-disabled my-4">Belum ada Kas Masuk</div>
+                        <div v-if="!currentData.cash_in.length" class="text-center text-subtitle-2 text-disabled my-4">Belum ada Kas Masuk</div>
                       </v-list>
                   </v-expansion-panel-text>
                 </v-expansion-panel>
@@ -329,7 +331,7 @@ function openInputOverlay(isCashIn: boolean) {
                       </v-btn>
                     </div>
                       <v-list>
-                        <v-list-item v-for="(item, index) in payload.cash_out" :key="index">
+                        <v-list-item v-for="(item, index) in currentData.cash_out" :key="index">
                           <v-row no-gutters class="py-2 align-center">
                             <v-col cols="7">
                               <div class="text-subtitle-2 font-weight-bold text-medium-emphasis">
@@ -341,8 +343,9 @@ function openInputOverlay(isCashIn: boolean) {
                                   variant="text"
                                   class="mb-1"
                                   @click="
-                                    payload.cash_out.splice(index, 1),
-                                    amountCashOut -= item.quantity * item.unit_price
+                                    payload.delete_cash_out.push(item.id),
+                                    currentData.cash_out.splice(index, 1)
+                                    // amountCashOut -= item.quantity * item.unit_price
                                   "
                                 ></v-btn>
                                 {{ item.subject }}
@@ -443,7 +446,7 @@ function openInputOverlay(isCashIn: boolean) {
           <v-col cols="12">
             <v-textarea
               v-model="payload.notes"
-              :rules="rules.notes"
+              
               prepend-icon="mdi-text-long"
               label="Catatan"
               rows="3"
@@ -462,6 +465,7 @@ function openInputOverlay(isCashIn: boolean) {
           <v-col class="d-flex justify-space-between align-center">
             <v-btn
               :loading="loading"
+              :disabled="loading || isChanged"
               prepend-icon="mdi-door-closed"
               color="error"
               variant="text"
@@ -471,6 +475,7 @@ function openInputOverlay(isCashIn: boolean) {
                 props: {
                   payload: payload,
                   close: () => {
+                    props.refresh()
                     emit('close')
                   }
                 }

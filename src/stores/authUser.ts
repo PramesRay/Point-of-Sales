@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
 import { dummyUser } from '@/services/common/user/dummyUser';
-import type { AccessKey, Employee, UserRole } from '@/types/employee';
-import type { Shift, ShiftCashier, ShiftKitchen } from '@/types/shift';
-import { dummyShiftCashier } from '@/services/shift/dummyShiftCashier';
-import { dummyShiftKitchen } from '@/services/shift/dummyShiftKitchen';
+import type { Employee, UserRole } from '@/types/employee';
+import type { Shift } from '@/types/shift';
 import { dummyShiftEmployee } from '@/services/shift/dummyShiftEmployee';
 import { auth } from '@/plugins/firebase';
+import { router } from '@/router';
 
 export const useUserStore = defineStore({
   id: 'user',
@@ -21,14 +20,17 @@ export const useUserStore = defineStore({
       try {
         const user = auth.currentUser;
         if (!user) throw new Error('Pengguna belum login');
-        
-        await user.getIdToken(true);
 
-        // const response = await api.get('/employee/me');
-        // this.me = response.data;
-        this.me = dummyUser // hapus nanti
+        const response = await api.get('/employee/me');
+        // if (response.data.data.role == null) {
+        //   await signOut(auth); // Logout paksa
+        //   throw new Error('Email belum dikonfirmasi oleh pemilik');
+        // }
+        this.me = response.data.data;
       } catch (error: any) {
+        // this.me = dummyUser
         console.error("Failed to fetch user data:", error);
+        router.push('/login');
       } finally {
         this.loading = false;
       }
@@ -47,6 +49,11 @@ export const useUserStore = defineStore({
       } finally {
         this.loading = false;
       }
+    },
+
+    setNull() {
+      this.me = null;
+      this.shift = null;
     },
 
     hasRole(role: UserRole | UserRole[]): boolean {

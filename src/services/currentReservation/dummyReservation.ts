@@ -13,7 +13,7 @@ const dummyReservationData: Reservation[] = [
       created_at: new Date('2025-05-29T14:00:00'),
       created_by: { id: 'khodijah', name: 'Khodijah' },
       updated_at: new Date('2025-05-29T14:00:00'),
-      last_updated_by: { id: 'khodijah', name: 'Khodijah' }
+      last_updated_by: { id: 'emp-000', name: 'Hermanu' }
     }
   },
   {

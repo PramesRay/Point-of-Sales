@@ -10,6 +10,7 @@ import { formatDate } from '@/utils/helpers/format-date'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import DetailReservation from './sub-components/DetailReservation.vue';
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
+import UpdateReservation from './sub-components/UpdateReservation.vue';
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
@@ -38,7 +39,7 @@ const listReservation = computed(() => currentData.value.slice(1))
 
 function openAddNew() {
   openOverlay({
-    component: DetailReservation,
+    component: UpdateReservation,
     props: {
       is_create: true,
       branches: props.branch_option,

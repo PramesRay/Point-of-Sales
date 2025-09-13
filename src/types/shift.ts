@@ -21,10 +21,12 @@ export interface Shift {
 export interface ShiftCashier extends Shift {
   initial_cash: number;
   cash_in: {
+    id: string;
     subject: string;
     amount: number;
   }[]
   cash_out: {
+    id: string;
     subject: string;
     quantity: number;
     unit: string;
@@ -86,19 +88,24 @@ export interface StartShiftCashierPayload {
 export type UpdateShiftCashierPayload = Omit<StartShiftCashierPayload, 'branch_id'> & {
   id: string;
   cash_in: {
+    id: string;
     subject: string;
     amount: number;
   }[]
+  delete_cash_in: string[]
   cash_out: {
+    id: string;
     subject: string;
     quantity: number;
     unit: string;
     unit_price: number;
   }[]
+  delete_cash_out: string[]
   notes: string | null;
 }
 
-export type UpdateAndEndShiftCashierPayload = UpdateShiftCashierPayload & {
+export type EndShiftCashierPayload = {
+  id: string;
   actual_cash: number;
 }
 

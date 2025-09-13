@@ -10,20 +10,24 @@ import type { StartShiftKitchenPayload } from '@/types/shift'
 import { useMenuItems } from '@/composables/useMenuItems'
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import { cloneDeep } from 'lodash'
+import { useBranchList } from '@/composables/useBranchList'
 
 const { mdAndUp } = useDisplay()
 const userStore = useUserStore()
 const { startKitchen, loading: loadingShift } = useShift()
-const { loadItemSales, dataItemSales, categories, loading: loadingMenu } = useMenuItems()
+const { load, dataItemSales, categories, loading: loadingMenu } = useMenuItems()
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 
 onMounted(() => {
-  loadItemSales()
+  load(userStore.me?.activity?.branch?.id)
+  loadBranch()
 })
 
 const props = defineProps<{
   confirmBeforeClose: boolean
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
+  refresh: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -42,10 +46,12 @@ const rules = {
 }
 
 const isChanged = computed(() => {
-  return payload.value.initial_menu?.some((item, index) => {
-    const originalItem = dataItemSales.value[index];
-    return item.quantity !== originalItem?.quantity;  // Membandingkan setiap item secara langsung
-  })
+  return (
+    payload.value.initial_menu?.some((item, index) => {
+      const originalItem = dataItemSales.value[index];
+      return item.quantity !== originalItem?.quantity;}) ||
+    payload.value.branch_id !== userStore.me?.activity?.branch?.id
+  )
 })
 
 watchEffect(() => {
@@ -77,21 +83,31 @@ async function processSubmit() {
       branch_id: payload.value.branch_id!,
       initial_menu: payload.value.initial_menu!
     })
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 }
 
 watch(dataItemSales, () => {
   if (dataItemSales.value.length > 0) {
     payload.value.initial_menu = cloneDeep(dataItemSales.value)
-    console.log('payload.value.initial_menu', payload.value.initial_menu)
   }
 })
+
+watch(
+  () => payload.value.branch_id,
+  (newVal) => {
+    if (newVal) {
+      load(newVal)
+    }
+  }
+)
 </script>
 
 <template>
@@ -117,8 +133,9 @@ watch(dataItemSales, () => {
           <v-col cols="12">
             <v-select
               v-model="payload.branch_id"
-              :items="userStore.me?.assigned_branch!"
-              disabled
+              :items="branches"
+              :disabled="lb || !userStore.hasRole(['admin', 'pemilik'])"
+              :loading=lb
               prepend-icon="mdi-home"
               item-title="name"
               item-value="id"
@@ -134,7 +151,12 @@ watch(dataItemSales, () => {
             </div>
             <ScrollContainer :maxHeight="'50dvh'" @scroll.@click.stop @touchend.@click.stop>
               <v-list>
+                <div v-if="loadingMenu" class="text-center my-4">
+                  <v-progress-circular indeterminate color="warning" height="1"></v-progress-circular>
+                </div>
+                <div v-else-if="!dataItemSales.length" class="text-center text-subtitle-2 text-disabled my-4">Data Menu tidak ditemukan</div>
                 <v-list-item
+                  v-else
                   v-for="(item, index) in dataItemSales"
                   :key="index"
                   class="pa-0 ps-2"
@@ -160,10 +182,6 @@ watch(dataItemSales, () => {
                     </v-col>
                   </v-row>
                 </v-list-item>
-                <div v-if="loadingMenu" class="text-center my-4">
-                  <v-progress-circular indeterminate color="warning" height="1"></v-progress-circular>
-                </div>
-                <div v-else-if="!dataItemSales.length" class="text-center text-subtitle-2 text-disabled my-4">Data Menu Sales tidak ditemukan</div>
               </v-list>
             </ScrollContainer>
           </v-col>

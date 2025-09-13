@@ -5,10 +5,11 @@ import type { Employee } from "@/types/employee";
 const dummyEmployee: Employee[] = [
   {
     id: 'emp-000',
+    uid: 'emp-000',
     name: 'Hermanu',
-    role: 'Admin',
+    role: 'admin',
     email: 'hermanu.admin@example.com',
-    assigned_branch: dummyBranchList,
+    assigned_branch: dummyBranchList[0],
     activity: {
       shift_emp: null,
       shift_op: null,
@@ -23,10 +24,11 @@ const dummyEmployee: Employee[] = [
   },
   {
     id: 'emp-001',
+    uid: 'emp-001',
     name: 'Hermanu',
-    role: 'Gudang',
+    role: 'gudang',
     email: 'hermanu.admin@example.com',
-    assigned_branch: dummyBranchList,
+    assigned_branch: dummyBranchList[0],
     activity: {
       shift_emp: {
         id: "sft-emp-2",
@@ -39,13 +41,13 @@ const dummyEmployee: Employee[] = [
           created_by: {
             id: 'emp-001',
             name: 'Hermanu',
-            role: 'Gudang',
+            role: 'gudang',
           },
           updated_at: new Date(),
           last_updated_by: {
             id: 'emp-001',
             name: 'Hermanu',
-            role: 'Gudang',
+            role: 'gudang',
           },
         },
       },
@@ -66,13 +68,13 @@ const dummyEmployee: Employee[] = [
           created_by: {
             id: 'emp-001',
             name: 'Hermanu',
-            role: 'Gudang',
+            role: 'gudang',
           },
           updated_at: new Date(),
           last_updated_by: {
             id: 'emp-001',
             name: 'Hermanu',
-            role: 'Gudang',
+            role: 'gudang',
           },
         },
       },
@@ -87,10 +89,11 @@ const dummyEmployee: Employee[] = [
   },
   { 
   id: 'emp-002',
+  uid: 'emp-002',
   name: 'Aldi', 
-  role: 'Kasir', 
+  role: 'kasir', 
   email: 'aldi.kitchen@example.com',
-  assigned_branch: [dummyBranchList[0], dummyBranchList[1]],
+  assigned_branch: dummyBranchList[0],
   activity: {
     shift_emp: {
       id: "sft-emp-3",
@@ -103,13 +106,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-002',
           name: 'Aldi', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-002',
           name: 'Aldi', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -122,12 +125,14 @@ const dummyEmployee: Employee[] = [
       initial_cash: 100000,
       cash_in: [
         {
+          id: 'cash-in-001',
           subject: "Pembayaran Cash",
           amount: 500000,
         },
       ],
       cash_out: [
         {
+          id: 'cash-out-001',
           subject: "Belanja Kertas Nasi",
           quantity: 3,
           unit: "pack",
@@ -150,13 +155,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-002',
           name: 'Aldi', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-002',
           name: 'Aldi', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -171,10 +176,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-003',
+  uid: 'emp-003',
   name: 'Rani', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'rani.kitchen@example.com',
-  assigned_branch: [dummyBranchList[0]],
+  assigned_branch: dummyBranchList[0],
   activity: {
     shift_emp: {
       id: "sft-emp-4",
@@ -187,13 +193,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-003',
           name: 'Rani', 
-          role: 'Dapur',
+          role: 'dapur',
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-003',
           name: 'Rani', 
-          role: 'Dapur',
+          role: 'dapur',
         },
       },
     },
@@ -209,10 +215,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-004',
+  uid: 'emp-004',
   name: 'Budi', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'budi.kitchen@example.com',
-  assigned_branch: [dummyBranchList[0]],
+  assigned_branch: dummyBranchList[0],
   activity: {
     shift_emp: {
       id: "sft-emp-5",
@@ -225,13 +232,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -258,13 +265,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-03T16:00:00.000Z'),
         last_updated_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -279,10 +286,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-005',
+  uid: 'emp-005',
   name: 'Siti', 
-  role: 'Admin', 
+  role: 'admin', 
   email: 'siti.kitchen@example.com',
-  assigned_branch: dummyBranchList,
+  assigned_branch: dummyBranchList[0],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -297,10 +305,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-005',
+  uid: 'emp-005',
   name: 'Siti', 
-  role: 'Gudang', 
+  role: 'gudang', 
   email: 'siti.kitchen@example.com',
-  assigned_branch: dummyBranchList,
+  assigned_branch: dummyBranchList[0],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -315,10 +324,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-006',
+  uid: 'emp-006',
   name: 'Joko', 
-  role: 'Pemilik', 
+  role: 'pemilik', 
   email: 'joko.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -333,10 +343,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-007',
+  uid: 'emp-007',
   name: 'Dian', 
-  role: 'Kasir', 
+  role: 'kasir', 
   email: 'dian.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: {
       id: "sft-emp-6",
@@ -349,13 +360,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-007',
           name: 'Dian', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-007',
           name: 'Dian', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -368,18 +379,21 @@ const dummyEmployee: Employee[] = [
       initial_cash: 100000,
       cash_in: [
         {
+          id: 'cash-in-002',
           subject: "Pembayaran Cash",
           amount: 2000000,
         },
       ],
       cash_out: [
         {
+          id: 'cash-out-002',
           subject: "Belanja Tempe",
           quantity: 3,
           unit: "pack",
           unit_price: 10000,
         },
         {
+          id: 'cash-out-003',
           subject: "Belanja Le Mineral",
           quantity: 2,
           unit: "pack",
@@ -402,13 +416,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-007',
           name: 'Dian', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-007',
           name: 'Dian', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -423,10 +437,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-008',
+  uid: 'emp-008',
   name: 'Fajar', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'fajar.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: {
       id: "sft-emp-7",
@@ -439,13 +454,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-008',
           name: 'Fajar', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-008',
           name: 'Fajar', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -472,13 +487,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-008',
           name: 'Fajar', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-04T00:00:00.000Z'),
         last_updated_by: {
           id: 'emp-008',
           name: 'Fajar', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -493,10 +508,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-009',
+  uid: 'emp-009',
   name: 'Tono', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'tono.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: {
       id: "sft-emp-8",
@@ -509,13 +525,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-009',
           name: 'Tono', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-009',
           name: 'Tono', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -542,13 +558,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-03T16:00:00.000Z'),
         last_updated_by: {
           id: 'emp-004',
           name: 'Budi', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -563,10 +579,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-010',
+  uid: 'emp-010',
   name: 'Ayu', 
-  role: 'Admin', 
+  role: 'admin', 
   email: 'ayu.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -581,10 +598,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-010',
+  uid: 'emp-010',
   name: 'Ayu', 
-  role: 'Gudang', 
+  role: 'gudang', 
   email: 'ayu.kitchen@example.com',
-  assigned_branch: [dummyBranchList[1]],
+  assigned_branch: dummyBranchList[1],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -599,10 +617,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-011',
+  uid: 'emp-011',
   name: 'Bagas', 
-  role: 'Pemilik', 
+  role: 'pemilik', 
   email: 'bagas.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -617,10 +636,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-012',
+  uid: 'emp-012',
   name: 'Lina', 
-  role: 'Kasir', 
+  role: 'kasir', 
   email: 'lina.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: {
@@ -632,6 +652,7 @@ const dummyEmployee: Employee[] = [
       initial_cash: 100000,
       cash_in: [
         {
+          id: 'cash-in-003',
           subject: "Pembayaran Cash",
           amount: 2000000,
         },
@@ -653,13 +674,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-012',
           name: 'Lina', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-012',
           name: 'Lina', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -674,10 +695,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-013',
+  uid: 'emp-013',
   name: 'Rizky', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'rizky.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: {
@@ -703,13 +725,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-013',
           name: 'Rizky', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-03T16:00:00.000Z'),
         last_updated_by: {
           id: 'emp-013',
           name: 'Rizky', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -724,10 +746,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-014',
+  uid: 'emp-014',
   name: 'Anton', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'anton.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: {
@@ -753,13 +776,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-013',
           name: 'Rizky', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-03T16:00:00.000Z'),
         last_updated_by: {
           id: 'emp-013',
           name: 'Rizky', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -774,10 +797,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-015',
+  uid: 'emp-015',
   name: 'Sari', 
-  role: 'Admin', 
+  role: 'admin', 
   email: 'sari.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -792,10 +816,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-022',
+  uid: 'emp-022',
   name: 'Sari', 
-  role: 'Gudang', 
+  role: 'gudang', 
   email: 'sari.kitchen@example.com',
-  assigned_branch: [dummyBranchList[2]],
+  assigned_branch: dummyBranchList[2],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -810,10 +835,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-016',
+  uid: 'emp-016',
   name: 'Hadi', 
-  role: 'Pemilik', 
+  role: 'pemilik', 
   email: 'hadi.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -828,10 +854,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-017',
+  uid: 'emp-017',
   name: 'Yuni', 
-  role: 'Kasir', 
+  role: 'kasir', 
   email: 'yuni.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: {
       id: "sft-emp-11",
@@ -844,13 +871,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-017',
           name: 'Yuni', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-017',
           name: 'Yuni', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -863,12 +890,14 @@ const dummyEmployee: Employee[] = [
       initial_cash: 100000,
       cash_in: [
         {
+          id: 'cash-in-004',
           subject: "Pembayaran Cash",
           amount: 500000,
         },
       ],
       cash_out: [
         {
+          id: 'cash-out-004',
           subject: "Belanja Kertas Nasi",
           quantity: 3,
           unit: "pack",
@@ -891,13 +920,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-017',
           name: 'Yuni', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-017',
           name: 'Yuni', 
-          role: 'Kasir', 
+          role: 'kasir', 
         },
       },
     },
@@ -912,10 +941,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-018',
+  uid: 'emp-018',
   name: 'Gilang', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'gilang.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: null,
     shift_op: {
@@ -941,13 +971,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-018',
           name: 'Gilang', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-04T00:00:00.000Z'),
         last_updated_by: {
           id: 'emp-018',
           name: 'Gilang', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -962,10 +992,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-019',
+  uid: 'emp-019',
   name: 'Nita', 
-  role: 'Dapur', 
+  role: 'dapur', 
   email: 'nita.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: null,
     shift_op: {
@@ -991,13 +1022,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-018',
           name: 'Gilang', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
         updated_at: new Date('2025-07-04T00:00:00.000Z'),
         last_updated_by: {
           id: 'emp-018',
           name: 'Gilang', 
-          role: 'Dapur', 
+          role: 'dapur', 
         },
       },
     },
@@ -1012,10 +1043,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-020',
+  uid: 'emp-020',
   name: 'Eko', 
-  role: 'Admin', 
+  role: 'admin', 
   email: 'eko.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -1030,10 +1062,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-020',
+  uid: 'emp-020',
   name: 'Eko', 
-  role: 'Gudang', 
+  role: 'gudang', 
   email: 'eko.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: null,
     shift_op: null,
@@ -1048,10 +1081,11 @@ const dummyEmployee: Employee[] = [
 },
 { 
   id: 'emp-021',
+  uid: 'emp-021',
   name: 'Bambang', 
-  role: 'Pemilik', 
+  role: 'pemilik', 
   email: 'bambang.kitchen@example.com',
-  assigned_branch: [dummyBranchList[3]],
+  assigned_branch: dummyBranchList[3],
   activity: {
     shift_emp: {
       id: "sft-emp-10",
@@ -1064,13 +1098,13 @@ const dummyEmployee: Employee[] = [
         created_by: {
           id: 'emp-021',
           name: 'Bambang', 
-          role: 'Pemilik', 
+          role: 'pemilik', 
         },
         updated_at: new Date(),
         last_updated_by: {
           id: 'emp-021',
           name: 'Bambang', 
-          role: 'Pemilik', 
+          role: 'pemilik', 
         },
       },
     },

@@ -17,10 +17,10 @@ const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
 
 const { updateKitchen, endKitchen, loading: loadingShift } = useShift()
-const { loadItemSales, dataItemSales, loading: loadingMenu } = useMenuItems()
+const { load, dataItemSales, loading: loadingMenu } = useMenuItems()
 
 onMounted(() => {
-  loadItemSales()
+  load()
 })
 
 const props = defineProps<{
@@ -28,6 +28,7 @@ const props = defineProps<{
   confirmBeforeClose: boolean
   isChanged?: boolean 
   onIsChangedUpdate?: (val: boolean) => void
+  refresh: () => void
 }>()
 
 const emit = defineEmits(['close'])
@@ -49,8 +50,7 @@ const isChanged = computed(() => {
     item.final !== props.data.quantity_menu?.[index]?.final
   )
 
-  const notesChanged = notes.value !== null &&
-    String(notes.value) !== String(props.data.notes)
+  const notesChanged = (props.data.notes === null ? !(notes.value === null || notes.value === '') : notes.value !== props.data.notes)
 
   return finalChanged || notesChanged
 })
@@ -79,18 +79,21 @@ function submitForm() {
 }
 
 async function processSubmit() {
+  const final_menu = quantity_menu.value.map((item) => ({ id: item.id, quantity: item.final }))
   try {
     await updateKitchen({
       id: currentData.id,
-      final_menu: quantity_menu.value.map((item) => ({ id: item.id, quantity: item.final })),
+      final_menu,
       notes: notes.value
     })
-    clearPayload()
-  } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false)
     }
+    props.refresh()
+    clearPayload()
     emit('close')
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -99,26 +102,24 @@ async function handleEndShift() {
     component: Blank,
     props: {
       confirmToContinue: true,
-      confirmMessage: 'Pastikan Stok Akhir sudah dimasukkan dengan benar. Apakah anda yakin ingin mengakhiri shift?',
+      confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
       onConfirm: async () => {
         try {
-          await endKitchen({
-            id: currentData.id,
-            final_menu: quantity_menu.value.map((item) => ({ id: item.id, quantity: item.final })),
-            notes: notes.value
-          })
+          await endKitchen(currentData.id)
           console.log('end shift kitchen')
-          clearPayload()
-        } catch (error) {
-          console.log('end shift kitchen failed')
           if (typeof props.onIsChangedUpdate === 'function') {
             props.onIsChangedUpdate(false)
           }
+          props.refresh()
+          clearPayload()
           emit('close')
+        } catch (error) {
+          console.log(error)
         }
       }
     }
   })
+  emit('close')
 }
 </script>
 
@@ -260,6 +261,7 @@ async function handleEndShift() {
           <v-col cols="12" class="d-flex justify-space-between align-center">
             <v-btn
               :loading="loadingShift"
+              :disabled="loadingShift || isChanged"
               prepend-icon="mdi-door-closed"
               color="error"
               variant="text"

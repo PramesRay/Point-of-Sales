@@ -2,9 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import { useAlertStore } from '@/stores/alert';
 import { auth } from '@/plugins/firebase';
-
-import { useRouter } from 'vue-router';
-const router = useRouter(); // Gunakan Vue Router
+import {router} from '@/router';
 
 // Simpan promise refresh global agar request lain NUNGGU promise yg sama (anti-dupe)
 let refreshPromise: Promise<string | null> | null = null;
@@ -12,7 +10,10 @@ let refreshPromise: Promise<string | null> | null = null;
 // Ambil token tanpa paksa (untuk request awal)
 export async function getIdTokenSoft(): Promise<string | null> {
   try {
-    return await auth.currentUser?.getIdToken() ?? null; // no force
+    const res = await auth.currentUser?.getIdToken() ?? null; // no force
+    console.log('token', res)
+    console.log('auth.currentUser', auth.currentUser)
+    return res
   } catch {
     return null;
   }

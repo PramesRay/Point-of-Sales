@@ -38,11 +38,21 @@ const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
 })
 
-onMounted(() => {
+
+const branchOptions = computed(() => branches.value);
+const selectedBranch = ref<string | undefined>(undefined)
+const selectedBranchObject = computed(() => {
+  return branchOptions.value.find(branch => branch.id === selectedBranch.value) || undefined
+})
+
+onMounted(async () => {
   // if(!userStore.me) userStore.fetchMe()
 
-  loadMenu()
-  loadBranch()
+  await loadBranch()
+  loadMenu(selectedBranch.value ?? branchOptions.value[0].id).then(() => {
+    console.log('load menu', menuData.value)
+    console.log('load categories', menuCategories.value)
+  })
   loadUser()
   loadSummary()
   loadReservation()
@@ -53,16 +63,10 @@ onMounted(() => {
   loadWarehouse()
 })
 
-const branchOptions = computed(() => branches.value);
-const selectedBranch = ref<string | undefined>(undefined)
-const selectedBranchObject = computed(() => {
-  return branchOptions.value.find(branch => branch.id === selectedBranch.value) || undefined
-})
-
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadUser()
-  loadMenu()
+  loadMenu(selectedBranch.value ?? branchOptions.value[0].id)
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
   // loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
   loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
@@ -191,7 +195,7 @@ const pinBranch = ref(true)
         </v-col>
         <v-col cols="6" v-if="mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
-            :branch="selectedBranchObject ?? branchOptions[0]"
+            :branch="selectedBranchObject"
             :data_user="userData"
             :data_branch="branches"
             :data_menu="menuData"
@@ -199,7 +203,7 @@ const pinBranch = ref(true)
             :loading_user="lu"
             :loading_branch="lb"
             :loading_menu="lm"
-            :refresh_menu="loadMenu"
+            :refresh_menu="() => loadMenu(selectedBranch ?? branchOptions[0].id)"
             :refresh_branch="loadBranch"
             :refresh_user="loadUser"
             :refresh_category="loadCategory"
@@ -233,10 +237,10 @@ const pinBranch = ref(true)
             :loading_user="lu"
             :loading_branch="lb"
             :loading_menu="lm"
-            :refresh_menu="loadMenu"
+            :refresh_menu="() => loadMenu(selectedBranch ?? branchOptions[0].id)"
             :refresh_branch="loadBranch"
             :refresh_user="loadUser"
-            :refresh_category="loadCategory"
+            :refresh_category="() => loadCategory(selectedBranch ?? branchOptions[0].id)"
             class="flex-grow-1"
           />
         </v-col>

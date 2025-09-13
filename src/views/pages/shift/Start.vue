@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useDisplay } from 'vuetify'
 
-import { formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
 import { useUserStore } from '@/stores/authUser'
 import { useShift } from '@/composables/useShift'
-
-import type { StartShiftCashierPayload } from '@/types/shift'
+import { useBranchList } from '@/composables/useBranchList'
 
 const { mdAndUp } = useDisplay()
 const userStore = useUserStore()
 const { startEmployee, loading } = useShift()
+const { load: loadBranch, data: branches, loading: lb } = useBranchList();
+
+onMounted(() => {
+  loadBranch()
+})
 
 const props = defineProps<{
   confirmBeforeClose: boolean
@@ -21,7 +24,7 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const payload = ref<{branch_id: string | null}>({
-  branch_id: userStore.me?.assigned_branch[0]?.id || null
+  branch_id: userStore.me?.assigned_branch?.id || null
 })
 
 const formRef = ref()
@@ -32,7 +35,7 @@ const rules = {
 }
 
 const isChanged = computed(() => {
-  return (payload.value.branch_id !== userStore.me?.assigned_branch[0]?.id)
+  return (payload.value.branch_id !== userStore.me?.assigned_branch?.id)
 })
 
 watchEffect(() => {
@@ -58,7 +61,7 @@ function submitForm() {
 
 async function processSubmit() {
   try {
-    await startEmployee(payload.value.branch_id!)
+    await startEmployee()
     clearPayload()
   } catch (error) {
     if (typeof props.onIsChangedUpdate === 'function') {
@@ -94,8 +97,8 @@ async function processSubmit() {
           <v-col cols="12">
             <v-select
               v-model="payload.branch_id"
-              :items="userStore.me?.assigned_branch"
-              :disabled="userStore.me?.assigned_branch.length === 1"
+              :items="branches"
+              :disabled="lb"
               prepend-icon="mdi-home"
               item-title="name"
               item-value="id"

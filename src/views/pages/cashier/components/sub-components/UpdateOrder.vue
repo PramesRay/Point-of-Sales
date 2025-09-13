@@ -619,7 +619,7 @@ watch(
           <!-- Tombol -->
           <v-divider class="my-4"></v-divider>
           <v-row >
-            <v-col cols="12" class="pa-2" v-if="userStore.hasRole(['Admin', 'Dapur']) && !props.data_order">
+            <v-col cols="12" class="pa-2" v-if="userStore.hasRole(['admin', 'pemilik', 'dapur']) && !props.data_order">
               <v-btn 
                 block
                 color="success"

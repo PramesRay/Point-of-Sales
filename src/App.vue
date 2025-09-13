@@ -44,22 +44,13 @@ onMounted(async () => {
 -->
 
 <template>
-  <div v-if="authStore.loading" class="fill-height d-flex justify-center align-center">
-    <v-progress-circular size="64" indeterminate color="primary" />
-  </div>
-
-  <div v-else>
-    <GlobalOverlay />
-    <GlobalAlert />
-    <RouterView></RouterView>
-  </div>
+  <GlobalOverlay />
+  <GlobalAlert />
+  <RouterView></RouterView>
 </template>
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import GlobalAlert from './components/shared/GlobalAlert.vue';
 import GlobalOverlay from '@/components/shared/GlobalOverlay.vue';
-import { useAuthStore } from './stores/auth';
-
-const authStore = useAuthStore();
 </script>

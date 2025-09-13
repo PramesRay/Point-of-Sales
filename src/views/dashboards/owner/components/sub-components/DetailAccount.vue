@@ -10,6 +10,9 @@ import { useBranchList } from '@/composables/useBranchList';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
 import Blank from '@/components/shared/Blank.vue';
+import { useUserStore } from '@/stores/authUser';
+const user = useUserStore()
+console.log('user', user)
 
 const { openOverlay } = useOverlayManager()
 
@@ -32,23 +35,34 @@ onMounted(() => {
 })
 
 const payload = ref<UpdateEmployeePayloadByOwner>({
-  id: props.data.id,
+  uid: props.data.uid,
   role: props.data.role,
-  assigned_branch_id: props.data.assigned_branch?.map(b => b.id) ?? []
+  assigned_branch_id: props.data.assigned_branch?.id
 })
 
+const roleItem = user.hasRole('admin') ? [
+  { title: 'Admin', value: 'admin' },
+  { title: 'Pemilik', value: 'pemilik' },
+  { title: 'Dapur', value: 'dapur' },
+  { title: 'Gudang', value: 'gudang' },
+  { title: 'Kasir', value: 'kasir' },
+] : [
+  { title: 'Pemilik', value: 'pemilik' },
+  { title: 'Dapur', value: 'dapur' },
+  { title: 'Gudang', value: 'gudang' },
+  { title: 'Kasir', value: 'kasir' },
+]
 const formRef = ref()
 const isFormValid = ref(false)
 
 const rules = {
   required: [(v: string) => !!v || 'Data tidak boleh kosing'],
-  required_array: [(v: any) => v.length > 0 || 'Data tidak boleh kosing'],
 }
 
 const isChanged = computed(() => {
   return (
     payload.value.role !== props.data.role ||
-    payload.value.assigned_branch_id.length != props.data.assigned_branch?.length
+    payload.value.assigned_branch_id != props.data.assigned_branch?.id
   )
 })
 
@@ -62,9 +76,9 @@ watchEffect(() => {
 
 function clearPayload() {
   payload.value = {
-    id: props.data.id,
+    uid: props.data.uid,
     role: props.data.role,
-    assigned_branch_id: props.data.assigned_branch?.map(b => b.id) ?? []
+    assigned_branch_id: props.data.assigned_branch?.id
   }
 
   formRef.value?.resetValidation()
@@ -91,7 +105,7 @@ async function processSubmit() {
 
 async function processDelete() {
   try {
-    await remove(payload.value.id)
+    await remove(payload.value.uid)
     props.refresh()
     handleClose()
   } catch (error) {
@@ -143,7 +157,7 @@ function handleClose() {
             v-model="payload.role"
             variant="underlined"
             label="Peran"
-            :items="['Admin', 'Pemilik', 'Bendahara', 'Gudang', 'Dapur', 'Kasir']"
+            :items=roleItem
             :rules="rules.required"
             prepend-icon="mdi-account-cog"
           />
@@ -157,21 +171,11 @@ function handleClose() {
             :items="branchData"
             item-title="name"
             item-value="id"
-            multiple
-            :rules="rules.required_array"
+            :rules="rules.required"
             :loading="lb"
+            :disabled="lb"
             :return-object="false"
           >
-            <template v-slot:selection="{ item, index }">
-              <v-chip v-if="index < 2" :text="item.title"></v-chip>
-
-              <span
-                v-if="index === 2"
-                class="text-grey text-caption align-self-center"
-              >
-                (+{{ payload.assigned_branch_id.length - 2 }} lainnya)
-              </span>
-            </template>
           </v-autocomplete>
         </v-col>
       </v-row>
