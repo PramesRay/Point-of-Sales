@@ -1,5 +1,14 @@
 import { ref, watchEffect } from 'vue'
-import { fetchCurrentOrder, updateOrderData, createOrderData, processDirectPaymentOrder } from '@/services/totalOrder/currentOrderService'
+import { 
+  fetchCurrentOrder, 
+  updateOrderData, 
+  updateOrderStatus, 
+  updateOrderPayment, 
+  updateOrderItemStatus, 
+  refundOrderItem,
+  createOrderData, 
+  processDirectPaymentOrder 
+} from '@/services/totalOrder/currentOrderService'
 import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, RefundOrderItemPayload, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 
 export function useCurrentOrders() {
@@ -41,7 +50,7 @@ export function useCurrentOrders() {
     }
   }
 
-  async function update(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload) {
+  async function update(payload: UpdateOrderPayload) {
     loading.value = true;
     try {
       await updateOrderData(payload);
@@ -53,10 +62,46 @@ export function useCurrentOrders() {
     }
   }
 
-  async function refundOrderItem(payload: RefundOrderItemPayload) {
+  async function updateItemStatus(payload: UpdateOrderItemStatusPayload) {
     loading.value = true;
     try {
-      await updateOrderData(payload);
+      await updateOrderItemStatus(payload);
+      // await load();
+    } catch (e) {
+      console.error("Gagal proses order:", e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateStatus(payload: UpdateOrderStatusPayload) {
+    loading.value = true;
+    try {
+      await updateOrderStatus(payload);
+      // await load();
+    } catch (e) {
+      console.error("Gagal proses order:", e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updatePayment(payload: UpdateOrderPaymentPayload) {
+    loading.value = true;
+    try {
+      await updateOrderPayment(payload);
+      // await load();
+    } catch (e) {
+      console.error("Gagal proses order:", e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function refund(payload: RefundOrderItemPayload) {
+    loading.value = true;
+    try {
+      await refundOrderItem(payload);
       // await load();
     } catch (e) {
       console.error("Gagal refund item:", e);
@@ -94,7 +139,10 @@ export function useCurrentOrders() {
   return {
     load,
     update,
-    refundOrderItem,
+    updateItemStatus,
+    updateStatus,
+    updatePayment,
+    refund,
     create,
     createDirectPaymentOrder,
     data,

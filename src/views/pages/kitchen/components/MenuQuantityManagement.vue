@@ -5,15 +5,15 @@ import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import type { StockRequest } from '@/types/inventory'
 import type { IdName } from '@/types/common'
 import type { RestockMenuSalesPayload, MenuSale } from '@/types/menu'
-import type { ShiftKitchen } from '@/types/shift'
+import type { ShiftKitchen, UpdateShiftKitchenPayload } from '@/types/shift'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 import { useMenuItems } from '@/composables/useMenuItems'
 import Blank from '@/components/shared/Blank.vue'
-
-const { qtyUpdate, loading } = useMenuItems()
+import { useShift } from '@/composables/useShift'
 
 const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
+const { updateKitchen } = useShift()
 
 const props = defineProps<{
   data: ShiftKitchen
@@ -22,10 +22,13 @@ const props = defineProps<{
   refresh: () => void
 }>()
 
+const currentShiftKichen = computed(() => props.data)
+
 // Salin data dan tambahkan properti tambahan untuk UI
 const currentData = ref<{
   id: string
   name: string
+  threshold: number
   initial: number
   final: number
   showQty: boolean
@@ -57,25 +60,29 @@ function resetData() {
   }))
 }
 
-// Submit handler (belum dihubungkan ke emit/request API)
 function handleSubmit() {
-  const itemsToSubmit = currentData.value.filter(item => item.showQty)
-  const payload: RestockMenuSalesPayload = itemsToSubmit.map(item => ({
+  const items = currentData.value.filter(item => item.showQty)
+  const itemsToSubmit: { id: string; quantity: number}[] = items.map(item => ({
     id: item.id,
     quantity: item.newQty,
-    branch_id: props.branch?.id!
   }))
+
+  const payload: Omit<UpdateShiftKitchenPayload, 'notes'> = {
+    id: props.data.id,
+    final_menu: itemsToSubmit
+  }
 
   openOverlay({
     component: Blank,
     props: {
       confirmToContinue: true,
-      confirmMessage: 'Apakah anda yakin ingin merestock seluruh menu ini?',
+      confirmMessage: 'Apakah anda yakin ingin mengubah jumlah seluruh menu ini?',
       onConfirm: () => {
-        qtyUpdate(payload).then(() => {
-          resetData()
-          props.refresh()
-        })
+        updateKitchen(payload)
+          .then(() => {
+            resetData()
+            props.refresh()
+          })
       }
     }
   })
@@ -98,10 +105,10 @@ function toggleQtyField(item: any) {
               <h4 class="text-h4 mt-1">Menu Penjualan</h4>
             </div>
             <div 
-              v-if="props.branch && props.branch.id !== 'all' && !props.loading"
+              v-if="!props.branch && !props.loading"
               class="text-subtitle-2 text-medium-emphasis"
             >
-              {{ props.branch?.name }}
+              {{ currentShiftKichen?.branch?.name }}
             </div> 
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
@@ -119,7 +126,7 @@ function toggleQtyField(item: any) {
 
         <div v-if="!props.loading">
           <div class="my-4">
-            <ScrollContainer :style="{ maxHeight: mdAndUp ? '35rem' : '18rem' }">
+            <ScrollContainer :style="{ maxHeight: mdAndUp ? '35rem' : '18rem' }" v-if="!currentShiftKichen?.end">
               <v-list v-if="currentData.length > 0" class="">
                 <v-list-item
                   v-for="(item, i) in currentData"
@@ -128,17 +135,18 @@ function toggleQtyField(item: any) {
                   color="secondary"
                   rounded="sm"
                 >
-                  <v-row no-gutters>
-                    <v-col cols="4">
+                  <v-row no-gutters align="center">
+                    <v-col cols="5">
+                      <span v-if="item.final <= item.threshold" class="text-subtitle-2 text-medium-emphasis text-warning">Perlu Restock</span>
                       <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 120px; overflow: hidden;">
                         {{ item.name }}
                       </h6>
                       <div class="text-subtitle-2 text-disabled">
-                        <div>Tersedia: <span class="text-h4 text-medium-emphasis font-weight-bold">{{ item.final }}</span></div>
+                        <div class="text-h5 text-medium-emphasis font-weight-bold">Tersedia: <span class="text-h4">{{ item.final }}</span></div>
                         <span>Stok awal: {{ item.initial }}</span>
                       </div>
                     </v-col>
-                    <v-col cols="8" class="ps-2">
+                    <v-col cols="7" class="ps-2">
                       <div
                         class="d-flex align-center justify-end ga-2"
                         style="overflow-x: auto; flex-wrap: nowrap; min-width: 0;"
@@ -150,7 +158,7 @@ function toggleQtyField(item: any) {
                             control-variant="split"
                             variant="outlined"
                             hide-details
-                            :min="item.is_add ? item.final : 1"
+                            :min="item.is_add ? item.final : 0"
                             :max="item.is_add ? Infinity : item.final"
                             inset
                             density="compact"
@@ -160,21 +168,33 @@ function toggleQtyField(item: any) {
                         </v-card>
 
                         <div style="min-width: fit-content;">
-                          <v-btn-group
-                            size="x-small"
-                            variant="outlined"
-                            density="compact"
+                          <v-btn 
+                            v-if="!item.showQty" 
+                            icon
+                            color="error"
+                            variant="text"
+                            @click="toggleQtyField(item), item.is_add = false"
                           >
-                            <v-btn icon v-if="!item.showQty" @click="toggleQtyField(item), item.is_add = false">
-                              <v-icon>mdi-minus</v-icon>
-                            </v-btn>
-                            <v-btn icon v-if="!item.showQty" @click="toggleQtyField(item), item.is_add = true">
-                              <v-icon>mdi-plus</v-icon>
-                            </v-btn>
-                            <v-btn icon v-if="item.showQty" @click="toggleQtyField(item)">
-                              <v-icon>mdi-close</v-icon>
-                            </v-btn>
-                          </v-btn-group>
+                            <v-icon>mdi-minus</v-icon>
+                          </v-btn>
+                          <v-btn 
+                            v-if="!item.showQty" 
+                            icon
+                            color="primary"
+                            variant="text"
+                            @click="toggleQtyField(item), item.is_add = true"
+                          >
+                            <v-icon>mdi-plus</v-icon>
+                          </v-btn>
+
+                          <v-btn
+                            v-if="item.showQty"
+                            icon
+                            variant="plain"
+                            @click="toggleQtyField(item)"
+                          >
+                            <v-icon>mdi-close</v-icon>
+                          </v-btn>
                         </div>
                       </div>
                     </v-col>
@@ -188,6 +208,9 @@ function toggleQtyField(item: any) {
                 Data Menu tidak ditemukan
               </div>
             </ScrollContainer>
+            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+              Tidak ada shift aktif
+            </div>
           </div>
         </div>
         <div v-else class="ml-auto">

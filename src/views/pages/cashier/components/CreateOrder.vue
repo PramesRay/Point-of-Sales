@@ -4,14 +4,25 @@ import type { MenuSale } from '@/types/menu'
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import UpdateOrder from './sub-components/UpdateOrder.vue';
+import type { ShiftKitchen } from '@/types/shift';
+import { computed } from 'vue';
 
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
-  data_menu: MenuSale[];
+  kitchen_shift: ShiftKitchen;
   categories: Category[];
   refresh: () => void
 }>();
+
+const data_menu = computed(() => {
+  return props.kitchen_shift.quantity_menu.map(item => {
+    return {
+      ...item,
+      quantity: item.final
+    }
+  })
+})
 
 </script>
 
@@ -25,7 +36,7 @@ const props = defineProps<{
         component: UpdateOrder,
         props: {
           is_create: true,
-          data_menu: props.data_menu,
+          data_menu: data_menu,
           categories: props.categories,
           refresh: () => props.refresh()
         },

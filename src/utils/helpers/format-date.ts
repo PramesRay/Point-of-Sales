@@ -1,7 +1,8 @@
 import { normalizeToDate, type AnyDateLike } from "./time";
 
 // src/helpers/dateHelper.ts
-export function formatDate(dateInput: AnyDateLike): string {
+export function formatDate(dateInput: AnyDateLike | null): string {
+  if (!dateInput) return '';
   const date = normalizeToDate(dateInput);
   return date!.toLocaleDateString('id-ID', {
     timeZone: 'Asia/Jakarta',

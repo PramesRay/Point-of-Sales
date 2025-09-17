@@ -46,10 +46,10 @@ const showCtg = ref(false)
 
 const currentDataUsers = computed(() => {
   if (!props.branch || props.branch.id === 'all') {
-    return props.data_user.filter((tx) => tx.uid !== user.me?.uid);
+    return props.data_user
   } else {
     return props.data_user.filter(
-      (tx) => tx.assigned_branch?.id == props.branch?.id && tx.uid !== user.me?.uid
+      (tx) => tx.assigned_branch?.id == props.branch?.id
     );
   }
 })
@@ -117,7 +117,7 @@ function handleAddNew() {
           <v-col cols="7">
             <div>
               <h4 class="text-h4">Manajemen</h4>
-              <span v-if="!props.loading_branch" class="text-subtitle-2 text-medium-emphasis">{{ (props.branch && tab !== 'branch') ? props.branch?.name : (tab === 'menu') ? props.branch?.name || currentDataBranch[0].name  : 'Semua Cabang' }}</span>
+              <span v-if="!props.loading_branch" class="text-subtitle-2 text-medium-emphasis">{{ (props.branch && tab !== 'branch') ? props.branch?.name : (tab === 'menu') ? props.branch?.name || currentDataBranch[0]?.name  : 'Semua Cabang' }}</span>
             </div>
           </v-col>
           <v-col cols="5" class="d-flex justify-end align-center" v-if="!(props.loading_user || props.loading_branch || props.loading_menu)">
@@ -210,10 +210,10 @@ function handleAddNew() {
                   </div>
                 </v-col>
                 <v-col cols="auto" class="pr-2">
+                  <div class="text-subtitle-2 text-medium-emphasis" v-if="data.role">{{ data.role }}</div>
                   <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
                     {{ data.name }}
                   </h6>
-                  <span class="text-subtitle-2 text-medium-emphasis" v-if="data.role">{{ data.role }}</span>
                   <i class="text-subtitle-2 text-medium-emphasis">{{ data?.email }}</i>
                   </v-col>
                 </v-row>

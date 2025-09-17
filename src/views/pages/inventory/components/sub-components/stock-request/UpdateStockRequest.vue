@@ -135,6 +135,7 @@ function updateRequest() {
   const updatePayload: UpdateStockRequestPayload = {
     id: props.data?.id!,
     branch_id: payload.value.branch_id,
+    type: 'updateStock',
     items: payload.value.items.map((item) => ({
       id: item.id!,
       quantity: item.quantity

@@ -26,7 +26,7 @@ import { useInventoryItems } from "@/composables/useInventoryItems";
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr } = useStockRequests();
-const { init: initItems, data: dataInventory, categories, loading: li, updateItem, deleteItem } = useInventoryItems();
+const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 
@@ -45,13 +45,7 @@ onMounted(() => {
   initItems();
   loadFundRequest();
   initStockMovement();
-  loadStockRequest({
-    filter: { 
-      'meta.created_at': new Date().toISOString().split('T')[0] 
-    },
-    sortBy: 'meta.created_at',
-    sortDesc: true
-  });
+  loadStockRequest();
 });
 
 // Branch Selection
@@ -179,8 +173,6 @@ const pinBranch = ref(false)
             :categories="categories"
             :loading="li"
             class="flex-grow-1"
-            @update-item="updateItem"
-            @delete-item="deleteItem"
             :refresh="initItems"
           />
         </v-col>
@@ -205,7 +197,6 @@ const pinBranch = ref(false)
           <CurrentFundRequest
             v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-dana')"
             :data="fundRequestList.data"
-            :branch="selectedBranchObject"
             :loading="lfr"
             class="flex-grow-1"
             :refresh="loadFundRequest"

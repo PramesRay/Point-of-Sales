@@ -1,4 +1,3 @@
-import type { Branch } from "./branch"
 import type { IdName } from "./common"
 import type { Category } from "./inventory"
 import type { Meta } from "./meta"
@@ -6,6 +5,7 @@ import type { Meta } from "./meta"
 export interface Menu {
   id: string
   name: string
+  threshold: number
   description: string
   price: number
   category: Category
@@ -28,6 +28,4 @@ export type UpdateMenuPayload = Omit<Menu, "category" | "branch" | "meta"> & {
   branch_id: string
 }
 
-export type RestockMenuSalesPayload = (Pick<MenuSale, "id" | "quantity"> & {
-  branch_id: string
-})[]
+export type RestockMenuSalesPayload = (Pick<MenuSale, "id" | "quantity">)[]

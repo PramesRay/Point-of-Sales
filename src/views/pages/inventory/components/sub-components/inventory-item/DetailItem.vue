@@ -37,7 +37,6 @@ const payload = ref<{[K in keyof CreateInventoryItemPayload]: CreateInventoryIte
 const formRef = ref()
 const isFormValid = ref(false)
 
-const purchase_price = ref<number | null>(null)
 const purchase_price_raw = ref<string | null>(props.data ? formatRupiahInput(props.data.purchase_price) : null)
 
 const inputDate = ref<Date | null>(props.data ? props.data.expired_date : null)
@@ -53,14 +52,14 @@ const rules = {
 const isChanged = computed(() => {
   if (props.is_create) {
     return (
-      payload.value.name !== null ||
-      payload.value.description !== null ||
-      payload.value.unit !== null ||
-      payload.value.purchase_price !== null ||
-      payload.value.threshold !== null ||
-      payload.value.category_id !== null ||
-      inputDate.value !== null ||
-      purchase_price_raw.value !== null
+      !!payload.value.name ||
+      !!payload.value.description ||
+      !!payload.value.unit ||
+      !!payload.value.purchase_price ||
+      !!payload.value.threshold ||
+      !!payload.value.category_id ||
+      !!inputDate.value ||
+      !!purchase_price_raw.value
     )
   } else {
     return (
@@ -70,8 +69,7 @@ const isChanged = computed(() => {
       payload.value.purchase_price !== props.data?.purchase_price ||
       payload.value.threshold !== props.data?.threshold ||
       payload.value.category_id !== props.data?.category.id ||
-      inputDate.value != props.data?.expired_date ||
-      purchase_price.value !== props.data?.purchase_price
+      inputDate.value !== props.data?.expired_date
     )
   }
 })
@@ -99,7 +97,7 @@ async function processSubmit() {
     else {
       const updatePayload: UpdateInventoryItemPayload = {
         id: props.data!.id,
-        expired_date: props.data!.expired_date,
+        expired_date: inputDate.value,
         ...payload.value as CreateInventoryItemPayload
       }
       await updateItem(updatePayload)
@@ -158,11 +156,11 @@ function handleClose() {
 
     <v-form ref="formRef" v-model="isFormValid">
       <v-row class="justify-center">
-          <v-col :cols="props.is_create ? 12 : 6">
+          <v-col :cols="(props.data && !props.data.is_new) ? 6 : 12">
             <v-select
               variant="underlined"
               v-model="payload.category_id"
-              :items="props.categories"
+              :items="props.categories.length > 0 ? props.categories : []"
               item-title="name"
               item-value="id"
               label="Kategori"
@@ -173,7 +171,7 @@ function handleClose() {
             />
           </v-col>
           <!-- expired date -->
-          <v-col cols="6" v-if="props.data">
+          <v-col cols="6" v-if="props.data && !props.data.is_new">
             <v-text-field
               v-model="formattedDate"
               label="Tanggal Expired"
@@ -221,7 +219,7 @@ function handleClose() {
               prepend-icon="mdi-cash"
               @input="
                 purchase_price_raw = formatRupiahInput(purchase_price_raw!),
-                purchase_price = formatRupiahInputR(purchase_price_raw)
+                payload.purchase_price = formatRupiahInputR(purchase_price_raw)
               "
             />
           </v-col>

@@ -32,9 +32,9 @@ const {
   endEmployee, 
   loadShiftbyRole, 
   startWarehouse, 
-  shiftCashier, 
-  shiftKitchen, 
-  shiftWarehouse, 
+  shiftCurrentCashier, 
+  shiftCurrentKitchen, 
+  shiftCurrentWarehouse, 
   loading 
 } = useShift()
 
@@ -89,9 +89,9 @@ onMounted(() => {
           Terakhir Aktif
         </h6>
         <h5 class="text-h5 font-weight-medium text-medium-emphasis mb-2">
-          {{ formatDate(userStore.me?.activity?.last_active || new Date()).split('pukul')[0] }}
+          {{ formatDate(userStore.me?.activity?.last_active).split('pukul')[0] || '-' }}
         </h5>
-        <span class="mr-2">
+        <span class="mr-2" v-if="userStore.me?.assigned_branch">
           <v-btn
             :ripple="false"
             icon
@@ -108,9 +108,7 @@ onMounted(() => {
                   confirmMessage: 'Apakah anda yakin ingin memulai aktifitas?',
                   loading,
                   onConfirm: async () => {
-                    await startEmployee().then(() => {
-                      loadShiftbyRole()
-                    })
+                    await startEmployee().then(() => userStore.fetchMe())
                   }
                 }
               })
@@ -126,16 +124,15 @@ onMounted(() => {
       <div v-else class="rounded-md pa-5 my-3 circle sm-circle lg-circle bg-lightwarning">
         <h4 class="d-flex justify-space-between">
           Aktif
-          <div>
-            <span class="text-subtitle-2 text-disabled">
+          <div class="text-right">
+            <div class="text-subtitle-2 text-disabled">
               <v-icon size="x-small">mdi-clock-outline</v-icon>
               {{ getTimeDiff(userStore.me?.activity?.last_active || new Date(), false) }}
-            </span>
-            <v-divider class="mx-1" vertical/>
-            <span class="text-subtitle-2 text-disabled">
+            </div>
+            <div class="text-subtitle-2 text-disabled">
               <v-icon size="x-small">mdi-store</v-icon>
               {{ userStore.hasRole('gudang') ? 'Gudang' : userStore.me?.activity?.branch?.name }}
-            </span>
+            </div>
           </div>
         </h4>
         <h6 class="text-subtitle-2 text-disabled mr-11 pr-11 mt-2">
@@ -160,9 +157,7 @@ onMounted(() => {
                   confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
                   loading,
                   onConfirm: async () => {
-                    await endEmployee().then(() => {
-                      loadShiftbyRole()
-                    })
+                    await endEmployee().then(() => userStore.fetchMe())
                   }
                 }
               })
@@ -178,7 +173,8 @@ onMounted(() => {
         <div v-if="userStore.hasRole(['admin', 'pemilik', 'dapur', 'kasir', 'gudang']) && !loading">
           <div v-if="userStore.hasRole(['admin', 'pemilik', 'kasir'])">
             <v-btn 
-              v-if="shiftCashier?.total == 0"
+              v-if="shiftCurrentCashier?.end !== null"
+              class="mt-2"
               elevation="1"
               append-icon="mdi-cash-register"
               @click="openOverlay({
@@ -201,7 +197,7 @@ onMounted(() => {
               @click="openOverlay({
                 component: UpdateShiftCashier,
                 props: {
-                  data: shiftCashier.data[0] as ShiftCashier,
+                  data: shiftCurrentCashier,
                   confirmBeforeClose: true,
                   isChanged: isChanged,
                   refresh: () => loadShiftbyRole()
@@ -214,7 +210,8 @@ onMounted(() => {
 
           <div v-if="userStore.hasRole(['admin', 'pemilik', 'dapur'])">
             <v-btn 
-              v-if="shiftKitchen?.total == 0"
+              v-if="shiftCurrentKitchen?.end !== null"
+              class="mt-2"
               elevation="1"
               append-icon="mdi-stove"
               @click="openOverlay({
@@ -237,7 +234,7 @@ onMounted(() => {
               @click="openOverlay({
                 component: UpdateShiftKitchen,
                 props: {
-                  data: shiftKitchen.data[0] as ShiftKitchen,
+                  data: shiftCurrentKitchen,
                   confirmBeforeClose: true,
                   isChanged: isChanged,
                   refresh: () => loadShiftbyRole()
@@ -251,7 +248,8 @@ onMounted(() => {
           <!-- shift warehouse -->
           <div v-if="userStore.hasRole(['admin', 'pemilik', 'gudang'])">
             <v-btn 
-              v-if="shiftWarehouse?.total == 0"
+              v-if="shiftCurrentWarehouse?.end !== null"
+              class="mt-2"
               elevation="1"
               append-icon="mdi-warehouse"
               @click="openOverlay({
@@ -279,7 +277,7 @@ onMounted(() => {
               @click="openOverlay({
                 component: UpdateShiftWarehouse,
                 props: {
-                  data: shiftWarehouse.data[0] as ShiftWarehouse,
+                  data: shiftCurrentWarehouse,
                   confirmBeforeClose: true,
                   isChanged: isChanged,
                   refresh: () => loadShiftbyRole()

@@ -89,21 +89,17 @@ export const useAuthStore = defineStore({
       try {
         const result = await signInWithPopup(auth, googleProvider);
         
-        const response = await api.get('/employee/me').catch(error => {
+        await api.get('/employee/me')
+        .catch(async error => {
           if (error.status === 404) {
-            return api.post(`${baseUrl}/auth/register`, { 
+            await api.post(`${baseUrl}/auth/register`, { 
               name: result.user.displayName,
               email: result.user.email,
               uid: result.user.uid,
             })
+            throw new Error('Akun berhasil dibuat, silahkan konfirmasi kepada pemilik');
           }
-          throw error;
         });
-        
-        if (response.data.data.role == null) {
-          await signOut(auth); // Logout paksa
-          throw new Error('Email belum dikonfirmasi oleh pemilik');
-        }
         
         this.user = result.user;
         this.isAuthenticated = true;

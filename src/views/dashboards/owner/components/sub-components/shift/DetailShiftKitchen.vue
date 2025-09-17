@@ -9,11 +9,6 @@ import { cloneDeep } from 'lodash'
 import { useMenuItems } from '@/composables/useMenuItems'
 
 const { mdAndUp } = useDisplay()
-const { loadItemSales, dataItemSales, loading: loadingMenu } = useMenuItems()
-
-onMounted(() => {
-  loadItemSales()
-})
 
 const props = defineProps<{
   data: ShiftKitchen
@@ -93,10 +88,7 @@ const isShowMenu = ref(false)
             <v-icon>{{ isShowMenu ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
           </div>
           <v-expand-transition v-show="isShowMenu">
-            <div class="text-center my-4" v-if="loadingMenu">
-              <v-progress-circular indeterminate color="warning" height="1"/>
-            </div>
-            <v-table :items="dataItemSales" style="overflow-x: hidden;" v-else>
+            <v-table :items="currentData.quantity_menu" style="overflow-x: hidden;">
               <thead>
                 <tr>
                   <th style="max-width: 30dvw;">Nama Menu</th>
@@ -105,23 +97,23 @@ const isShowMenu = ref(false)
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, index) in dataItemSales" :key="index" >
+                <tr v-for="(item, index) in currentData.quantity_menu" :key="index" >
                   <td style="max-width: 30dvw; overflow: hidden; text-overflow: ellipsis;">
                     <h4 class="text-h5 font-weight-medium">
                       {{ item.name }}
                     </h4>
                   </td>
                   <td class="text-center text-disabled">
-                    {{ currentData.quantity_menu[index].initial || '-' }}
+                    {{ item.initial || '-' }}
                   </td>
                   <td class="text-center text-disabled">
-                    {{ currentData.quantity_menu[index].final || '-' }}
+                    {{ item.final || '-' }}
                   </td>
                 </tr>
               </tbody>
             </v-table>
 
-            <div v-if="!loadingMenu && dataItemSales.length === 0" class="text-center text-subtitle-2 text-disabled my-4">
+            <div v-if="currentData.quantity_menu.length === 0" class="text-center text-subtitle-2 text-disabled my-4">
               Data Menu Sales tidak ditemukan
             </div>
           </v-expand-transition>

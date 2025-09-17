@@ -18,26 +18,18 @@ const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
   data: FundRequest[];
-  branch: IdName | undefined | null;
   loading?: boolean;
   refresh: () => void
 }>();
 
 // Computed untuk filter transaksi berdasarkan branch
-const filteredData = computed(() => {
-  if (!props.branch || props.branch.id === 'all') {
-    return props.data;
-  }
-  return props.data.filter(
-    (tx) => tx.branch.id === props.branch?.id
-  );
-});
+const currentData = computed(() => props.data);
 
 // Ambil permintaan terbaru
-const latestRequest = computed(() => filteredData.value[0]);
+const latestRequest = computed(() => currentData?.value[0]);
 
 // Sisanya untuk list biasa
-const listRequest = computed(() => filteredData.value.slice(1));
+const listRequest = computed(() => currentData?.value.slice(1));
 
 const isChanged = ref(false)
 
@@ -84,11 +76,6 @@ function openDetail(request: FundRequest) {
           <v-col cols="8">
             <div class="d-flex align-center">
               <h4 class="text-h4 mt-1">Permintaan Dana Terkini</h4>
-            </div>
-            <div 
-              v-if="props.branch && props.branch.id !== 'all' && !props.loading" 
-              class="text-subtitle-2 text-medium-emphasis"
-            >{{ props.branch.name }}
             </div> 
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
@@ -106,10 +93,6 @@ function openDetail(request: FundRequest) {
           <v-card class="bg-lightsecondary mt-6" @click="openDetail(latestRequest)">
             <div v-if="latestRequest" class="pa-5">
               <span class="text-subtitle-2 text-disabled">
-                <span 
-                  class="text-medium-emphasis" 
-                  v-if="props.branch?.id === 'all'"
-                >{{ latestRequest?.branch.name }}: </span>
                 {{ latestRequest.meta?.updated_at ? `${formatDate(latestRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(latestRequest.meta?.updated_at).slice(-5)}` : '' }}
               </span>
               <v-row no-gutters>
@@ -143,10 +126,6 @@ function openDetail(request: FundRequest) {
                   @click="openDetail(listRequest)"
                 >
                   <span class="text-subtitle-2 text-disabled">
-                    <span
-                      class="text-medium-emphasis"
-                      v-if="props.branch?.id === 'all'"
-                    >{{ listRequest?.branch.name }}: </span>
                     {{ listRequest.meta?.updated_at ? `${formatDate(listRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(listRequest.meta?.updated_at).slice(-5)}` : '' }}
                   </span>
                   <v-row no-gutters>

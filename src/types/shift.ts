@@ -12,10 +12,14 @@ export interface Shift {
   notes: string | null;
   meta: {
     created_at: Date;
-    created_by: Pick<Employee, 'id' | 'name' | 'role'>;
+    created_by: Pick<Employee, 'id' | 'name'>;
     updated_at: Date;
-    last_updated_by: Pick<Employee, 'id' | 'name' | 'role'>;
+    last_updated_by: Pick<Employee, 'id' | 'name'>;
   };
+}
+
+export interface ShiftEmployee extends Shift {
+  employee: Omit<Employee, 'activity'>
 }
 
 export interface ShiftCashier extends Shift {
@@ -52,6 +56,7 @@ export interface ShiftKitchen extends Shift {
   quantity_menu: {
     id: string;
     name: string;
+    threshold: number;
     initial: number;
     final: number;
   }[]

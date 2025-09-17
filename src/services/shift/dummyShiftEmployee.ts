@@ -1,8 +1,8 @@
-import type { Shift } from "@/types/shift";
+import type { ShiftEmployee } from "@/types/shift";
 import dummyEmployee from "../common/employee/dummyEmployee";
 import dummyBranchList from "../common/branch/dummyBranchList";
 
-export const dummyShiftEmployee: Shift[] = [
+export const dummyShiftEmployee: ShiftEmployee[] = [
   // Hermanu (Gudang)
   {
     id: "sft-emp-2",
@@ -15,13 +15,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-001',
         name: 'Hermanu',
-        role: 'Gudang',
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-001',
         name: 'Hermanu',
-        role: 'Gudang',
       },
     },
   },
@@ -37,13 +35,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-002',
         name: 'Aldi', 
-        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-002',
         name: 'Aldi', 
-        role: 'Kasir', 
       },
     },
   },
@@ -59,13 +55,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-003',
         name: 'Rani', 
-        role: 'Dapur', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-003',
         name: 'Rani', 
-        role: 'Dapur', 
       },
     },
   },
@@ -81,13 +75,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-004',
         name: 'Budi', 
-        role: 'Dapur', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-004',
         name: 'Budi', 
-        role: 'Dapur', 
       },
     },
   },
@@ -106,13 +98,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-007',
         name: 'Dian', 
-        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-007',
         name: 'Dian', 
-        role: 'Kasir', 
       },
     },
   },
@@ -128,13 +118,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-008',
         name: 'Fajar', 
-        role: 'Dapur', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-008',
         name: 'Fajar', 
-        role: 'Dapur', 
       },
     },
   },
@@ -150,13 +138,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-009',
         name: 'Tono', 
-        role: 'Dapur', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-009',
         name: 'Tono', 
-        role: 'Dapur', 
       },
     },
   },
@@ -172,13 +158,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-021',
         name: 'Bambang', 
-        role: 'Pemilik', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-021',
         name: 'Bambang', 
-        role: 'Pemilik', 
       },
     },
   },
@@ -194,13 +178,11 @@ export const dummyShiftEmployee: Shift[] = [
       created_by: {
         id: 'emp-017',
         name: 'Yuni', 
-        role: 'Kasir', 
       },
       updated_at: new Date(),
       last_updated_by: {
         id: 'emp-017',
         name: 'Yuni', 
-        role: 'Kasir', 
       },
     },
   }

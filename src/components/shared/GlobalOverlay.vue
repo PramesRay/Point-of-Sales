@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { useDisplay } from 'vuetify'
 const { mdAndUp } = useDisplay()
 
@@ -14,24 +14,7 @@ const {
   closeConfirmDialog
 } = useOverlayManager()
 
-// watcher untuk handle exit overlay via esc atau klik di luar overlay dengan memanfaatkan visibilitas
 const currentOverlay = computed(() => overlayStack.value[overlayStack.value.length - 1])
-
-// watch(currentOverlay, (overlay) => {
-//   if (overlay?.overlayVisible) {
-//     window.addEventListener('keydown', (e) => {
-//       if (e.key === 'Escape') {
-//         closeOverlay()
-//       }
-//     })
-//   } else {
-//     window.removeEventListener('keydown', (e) => {
-//       if (e.key === 'Escape') {
-//         closeOverlay()
-//       }
-//     })
-//   }
-// })
 
 function handleCloseConfirmDialog() {
   if (overlayStack.value[overlayStack.value.length - 1].props?.confirmToContinue) {

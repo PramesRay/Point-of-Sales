@@ -38,7 +38,7 @@ function openAddNew() {
         is_create: true,
         isChanged,
         confirmBeforeClose: true,
-        refresh: props.refresh
+        refresh: () => props.refresh()
       }
     })
   } else {
@@ -46,10 +46,10 @@ function openAddNew() {
       component: DetailItem,
       props: {
         is_create: true,
-        categories: props.categories,
+        categories: select_ctgs.value,
         isChanged,
         confirmBeforeClose: true,
-        refresh: props.refresh
+        refresh: () => props.refresh()
       }
     })
   }
@@ -60,14 +60,17 @@ function openDetail(item: InventoryItem) {
     component: DetailItem,
     props: {
       data: item,
-      categories: props.categories,
-      refresh: props.refresh
+      categories: select_ctgs.value,
+      refresh: () => props.refresh()
     }
   })
 }
 
-const categories = computed(() => props.categories)
-const select_ctgs = computed(() => [{ id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' }, ...props.categories])
+const select_ctgs = computed(() => {
+  console.log('select_ctgs', props.categories)
+  if (!props.categories.length) return []
+  return props.categories;
+})
 
 const currentData = computed(() => {
   if (!props.data?.length || !selectedCtg.value) return []
@@ -112,7 +115,7 @@ const currentData = computed(() => {
                         is_create: true,
                         confirmBeforeClose: true,
                         isChanged,
-                        refresh: props.refresh
+                        refresh: () => props.refresh()
                       }
                     })
                   "
@@ -145,7 +148,7 @@ const currentData = computed(() => {
               variant="outlined"
               hide-details
               v-model="selectedCtg"
-              :items="select_ctgs"
+              :items="[ { id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' }, ...select_ctgs]"
               item-title="name"
               item-value="id"
               label="Pilih Kategori"
@@ -167,6 +170,7 @@ const currentData = computed(() => {
                 rounded="sm"
                 @click="openDetail(item)"
               >
+                <v-divider v-if="i !== 0" class="my-3" />
                 <span 
                   v-if="!item?.is_new"
                   class="text-subtitle-2 text-disabled"
@@ -252,7 +256,7 @@ const currentData = computed(() => {
           <ScrollContainer :maxHeight="mdAndUp ? '20rem' : '15rem'">
             <v-list>
               <v-list-item
-                v-for="(data, i) in categories"
+                v-for="(data, i) in select_ctgs"
                 :key="i"
                 :value="data"
                 rounded="sm"
@@ -263,12 +267,11 @@ const currentData = computed(() => {
                       data: data,
                       confirmBeforeClose: true,
                       isChanged,
-                      refresh: props.refresh
+                      refresh: () => props.refresh()
                     },
                   })
                 "
               >
-                <v-divider v-if="i > 0" class="mb-4 mt-2"></v-divider>
                 <div class="d-flex justify-space-between w-100">
                   <div class="pe-4" style="flex: 1">
                     <h6 class="text-h4 text-medium-emphasis font-weight-bold">

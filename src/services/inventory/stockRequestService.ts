@@ -115,7 +115,7 @@ export async function fetchStockRequestList({
     filter?: Record<string, any>
   } = {}): Promise<{data: StockRequest[]; total: number}> {
     try {
-      const url = `/stock-request`;
+      const url = `/inventory/stock-requests`;
       const query = new URLSearchParams();
       
       if (search) query.append('search', search)
@@ -260,9 +260,9 @@ export async function fetchStockRequestList({
 
 export async function createStockRequest(payload: CreateStockRequestPayload): Promise<StockRequest> {
   try {
-    const res = await api.post<StockRequest>(`/inventory/stock-requests`, payload);
+    const res = await api.post(`/inventory/stock-requests`, payload);
     alertStore.showAlert('Permintaan Stok berhasil dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.warn(`Create stock request failed, using dummy.`, error);
     console.log('Payload: ', payload)
@@ -272,9 +272,9 @@ export async function createStockRequest(payload: CreateStockRequestPayload): Pr
 
 export async function updateStockRequest(payload: UpdateStockRequestPayload | ApproveStockRequestPayload): Promise<StockRequest> {
   try {
-    const res = await api.put<StockRequest>(`/inventory/stock-requests`, payload);
+    const res = await api.put(`/inventory/stock-requests`, payload);
     alertStore.showAlert('Permintaan Stok berhasil diubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.warn(`Update stock request failed, using dummy.`, error);
     console.log('Payload: ', payload)
@@ -282,11 +282,21 @@ export async function updateStockRequest(payload: UpdateStockRequestPayload | Ap
   }  
 }
 
+export async function readyStockRequest(id: string): Promise<StockRequest> {
+  try {
+    const res = await api.put(`/inventory/stock-requests/${id}/ready`);
+    alertStore.showAlert('Permintaan Stok telah siap!', 'success');
+    return res.data.data;
+  } catch (error) {
+    throw error
+  }  
+}
+
 export async function finishStockRequest(id: string): Promise<StockRequest> {
   try {
-    const res = await api.put<StockRequest>(`/inventory/stock-requests/${id}/end`);
+    const res = await api.put(`/inventory/stock-requests/${id}/end`);
     alertStore.showAlert('Permintaan Stok berhasil dikonfirmasi!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     throw error
   }  

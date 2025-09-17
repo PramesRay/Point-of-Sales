@@ -69,8 +69,26 @@ const timeMenu = ref(false)
 const timeModel = ref<string>('');
 const isUpdatingTime = ref(false)
 
+const now = new Date()
+const currentHour = now.getHours()
+const currentMinute = now.getMinutes()
+
+function allowedHours(hour: number) {
+  // hanya izinkan jam <= jam sekarang
+  return hour <= currentHour
+}
+
+function allowedMinutes(minute: number) {
+  // kalau jam belum sampai sekarang, izinkan semua menit
+  if (parseInt(timeModel.value?.split(':')[0] ?? '0') < currentHour) {
+    return true
+  }
+  // kalau jam sama dengan sekarang, batasi menit
+  return minute <= currentMinute
+}
+
+
 const isFromBranch = ref(false)
-const isIn = ref(false)
 
 const formatedDateTime = computed(() => {
   if (!payload.value.time) return ''
@@ -104,11 +122,11 @@ const isChanged = computed(() => {
     return (
       payload.value.description !== props.data?.description ||
       payload.value.shift_warehouse !== props.data?.shift_warehouse ||
-      payload.value.item?.id !== props.data?.item.id ||
-      payload.value.item?.quantity !== props.data?.item.quantity ||
+      payload.value.item?.id !== props.data?.item?.id ||
+      payload.value.item?.quantity !== props.data?.item?.quantity ||
       payload.value.status !== props.data?.status ||
       payload.value.branch_id !== props.data?.branch?.id ||
-      payload.value.time !== props.data?.time
+      JSON.stringify(payload.value.time) !== JSON.stringify(props.data?.time)
     )
   }
 })
@@ -168,6 +186,7 @@ function updateItem(id: string) {
     const item = props.inv_item.find(item => item.id === id)
     if (item) {
       payload.value.item.unit = item.unit
+      payload.value.item.category_id = item.category.id
     } else console.log('item not found')
   }
 }
@@ -258,7 +277,6 @@ function handleClose() {
 
     <v-form ref="formRef" v-model="isFormValid">
       <PerfectScrollbar :style="{ maxHeight: mdAndUp? '80dvh' : '70dvh'}">
-        <div class="text-h4 text-disabled text-center mb-3">Informasi Perpindahan </div>
         <v-row no-gutters class="justify-center">
           <v-col cols="7">
             <v-text-field
@@ -314,6 +332,8 @@ function handleClose() {
                 <v-time-picker
                   v-model="timeModel"
                   format="24hr"
+                  :allowed-hours="allowedHours"
+                  :allowed-minutes="allowedMinutes"
                   @update:model-value="onTimePicked"
                 />
               </v-dialog>
@@ -329,10 +349,6 @@ function handleClose() {
               :rules="rules.required"
               label="Tipe"
               prepend-inner-icon="mdi-format-vertical-align-center"
-              @update:model-value="
-                isFromBranch = props.data?.item.is_new!,
-                formRef.validate()
-              "
             />
           </v-col>
           <v-col cols="6" class="ps-2">
@@ -370,7 +386,6 @@ function handleClose() {
             :rules="rules.desc && rules.required"
             label="Deskripsi"
             rows="2"
-            auto-grow
             prepend-inner-icon="mdi-text-long"
             clear-icon="mdi-close"
             clearable
@@ -378,47 +393,20 @@ function handleClose() {
           />
         </div>
         
-        <div class="text-h4 text-disabled text-center mb-3">Informasi Barang </div>
-
-        <v-row no-gutters class="justify-space-between">
-          <v-col cols="5" class="pe-2">
-            <v-select
+        <v-row no-gutters>
+          <v-col class="pe-4">
+            <v-autocomplete
               variant="underlined"
-              v-model="payload.item.category_id"
-              :items="props.categories"
-              :rules="[...rules.item_required]"
+              v-model="payload.item.id"
+              :items="props.inv_item"
               item-title="name"
               item-value="id"
-              label="Kategori"
-              prepend-inner-icon="mdi-shape"
-            />
-          </v-col>
-          <v-col cols="7" class="ps-2">
-            <v-autocomplete
-            variant="underlined"
-            v-model="payload.item.id"
-            :items="props.inv_item"
-            item-title="name"
-            item-value="id"
-            label="Nama Barang"
-            :rules="rules.required"
-            prepend-inner-icon="mdi-form-textbox"
-            @update:model-value="updateItem(payload.item.id!), formRef.validate()"
-          />
-          </v-col>
-        </v-row>
-        <v-row no-gutters class="justify-center" align="center">
-          <v-col cols="3" class="pe-2">
-            <v-text-field
-              v-model="payload.item.unit"
-              variant="underlined"
-              disabled
-              label="Satuan"
+              label="Nama Barang"
               :rules="rules.required"
-              prepend-inner-icon="mdi-scale-balance"
+              prepend-inner-icon="mdi-form-textbox"
             />
           </v-col>
-          <v-col cols="6" class="ps-2">
+          <v-col>
             <v-number-input 
               v-model.number="payload.item.quantity"
               inset

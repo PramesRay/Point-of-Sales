@@ -12,7 +12,7 @@ import UpdateFundRequest from './UpdateFundRequest.vue';
 import { useAlertStore } from '@/stores/alert';
 
 const { openOverlay } = useOverlayManager()
-const { loading: lfr, update } = useFundRequests();
+const { loading: lfr, approve } = useFundRequests();
 const userStore = useUserStore()
 const alertStore = useAlertStore()
 
@@ -58,10 +58,10 @@ const isDisabled = computed(() => {
   return !isFormValid.value || approvalItems.value.some(item => item.approved === null)
 })
 
-const totalApprovedAmount = computed(() => {
+const totalApprovedQuantity = computed(() => {
   return approvalItems.value.reduce((acc, item) => {
     if (item.approved) {
-      return acc + item.item.purchase_price * item.quantity
+      return acc + 1
     }
     return acc
   }, 0)
@@ -75,7 +75,7 @@ function processApprovalItems() {
       id: item.item.id,
       approved: item.approved!
     })),
-    total_approved: totalApprovedAmount.value
+    total_approved: totalApprovedQuantity.value
   }
 
   openOverlay({
@@ -84,7 +84,7 @@ function processApprovalItems() {
       confirmToContinue: true,
       confirmMessage: 'Apakah anda yakin ingin menyetujui permintaan ini?',
       onConfirm: async () => {
-        update(payload).then(() => {
+        approve(payload).then(() => {
           props.refresh()
           emit('close')
         })
@@ -143,11 +143,6 @@ const handleUpdate = () => {
 
     <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="handleSubmit">
       <v-row no-gutters>
-        <v-col cols="12">
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <span>{{ props.data.branch.name }}</span>
-          </span>
-        </v-col>
         <v-col cols="7">
           <h6 class="text-secondary text-h4 font-weight-bold">
             {{ props.data.subject }}

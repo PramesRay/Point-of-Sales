@@ -32,7 +32,7 @@ const { data: reservationData, loading: lr, load: loadReservation } = useReserva
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadMenu, loadCategory, dataItemSales: menuData, categories: menuCategories, loading: lm } = useMenuItems();
-const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
+const { loadShiftbyRole, loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
@@ -49,31 +49,24 @@ onMounted(async () => {
   // if(!userStore.me) userStore.fetchMe()
 
   await loadBranch()
-  loadMenu(selectedBranch.value ?? branchOptions.value[0].id).then(() => {
-    console.log('load menu', menuData.value)
-    console.log('load categories', menuCategories.value)
-  })
+
+  selectedBranch.value ? loadMenu(selectedBranch.value ?? branchOptions.value[0]?.id) : null
   loadUser()
   loadSummary()
   loadReservation()
   loadEmployeeActive()
-  loadCashier()
-  loadEmployee()
-  loadKitchen()
-  loadWarehouse()
+  loadShiftbyRole()
 })
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadUser()
-  loadMenu(selectedBranch.value ?? branchOptions.value[0].id)
+  loadMenu(selectedBranch.value ?? branchOptions?.value[0].id)
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
   // loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
   loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
   loadReservation({ filter: { 'branch.id': selectedBranch.value } })
-  loadCashier({ filter: { 'branch.id': selectedBranch.value } })
-  loadEmployee({ filter: { 'branch.id': selectedBranch.value } })
-  loadKitchen({ filter: { 'branch.id': selectedBranch.value } })
+  loadShiftbyRole()
 });
 
 const pinBranch = ref(true)

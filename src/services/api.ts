@@ -113,7 +113,7 @@ api.interceptors.response.use(
     if (status === 401 || status === 403) {
       await useAuthStore().logout();
       router.push('/login');
-      useAlertStore().showAlert('Sesi kadaluarsa. Silakan login kembali.', 'error');
+      useAlertStore().showAlert(error.response.data?.message || 'Sesi kadaluarsa. Silakan login kembali.', 'error');
     } else {
       useAlertStore().showAlert(
         error.response?.data?.message || 'Terjadi kesalahan.',

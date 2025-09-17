@@ -10,8 +10,8 @@ const alertStore = useAlertStore();
 
 export async function fetchInventoryItem(): Promise<InventoryItem[]> {
   try {
-    const res = await api.get<InventoryItem[]>(`/inventory/items`);
-    return res.data;
+    const res = await api.get(`/inventory/items`);
+    return res.data.data;
   } catch (error) {
     console.warn(`Fetch Inventory Item failed, using dummy.`, error);
     return dummyInventoryItems
@@ -34,7 +34,7 @@ export async function fetchStockMovements({
     filter?: Record<string, any>
   } = {}): Promise<{data: StockMovement[]; total: number}> {
   try {
-    const url = `/stock-movement`;
+    const url = `/inventory/stock-movements`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -54,7 +54,7 @@ export async function fetchStockMovements({
 
     return {
       data: res.data.data,
-      total: res.data.meta?.total ?? res.data.data.length,
+      total: res.data.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
     console.warn(`Fetch Stock Movement data failed, using dummy.`, error);
@@ -179,9 +179,9 @@ export async function fetchStockMovements({
 
 export async function createStockMovement(payload: CreateStockMovementPayload): Promise<StockMovement> {
   try {
-    const res = await api.post<StockMovement>(`/inventory/stock-movements`, payload);
+    const res = await api.post(`/inventory/stock-movements`, payload);
     alertStore.showAlert('Stock Movement berhasil dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Stock Movement gagal dibuat!', 'error');
     console.warn(`Create stock movement failed, using dummy.`, error);
@@ -191,9 +191,9 @@ export async function createStockMovement(payload: CreateStockMovementPayload): 
 
 export async function updateStockMovement(payload: UpdateStockMovementPayload): Promise<StockMovement> {
   try {
-    const res = await api.put<StockMovement>(`/inventory/stock-movements`, payload);
+    const res = await api.put(`/inventory/stock-movements`, payload);
     alertStore.showAlert('Stock Movement berhasil diubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Stock Movement gagal diubah!', 'error');
     console.warn(`Update stock movement failed, using dummy.`, error);
@@ -214,9 +214,9 @@ export async function deleteStockMovement(id: string): Promise<void> {
 
 export async function createItem(payload: CreateInventoryItemPayload): Promise<InventoryItem> {
   try {
-    const res = await api.post<InventoryItem>(`/inventory/items`, payload);
+    const res = await api.post(`/inventory/items`, payload);
     alertStore.showAlert('Item berhasil dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Item gagal dibuat!', 'error');
     console.warn(`Create item failed, using dummy.`, error);
@@ -226,9 +226,9 @@ export async function createItem(payload: CreateInventoryItemPayload): Promise<I
 
 export async function updateItem(payload: UpdateInventoryItemPayload): Promise<InventoryItem> {
   try {
-    const res = await api.put<InventoryItem>(`/inventory/items`, payload);
+    const res = await api.put(`/inventory/items`, payload);
     alertStore.showAlert('Item berhasil diubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Item gagal diubah!', 'error');
     console.warn(`Update item failed, using dummy.`, error);
@@ -249,8 +249,8 @@ export async function deleteItem(id: string): Promise<void> {
 
 export async function fetchCategoryInvItem(): Promise<Category[]> {
   try {
-    const res = await api.get<Category[]>(`/inventory/category`);
-    return res.data;
+    const res = await api.get(`/categories?type=inv`);
+    return res.data.data;
   } catch (error) {
     console.warn(`Fetch Inventory Item's Category failed, using dummy.`, error);
     return dummyInventoryItemsCategories
@@ -259,9 +259,9 @@ export async function fetchCategoryInvItem(): Promise<Category[]> {
 
 export async function createCategoryInvItem(payload: CreateCategoryPayload): Promise<Category> {
   try {
-    const res = await api.post<Category>(`/inventory/category`, payload);
+    const res = await api.post(`/category?type=inv`, payload);
     alertStore.showAlert('Category berhasil dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Category gagal dibuat!', 'error');
     console.warn(`Create category failed, using dummy.`, error);
@@ -271,9 +271,9 @@ export async function createCategoryInvItem(payload: CreateCategoryPayload): Pro
 
 export async function updateCategoryInvItem(payload: UpdateCategoryPayload): Promise<Category> {
   try {
-    const res = await api.put<Category>(`/inventory/category`, payload);
+    const res = await api.put(`/category?type=inv`, payload);
     alertStore.showAlert('Category berhasil diubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     alertStore.showAlert('Category gagal diubah!', 'error');
     console.warn(`Update category failed, using dummy.`, error);
@@ -283,7 +283,7 @@ export async function updateCategoryInvItem(payload: UpdateCategoryPayload): Pro
 
 export async function deleteCategoryInvItem(id: string): Promise<void> {
   try {
-    await api.delete(`/inventory/category/${id}`);
+    await api.delete(`/category/${id}`);
     alertStore.showAlert('Category berhasil dihapus!', 'success');
   } catch (error) {
     alertStore.showAlert('Category gagal dihapus!', 'error');

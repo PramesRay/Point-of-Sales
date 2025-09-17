@@ -102,16 +102,6 @@ export async function updateMenu(menu: UpdateMenuPayload): Promise<Menu> {
   }
 }
 
-export async function qtyMenuUpdate(payload: RestockMenuSalesPayload): Promise<Menu> {
-  try {
-    const res = await api.patch<Menu>(`/menu/manage-qty`, payload);
-    return res.data;
-  } catch (error) {
-    console.error('Failed to restock menu:', error);
-    throw error;
-  }
-}
-
 export async function deleteMenu(id: string): Promise<void> {
   try {
     await api.delete(`/menu/${id}`);

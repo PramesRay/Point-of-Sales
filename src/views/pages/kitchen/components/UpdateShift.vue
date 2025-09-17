@@ -12,16 +12,13 @@ import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import { cloneDeep } from 'lodash'
 import { useMenuItems } from '@/composables/useMenuItems'
 import Blank from '@/components/shared/Blank.vue'
+import { useUserStore } from '@/stores/authUser'
 
 const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
 
+const userStore = useUserStore()
 const { updateKitchen, endKitchen, loading: loadingShift } = useShift()
-const { load, dataItemSales, loading: loadingMenu } = useMenuItems()
-
-onMounted(() => {
-  load()
-})
 
 const props = defineProps<{
   data: ShiftKitchen
@@ -37,7 +34,7 @@ const currentData = cloneDeep(props.data)
 
 // const initial_menu = ref(cloneDeep(props.data.initial_menu))
 const quantity_menu = ref(
-  props.data.end ? [] : cloneDeep(props.data.quantity_menu)
+  currentData?.end ? [] : cloneDeep(currentData?.quantity_menu)
 )
 const notes = ref<string | null>(null)
 
@@ -47,10 +44,10 @@ const isShowMenu = ref(false)
 
 const isChanged = computed(() => {
   const finalChanged = quantity_menu.value.some((item, index) => 
-    item.final !== props.data.quantity_menu?.[index]?.final
+    item.final !== currentData?.quantity_menu?.[index]?.final
   )
 
-  const notesChanged = (props.data.notes === null ? !(notes.value === null || notes.value === '') : notes.value !== props.data.notes)
+  const notesChanged = (currentData?.notes === null ? !(notes.value === null || notes.value === '') : notes.value !== currentData?.notes)
 
   return finalChanged || notesChanged
 })
@@ -65,8 +62,7 @@ watchEffect(() => {
 })
 
 function clearPayload() {
-  // initial_menu.value = currentData.initial_menu
-  quantity_menu.value = cloneDeep(currentData.quantity_menu)
+  quantity_menu.value = cloneDeep(currentData?.quantity_menu)
   notes.value = null
   formRef.value?.resetValidation()
 }
@@ -82,7 +78,7 @@ async function processSubmit() {
   const final_menu = quantity_menu.value.map((item) => ({ id: item.id, quantity: item.final }))
   try {
     await updateKitchen({
-      id: currentData.id,
+      id: currentData?.id,
       final_menu,
       notes: notes.value
     })
@@ -105,7 +101,7 @@ async function handleEndShift() {
       confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
       onConfirm: async () => {
         try {
-          await endKitchen(currentData.id)
+          await endKitchen(currentData?.id)
           console.log('end shift kitchen')
           if (typeof props.onIsChangedUpdate === 'function') {
             props.onIsChangedUpdate(false)
@@ -116,6 +112,7 @@ async function handleEndShift() {
         } catch (error) {
           console.log(error)
         }
+        emit('close')
       }
     }
   })
@@ -141,7 +138,7 @@ async function handleEndShift() {
       </div>
 
       <h4 class="text-h4 mt-1 mb-1">Detail Shift Dapur</h4>
-      <div class="text-subtitle-2 text-disabled">{{ currentData.branch?.name }}</div>
+      <div class="text-subtitle-2 text-disabled">{{ currentData?.branch?.name }}</div>
 
       <v-divider class="my-4"></v-divider>
 
@@ -152,7 +149,7 @@ async function handleEndShift() {
               <v-list-subheader class="text-subtitle-1 font-weight-bold">
                 Pesanan
               </v-list-subheader>
-              {{ currentData.total_order }}
+              {{ currentData?.total_order }}
             </div>
             <v-list-item class="px-0 mx-2">
               <v-expansion-panels multiple variant="accordion" elevation="0">  
@@ -163,7 +160,7 @@ async function handleEndShift() {
                     </div>
                     <template v-slot:actions>
                       <div class="text-caption text-medium-emphasis font-weight-bold text-success">
-                        {{ currentData.completed_order }}
+                        {{ currentData?.completed_order }}
                       </div>
                     </template>
                   </v-expansion-panel-title>
@@ -176,7 +173,7 @@ async function handleEndShift() {
                     </div>
                     <template v-slot:actions>
                       <div class="text-caption text-medium-emphasis font-weight-bold text-error">
-                        {{ currentData.canceled_order }}
+                        {{ currentData?.canceled_order }}
                       </div>
                     </template>
                   </v-expansion-panel-title>
@@ -191,10 +188,7 @@ async function handleEndShift() {
               <v-icon>{{ isShowMenu ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
             </div>
             <v-expand-transition v-show="isShowMenu">
-              <div class="text-center my-4" v-if="loadingMenu">
-                <v-progress-circular indeterminate color="warning" height="1"/>
-              </div>
-              <v-table :items="dataItemSales" style="overflow-x: hidden;" v-else>
+              <v-table :items="quantity_menu" style="overflow-x: hidden;">
                 <thead>
                   <tr>
                     <th style="max-width: 30dvw;">Nama Menu</th>
@@ -203,14 +197,14 @@ async function handleEndShift() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in dataItemSales" :key="index" >
+                  <tr v-for="(item, index) in quantity_menu" :key="index" >
                     <td style="max-width: 30dvw; overflow: hidden; text-overflow: ellipsis;">
                       <h4 class="text-h5 font-weight-medium">
                         {{ item.name }}
                       </h4>
                     </td>
                     <td class="text-center text-disabled">
-                      {{ currentData.quantity_menu[index].initial || '-' }}
+                      {{ currentData?.quantity_menu[index]?.initial || '-' }}
                     </td>
                     <td class="text-center d-flex justify-center pa-2" align="center">
                       <v-number-input
@@ -224,7 +218,7 @@ async function handleEndShift() {
                         single-line
                         inset
                         :min="0"
-                        :max="currentData.quantity_menu[index].final"
+                        :max="currentData?.quantity_menu[index].final"
                         color="error"
                       />
                     </td>
@@ -232,8 +226,8 @@ async function handleEndShift() {
                 </tbody>
               </v-table>
   
-              <div v-if="!loadingMenu && dataItemSales.length === 0" class="text-center text-subtitle-2 text-disabled my-4">
-                Data Menu Sales tidak ditemukan
+              <div v-if="quantity_menu.length === 0" class="text-center text-subtitle-2 text-disabled my-4">
+                Data Menu tidak ditemukan
               </div>
             </v-expand-transition>
           </v-list>

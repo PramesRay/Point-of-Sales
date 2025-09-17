@@ -6,7 +6,7 @@ import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 
-const { refundOrderItem, loading: lo } = useCurrentOrders()
+const { refund, loading: lo } = useCurrentOrders()
 
 const emit = defineEmits(['close'])
 
@@ -29,31 +29,30 @@ const amtRules = [
   }
 ]
 
-async function processPayment() {
+async function processRefund() {
   try {
-      await refundOrderItem({
-        id: props.payload?.id!,
-        items: props.payload?.items?.map((item) => ({
-          id: item.id,
-          status: 'Refund'
-        })) ?? [],
-        amount: props.payload?.amount_refund ?? 0,
-        reason: reason.value ?? '',
-        method: refund_method.value ?? 'Cash'
-      })
+    await refund({
+      id: props.payload?.id!,
+      items: props.payload?.items?.map((item) => ({
+        id: item.id,
+        status: 'Refund'
+      })) ?? [],
+      amount: props.payload?.amount_refund ?? 0,
+      reason: reason.value ?? '',
+      method: refund_method.value ?? 'Cash'
+    })
 
-      props.refresh()
-      emit('close')
-    } catch (error) {
-      props.refresh()
-      console.log(error)
-    }
+    props.refresh()
+    emit('close')
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 function handleSubmit() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    processPayment()
+    processRefund()
   })
 }
 </script>
@@ -74,7 +73,7 @@ function handleSubmit() {
         <v-icon>mdi-close</v-icon>
       </v-btn>
   
-      <h4 class="text-h4">Pembayaran</h4>
+      <h4 class="text-h4">Refund</h4>
       <v-divider class="my-2"></v-divider>
   
       <div class="text-center mb-4">

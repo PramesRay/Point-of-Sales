@@ -6,15 +6,11 @@ const { mdAndUp } = useDisplay()
 
 import { getTimeDiff } from "@/utils/helpers/time";
 
-import type { Order, OrderItem } from '@/types/order';
 import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
-// import DetailOrder from '../../cashier/components/sub-components/DetailOrder.vue';
-import { useMenuItems } from '@/composables/useMenuItems';
-
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
-import type { Shift, ShiftCashier, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
+import type { ShiftCashier, ShiftEmployee, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
 import { formatDate } from '@/utils/helpers/format-date';
 import Blank from '@/components/shared/Blank.vue';
 import DetailShiftCashier from './sub-components/shift/DetailShiftCashier.vue';
@@ -26,7 +22,7 @@ import DetailShiftWarehouse from './sub-components/shift/DetailShiftWarehouse.vu
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
-  shift_employee: Shift[];
+  shift_employee: ShiftEmployee[];
   shift_cashier: ShiftCashier[];
   shift_kitchen: ShiftKitchen[];
   shift_warehouse: ShiftWarehouse[];
@@ -46,26 +42,69 @@ const props = defineProps<{
 }>();
 
 const selectedEmployee = computed<Employee[]>(() => {
+  const sortedEmployee = [...props.data_employee].filter(tx => tx.role !== null).sort((a, b) => {
+    const hasShiftEmpA = !!a.activity?.shift_emp;
+    const hasShiftEmpB = !!b.activity?.shift_emp;
+    if (hasShiftEmpA !== hasShiftEmpB) return hasShiftEmpA ? -1 : 1; // yang punya shift_emp duluan
+
+    const isActiveA = !!a.activity?.is_active;
+    const isActiveB = !!b.activity?.is_active;
+    if (isActiveA !== isActiveB) return isActiveA ? -1 : 1; // aktif (true) di atas non-aktif
+
+    const lastA = a.activity?.last_active ? new Date(a.activity.last_active).getTime() : -Infinity;
+    const lastB = b.activity?.last_active ? new Date(b.activity.last_active).getTime() : -Infinity;
+    return lastB - lastA; // yang paling baru di atas
+    });
+
+
   if (!props.branch || props.branch.id === 'all') {
-    console.log('props.data_employee', props.data_employee)
-    return props.data_employee.filter((tx) => 
-      (selectedTab.value === 3 ? tx.role === 'gudang' : ['kasir', 'dapur', 'gudang'].includes(tx.role!))
-    );
+    return sortedEmployee;
   }
-  return props.data_employee.filter((tx) => 
-    (selectedTab.value === 3 ? tx.role === 'gudang' : ['kasir', 'dapur', 'gudang'].includes(tx.role!)) && 
-    tx.assigned_branch.id === props.branch?.id
+  return sortedEmployee.filter((tx) => 
+    tx.assigned_branch ? tx.assigned_branch.id === props.branch?.id : false
+  ).concat(
+    props.data_employee.filter(tx => 
+      !sortedEmployee.some(val => val.id === tx.id) && 
+      tx.assigned_branch ? tx.assigned_branch.id === props.branch?.id : false
+    )
   );
 })
 
 const selectedBranch = computed<Branch[]>(() => {
+  const sortedBranch = props.data_branch.sort((a: Branch, b: Branch) => {
+    const lastActiveA = a.operational?.activity.last_active ? new Date(a.operational?.activity.last_active).getTime() : 0;
+    const lastActiveB = b.operational?.activity.last_active ? new Date(b.operational?.activity.last_active).getTime() : 0;
+
+    const startA = selectedTab.value === 1 
+      ? a.operational?.activity?.shift_cashier?.start 
+        ? new Date(a.operational?.activity?.shift_cashier?.start).getTime() 
+        : 0
+      : selectedTab.value === 2 
+        ? a.operational?.activity?.shift_kitchen?.start 
+          ? new Date(a.operational?.activity?.shift_kitchen?.start).getTime() 
+          : 0
+        : 0;
+    
+    const startB = selectedTab.value === 1 
+      ? b.operational?.activity?.shift_cashier?.start 
+        ? new Date(b.operational?.activity?.shift_cashier?.start).getTime() 
+        : 0
+      : selectedTab.value === 2 
+        ? b.operational?.activity?.shift_kitchen?.start 
+          ? new Date(b.operational?.activity?.shift_kitchen?.start).getTime() 
+          : 0
+        : 0;
+
+    return startB - startA || lastActiveA - lastActiveB;
+  });
+
   if (!props.branch || props.branch.id === 'all') {
-    return props.data_branch;
+    return sortedBranch;
   }
-  return props.data_branch.filter((tx) => tx.id === props.branch?.id);
+  return sortedBranch.filter((tx) => tx.id === props.branch?.id);
 })
 
-const selectedShiftEmployee = computed<Shift[]>(() => {
+const selectedShiftEmployee = computed<ShiftEmployee[]>(() => {
   if (!props.branch || props.branch.id === 'all') {
     return props.shift_employee;
   }
@@ -76,14 +115,14 @@ const selectedShiftCashier = computed<ShiftCashier[]>(() => {
   if (!props.branch || props.branch.id === 'all') {
     return props.shift_cashier;
   }
-  return props.shift_cashier.filter((tx) => tx.branch ? tx.branch.id === props.branch?.id : false);
+  return props.shift_cashier?.filter((tx) => tx.branch ? tx.branch.id === props.branch?.id : false);
 });
 
 const selectedShiftKitchen = computed<ShiftKitchen[]>(() => {
   if (!props.branch || props.branch.id === 'all') {
     return props.shift_kitchen;
   }
-  return props.shift_kitchen.filter((tx) => tx.branch ? tx.branch.id === props.branch?.id : false);
+  return props.shift_kitchen?.filter((tx) => tx.branch ? tx.branch.id === props.branch?.id : false);
 });
 
 const selectedWarehouse = computed<ShiftWarehouse[]>(() => {
@@ -96,8 +135,8 @@ const listEmployee = computed<Employee[]>(() => selectedEmployee.value.slice(1) 
 const latestBranch = computed<Branch | null>(() => selectedBranch.value[0] || null);
 const listBranch = computed<Branch[]>(() => selectedBranch.value.slice(1) || []);
 
-const latestShiftEmployee = computed<Shift | null>(() => selectedShiftEmployee.value[0] || null);
-const listShiftEmployee = computed<Shift[]>(() => selectedShiftEmployee.value.slice(1) || []);
+const latestShiftEmployee = computed<ShiftEmployee | null>(() => selectedShiftEmployee.value[0] || null);
+const listShiftEmployee = computed<ShiftEmployee[]>(() => selectedShiftEmployee.value.slice(1) || []);
 
 const latestShiftCashier = computed<ShiftCashier | null>(() => selectedShiftCashier.value[0] || null);
 const listShiftCashier = computed<ShiftCashier[]>(() => selectedShiftCashier.value.slice(1) || []);
@@ -122,8 +161,9 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
         <v-row align="center" no-gutters class="mb-4 ml-1">
           <v-col>
             <h4 class="text-h4">
-              {{ byShift ? 'Semua' : '' }} Shift
+              {{ (byShift || selectedTab === 3) ? 'Semua' : '' }} Shift
               <v-btn
+                v-if="selectedTab !== 3"
                 icon
                 variant="text"
                 density="compact"
@@ -133,7 +173,15 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                 <v-icon>mdi-swap-vertical</v-icon>
               </v-btn>
             </h4>
-            <span v-if="!props.loading" class="text-subtitle-2 text-medium-emphasis">{{ (props.branch && selectedTab !== 3) ? props.branch?.name : 'Semua Cabang' }}</span>
+            <div v-if="!props.loading" class="text-subtitle-2 text-medium-emphasis">
+              <div v-if="!byShift && selectedTab !== 3">
+                {{ selectedTab !== 0 
+                    ? !!props.branch ? `Dari Cabang ${props.branch?.name}` : ' Dari Semua Cabang'
+                    : 'Dari Pegawai' 
+                }}
+              </div>
+              <div v-if="byShift && selectedTab !== 3">{{ (props.branch && selectedTab !== 3) ? `Di ${props.branch?.name}` : 'Di Semua Cabang' }}</div>
+            </div>
           </v-col>
           <v-col cols="auto" class="text-center" v-if="!props.loading">
             <v-window
@@ -205,61 +253,63 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
         <div v-if="!props.loading && selectedTab === 0">
           <div v-if="byShift">
             <v-card 
-              class="bg-lightsecondary"
+              v-if="latestShiftEmployee"
+              class="bg-lightsecondary pa-5"
               :class="latestShiftEmployee?.end ? 'text-disabled' : 'text-medium-emphasis'"
             >
-              <div v-if="latestShiftEmployee" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div>
-                    <span 
-                      v-if="latestShiftEmployee.start"
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestShiftEmployee.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestShiftEmployee.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestShiftEmployee.start!, !!latestShiftEmployee.end) }}
+              <div v-if="latestShiftEmployee" class="text-subtitle-2 text-medium-emphasis">
+                <v-row no-gutters>
+                  <v-col cols="12" md="6" class="d-flex align-center justify-space-between">
+                    <div>
+                      <span 
+                        v-if="latestShiftEmployee.start"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestShiftEmployee.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestShiftEmployee.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestShiftEmployee.end ?? latestShiftEmployee.start, !!latestShiftEmployee.end) }}
+                        </span>
                       </span>
-                    </span>
-                    <span
-                      v-else
-                      class="text-subtitle-2 text-medium-emphasis"
-                    >
-                      Tidak Aktif
-                    </span>
-                    <h6 :class="(!latestShiftEmployee?.start || latestShiftEmployee?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
-                      {{ latestShiftEmployee?.meta.created_by.name }}
-                    </h6>
-                    <div :class="(!latestShiftEmployee?.start || latestShiftEmployee?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                      {{ latestShiftEmployee?.meta.created_by.role }} {{ latestShiftEmployee?.branch ? (' - ' + latestShiftEmployee?.branch.name) : '' }}
+                      <span
+                        v-else
+                        class="text-subtitle-2 text-medium-emphasis"
+                      >
+                        Tidak Aktif
+                      </span>
+                      <h6 :class="(!latestShiftEmployee?.start || latestShiftEmployee?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                        {{ latestShiftEmployee?.meta?.created_by?.name }}
+                      </h6>
+                      <div :class="(!latestShiftEmployee?.start || latestShiftEmployee?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
+                        {{ latestShiftEmployee?.employee?.role + ' - ' }} {{ latestShiftEmployee?.branch ? (latestShiftEmployee?.branch.name) : '' }}
+                      </div>
                     </div>
-                    <!-- <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span> -->
-                  </div>
-                  <div v-if="!latestShiftEmployee?.end" class="text-right">
-                    <div class="text-disabled">
-                      Dimulai pada: 
+                  </v-col>
+                  <v-col class="text-subtitle-2 text-right">
+                    <div v-if="!latestShiftEmployee?.end">
+                      <div class="text-disabled">
+                        Dimulai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestShiftEmployee?.start).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestShiftEmployee?.start).split(' pukul')[1] }}
+                      </div>
                     </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestShiftEmployee?.start).split(' pukul')[0] }}
+                    <div v-else>
+                      <div class="text-disabled">
+                        Selesai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestShiftEmployee?.end).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestShiftEmployee?.end).split(' pukul')[1] }}
+                      </div>
                     </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestShiftEmployee?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                  <div v-else>
-                    <div class="text-disabled text-right">
-                      Selesai pada: 
-                    </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestShiftEmployee?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestShiftEmployee?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -273,58 +323,59 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     rounded="sm"
                     :class="item?.end ? 'text-disabled' : 'text-medium-emphasis'"
                   >
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <span 
-                          v-if="item?.start"
-                          class="text-subtitle-2 text-medium-emphasis"
-                          :class="item?.end ? 'text-success' : 'text-primary'"
-                        >
-                          {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                          <span class="font-weight-bold">
-                            {{ getTimeDiff(item?.start!, !!item?.end) }}
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <v-row no-gutters>
+                      <v-col class="d-flex align-center justify-space-between">
+                        <div>
+                          <span 
+                            v-if="item?.start"
+                            class="text-subtitle-2 text-medium-emphasis"
+                            :class="item?.end ? 'text-success' : 'text-primary'"
+                          >
+                            {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                            <span class="font-weight-bold">
+                              {{ getTimeDiff(item?.end ?? item?.start, !!item?.end) }}
+                            </span>
                           </span>
-                        </span>
-                        <span
-                          v-else
-                          class="text-subtitle-2 text-medium-emphasis"
-                        >
-                          Tidak Aktif
-                        </span>
-                        <h6 :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
-                          {{ item?.meta.created_by.name }}
-                        </h6>
-                        <div :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                          {{ item?.meta.created_by.role }} {{ item?.branch ? (' - ' + item?.branch.name) : '' }}
+                          <span
+                            v-else
+                            class="text-subtitle-2 text-medium-emphasis"
+                          >
+                            Tidak Aktif
+                          </span>
+                          <h6 :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                            {{ item?.meta?.created_by?.name }}
+                          </h6>
+                          <div :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
+                            {{ item?.employee?.role + ' - ' }} {{ item?.branch ? (item?.branch.name) : '' }}
+                          </div>
                         </div>
-                        <!-- <span class="text-subtitle-2 text-disabled">
-                          Lihat Detail
-                        </span> -->
-                      </div>
-                      <div v-if="!item?.end" class="text-subtitle-2 text-right">
-                        <div class="text-disabled">
-                          Dimulai pada: 
+                      </v-col>
+                      <v-col class="text-subtitle-2 text-right">
+                        <div v-if="!item?.end">
+                          <div class="text-disabled">
+                            Dimulai pada: 
+                          </div>
+                          <div class="text-subtitle-2 font-weight-bold">  
+                            {{ formatDate(item?.start).split(' pukul')[0] }}
+                          </div>
+                          <div class="text-h4">
+                            {{ formatDate(item?.start).split(' pukul')[1] }}
+                          </div>
                         </div>
-                        <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.start).split(' pukul')[0] }}
+                        <div v-else>
+                          <div class="text-disabled">
+                            Selesai pada: 
+                          </div>
+                          <div class="text-subtitle-2 font-weight-bold">  
+                            {{ formatDate(item?.end).split(' pukul')[0] }}
+                          </div>
+                          <div class="text-h4">
+                            {{ formatDate(item?.end).split(' pukul')[1] }}
+                          </div>
                         </div>
-                        <div class="text-h4">
-                          {{ formatDate(item?.start).split(' pukul')[1] }}
-                        </div>
-                      </div>
-                      <div v-else class="text-subtitle-2 text-right">
-                        <div class="text-disabled">
-                          Selesai pada: 
-                        </div>
-                        <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.start).split(' pukul')[0] }}
-                        </div>
-                        <div class="text-h4">
-                          {{ formatDate(item?.start).split(' pukul')[1] }}
-                        </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
+                      </v-col>
+                    </v-row>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -336,52 +387,76 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                 Data Shift Pegawai Kosong
               </div>
             </div>
-
           </div>
           <div v-else>
-            <v-card class="bg-lightsecondary"
-            >
-              <div v-if="latestEmployee?.activity.shift_emp" class="pa-5 text-subtitle-2 text-medium-emphasis">
+            <v-card class="bg-lightsecondary" v-if="latestEmployee">
+              <div class="pa-5 text-subtitle-2 text-medium-emphasis">
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <span 
+                      v-if="latestEmployee?.activity?.is_active"
                       class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestEmployee?.activity.shift_emp?.end ? 'text-success' : 'text-primary'"
+                      :class="latestEmployee?.activity?.shift_emp?.end ? 'text-success' : 'text-primary'"
                     >
-                      {{ latestEmployee?.activity.shift_emp?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                      {{ latestEmployee?.activity?.shift_emp?.end ? 'Selesai: ' : 'Aktif: ' }} 
                       <span class="font-weight-bold">
-                        {{ getTimeDiff(latestEmployee?.activity.shift_emp?.start, !!latestEmployee?.activity.shift_emp?.end) }}</span>
+                        {{ getTimeDiff(latestEmployee?.activity?.shift_emp?.end ?? latestEmployee?.activity?.shift_emp?.start, !!latestEmployee?.activity?.shift_emp?.end) }}
                       </span>
-                    <h6 :class="!latestEmployee?.activity.shift_emp?.start || latestEmployee?.activity.shift_emp?.end ? '' : 'text-secondary'" class="text-secondary text-h4 font-weight-bold">
-                      {{ latestEmployee?.activity.shift_emp?.meta.created_by.name }}
+                    </span>
+                    <span
+                      v-else
+                      class="text-subtitle-2 text-medium-emphasis"
+                    >
+                      Tidak Aktif
+                    </span>
+                    <h6 :class="(!latestEmployee?.activity?.shift_emp?.start || latestEmployee?.activity?.shift_emp?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                      {{ latestEmployee?.name }}
                     </h6>
-                    <div :class="!latestEmployee?.activity.shift_emp?.start || latestEmployee?.activity.shift_emp?.end ? '' : 'text-secondary'" class="text-secondary text-subtitle-2 text-medium-emphasis">
-                      {{ latestEmployee?.activity.shift_emp?.meta.created_by.role }} {{ latestEmployee?.activity.shift_emp?.branch ? (' - ' + latestEmployee?.activity.shift_emp?.branch.name) : '' }}
+                    <div :class="(!latestEmployee?.activity?.shift_emp?.start || latestEmployee?.activity?.shift_emp?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
+                      {{ latestEmployee?.role + ' - ' }} {{ latestEmployee?.assigned_branch ? (latestEmployee.assigned_branch.name) : '' }}
                     </div>
                     <!-- <span class="text-subtitle-2 text-disabled">
                       Lihat Detail
                     </span> -->
                   </div>
-                  <div v-if="!latestEmployee?.activity.shift_emp?.end" class="text-right">
-                    <div class="text-disabled">
-                      Dimulai pada: 
-                    </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestEmployee.activity.shift_emp?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestEmployee.activity.shift_emp?.start).split(' pukul')[1] }}
+                  <div v-if="!latestEmployee?.activity?.shift_emp">
+                    <div class="text-subtitle-2 text-right text-disabled">
+                      Belum ada shift
                     </div>
                   </div>
-                  <div v-else class="text-right">
-                    <div class="text-disabled">
-                      Selesai pada: 
+                  <div v-else-if="latestEmployee?.activity?.shift_emp" class="text-subtitle-2 text-right">
+                    <div v-if="!latestEmployee?.activity?.shift_emp?.end">
+                      <div class="text-disabled">
+                        Dimulai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestEmployee?.activity?.shift_emp?.start).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestEmployee?.activity?.shift_emp?.start).split(' pukul')[1] }}
+                      </div>
+                    </div>
+                    <div v-else class="text-subtitle-2 text-right">
+                      <div class="text-disabled">
+                        Selesai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestEmployee?.activity?.shift_emp?.end).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestEmployee?.activity?.shift_emp?.end).split(' pukul')[1] }}
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-subtitle-2 text-right text-disabled">
+                    <div>
+                      Terakhir aktif: 
                     </div>
                     <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestEmployee.activity.shift_emp?.start).split(' pukul')[0] }}
+                      {{ formatDate(latestEmployee?.activity?.last_active).split(' pukul')[0] }}
                     </div>
                     <div class="text-h4">
-                      {{ formatDate(latestEmployee.activity.shift_emp?.start).split(' pukul')[1] }}
+                      {{ formatDate(latestEmployee?.activity?.last_active).split(' pukul')[1] }}
                     </div>
                   </div>
                 </div>
@@ -396,18 +471,19 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     :value="item"
                     color="secondary"
                     rounded="sm"
-                    :class="(!item?.activity.shift_emp?.start || item?.activity.shift_emp?.end) ? 'text-disabled' : 'text-medium-emphasis'"
+                    :class="(!item?.activity?.shift_emp?.start || item?.activity?.shift_emp?.end) ? 'text-disabled' : 'text-medium-emphasis'"
                   >
+                    <v-divider v-if="i !== 0" class="my-3"/>
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
                         <span 
-                          v-if="item?.activity.shift_emp?.start"
+                          v-if="item?.activity?.is_active"
                           class="text-subtitle-2 text-medium-emphasis"
-                          :class="item?.activity.shift_emp?.end ? 'text-success' : 'text-primary'"
+                          :class="item?.activity?.shift_emp?.end ? 'text-success' : 'text-primary'"
                         >
-                          {{ item?.activity.shift_emp?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                          {{ item?.activity?.shift_emp?.end ? 'Selesai: ' : 'Aktif: ' }} 
                           <span class="font-weight-bold">
-                            {{ getTimeDiff(item?.activity.shift_emp?.start!, !!item?.activity.shift_emp?.end) }}
+                            {{ getTimeDiff(item?.activity?.shift_emp?.end ?? item?.activity?.shift_emp?.start, !!item?.activity?.shift_emp?.end) }}
                           </span>
                         </span>
                         <span
@@ -416,26 +492,31 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                         >
                           Tidak Aktif
                         </span>
-                        <h6 :class="(!item?.activity.shift_emp?.start || item?.activity.shift_emp?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                        <h6 :class="(!item?.activity?.shift_emp?.start || item?.activity?.shift_emp?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
                           {{ item?.name }}
                         </h6>
-                        <div :class="(!item?.activity.shift_emp?.start || item?.activity.shift_emp?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                          {{ item?.role }} {{ item?.activity.shift_emp?.branch ? (' - ' + item?.activity.shift_emp.branch.name) : '' }}
+                        <div :class="(!item?.activity?.shift_emp?.start || item?.activity?.shift_emp?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
+                          {{ item?.role + ' - ' }} {{ item?.assigned_branch ? (item?.assigned_branch.name) : '' }}
                         </div>
                         <!-- <span class="text-subtitle-2 text-disabled">
                           Lihat Detail
                         </span> -->
                       </div>
-                      <div v-if="item?.activity.shift_emp?.start">
-                        <div v-if="!item?.activity.shift_emp?.end" class="text-subtitle-2 text-right">
+                      <div v-if="!item?.activity?.shift_emp">
+                        <div class="text-subtitle-2 text-right text-disabled">
+                          Belum ada shift
+                        </div>
+                      </div>
+                      <div v-else-if="item?.activity?.shift_emp" class="text-subtitle-2 text-right">
+                        <div v-if="!item?.activity?.shift_emp?.end">
                           <div class="text-disabled">
                             Dimulai pada: 
                           </div>
                           <div class="text-subtitle-2 font-weight-bold">  
-                            {{ formatDate(item?.activity.shift_emp?.start).split(' pukul')[0] }}
+                            {{ formatDate(item?.activity?.shift_emp?.start).split(' pukul')[0] }}
                           </div>
                           <div class="text-h4">
-                            {{ formatDate(item?.activity.shift_emp?.start).split(' pukul')[1] }}
+                            {{ formatDate(item?.activity?.shift_emp?.start).split(' pukul')[1] }}
                           </div>
                         </div>
                         <div v-else class="text-subtitle-2 text-right">
@@ -443,10 +524,10 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                             Selesai pada: 
                           </div>
                           <div class="text-subtitle-2 font-weight-bold">  
-                            {{ formatDate(item?.activity.shift_emp?.start).split(' pukul')[0] }}
+                            {{ formatDate(item?.activity?.shift_emp?.end).split(' pukul')[0] }}
                           </div>
                           <div class="text-h4">
-                            {{ formatDate(item?.activity.shift_emp?.start).split(' pukul')[1] }}
+                            {{ formatDate(item?.activity?.shift_emp?.end).split(' pukul')[1] }}
                           </div>
                         </div>
                       </div>
@@ -455,14 +536,13 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                           Terakhir aktif: 
                         </div>
                         <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.activity.last_active).split(' pukul')[0] }}
+                          {{ formatDate(item?.activity?.last_active).split(' pukul')[0] }}
                         </div>
                         <div class="text-h4">
-                          {{ formatDate(item?.activity.last_active).split(' pukul')[1] }}
+                          {{ formatDate(item?.activity?.last_active).split(' pukul')[1] }}
                         </div>
                       </div>
                     </div>
-                    <v-divider class="my-3"/>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -478,65 +558,62 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
         </div>
         <div v-if="!props.loading && selectedTab === 1">
           <div v-if="!byShift">
-            <v-card class="bg-lightsecondary"
-              @click="
-                openOverlay({
-                  component: DetailShiftCashier,
-                  props: {
-                    data: latestBranch?.operational.activity.shift_cashier
-                  }
-                })
-              "
-            >
-              <div v-if="latestBranch?.operational.activity.shift_cashier" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div :class="(!latestBranch?.operational.activity.shift_cashier?.start || latestBranch?.operational.activity.shift_cashier?.end) ? 'text-disabled' : 'text-secondary'">
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestBranch?.operational.activity.shift_cashier?.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestBranch?.operational.activity.shift_cashier?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestBranch?.operational.activity.shift_cashier?.start!, !!latestBranch?.operational.activity.shift_cashier?.end) }} 
+            <v-card v-if="latestBranch" class="bg-lightsecondary">
+              <div class="pa-5 text-subtitle-2 text-medium-emphasis">
+                <v-row no-gutters align="center">
+                  <v-col>
+                    <div :class="(!latestBranch?.operational.activity?.shift_cashier?.start || latestBranch?.operational.activity?.shift_cashier?.end) ? 'text-disabled' : 'text-secondary'">
+                      <span 
+                        v-if="latestBranch?.operational.activity?.shift_cashier.id"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestBranch?.operational.activity?.shift_cashier?.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestBranch?.operational.activity?.shift_cashier?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestBranch?.operational.activity?.shift_cashier?.end ?? latestBranch?.operational.activity?.shift_cashier?.start, !!latestBranch?.operational.activity?.shift_cashier?.end) }} 
+                        </span>
                       </span>
-                    </span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis">
+                        Tidak Aktif
+                      </span>
+                    </div>
                     <h6 class="text-h4 font-weight-bold">
                       {{ latestBranch?.name }}
                     </h6>
                     <div class="text-subtitle-2 text-disabled">
-                      dimulai oleh: <span class="font-weight-bold">{{ latestBranch?.operational.activity.shift_cashier?.meta.created_by.name }}</span>
+                      dimulai oleh: <span class="font-weight-bold">{{ latestBranch?.operational.activity?.shift_cashier?.meta?.created_by?.name }}</span>
                     </div>
-                    <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span>
-                  </div>
-                  <div>
-                    <div class="d-flex justify-end">  
-                      <div v-if="!latestBranch?.operational.activity.shift_cashier?.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestBranch?.operational.activity.shift_cashier?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestBranch?.operational.activity.shift_cashier?.start).split(' pukul')[1] }}
-                          </div>
+                  </v-col>
+                  <v-col class="text-right">
+                    <div v-if="latestBranch?.operational.activity?.shift_cashier?.id" class="d-flex justify-end">  
+                      <div v-if="!latestBranch?.operational.activity?.shift_cashier?.end">
+                        <div class="text-disabled">
+                          Dimulai pada: 
                         </div>
-                        <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestBranch?.operational.activity.shift_cashier?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestBranch?.operational.activity.shift_cashier?.start).split(' pukul')[1] }}
-                          </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestBranch?.operational.activity?.shift_cashier?.start).split(' pukul')[0] }}
                         </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestBranch?.operational.activity?.shift_cashier?.start).split(' pukul')[1] }}
+                        </div>
+                      </div>
+                      <div v-else class="text-subtitle-2 text-disabled text-right">
+                        <div class="text-disabled">
+                          Selesai pada: 
+                        </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestBranch?.operational.activity?.shift_cashier?.end).split(' pukul')[0] }}
+                        </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestBranch?.operational.activity?.shift_cashier?.end).split(' pukul')[1] }}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    <div v-else class="text-subtitle-2 text-disabled text-right">
+                      Belum ada shift
+                    </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -547,66 +624,64 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     :key="i" 
                     :value="item"
                     color="secondary"
-                    :class="item.operational.activity.shift_cashier.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
+                    :class="!(item?.operational.activity?.last_active && item?.operational.activity?.is_active) ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
                     rounded="sm"
-                    @click="
-                      openOverlay({
-                        component: DetailShiftCashier,
-                        props: {
-                          data: item.operational.activity.shift_cashier
-                        }
-                      })
-                    "
                   >
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="item.operational.activity.shift_cashier.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ item.operational.activity.shift_cashier.end ? 'Selesai: ' : 'Aktif: ' }}
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(item.operational.activity.shift_cashier.start!, !!item.operational.activity.shift_cashier.end) }} 
-                      </span>
-                    </span>
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <div :class="(!item.operational.activity.shift_cashier.start || item.operational.activity.shift_cashier.end) ? 'text-disabled' : 'text-secondary'">
-                          <h6 class="text-h4 font-weight-bold">
-                            {{ item.name }}
-                          </h6>
-                          <div class="text-subtitle-2 text-disabled">
-                            Dimulai oleh: <span class="font-weight-bold">{{ item.operational.activity.shift_cashier.meta.created_by.name }}</span>
-                          </div>
-                          <span class="text-subtitle-2 text-disabled">
-                            Lihat Detail
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <v-row no-gutters align="center">
+                      <v-col>
+                        <div :class="(!item?.operational.activity?.shift_cashier?.start || item?.operational.activity?.shift_cashier?.end) ? 'text-disabled' : 'text-secondary'">
+                          <span 
+                            v-if="item?.operational.activity?.shift_cashier.id"
+                            class="text-subtitle-2 text-medium-emphasis"
+                            :class="item?.operational.activity?.shift_cashier?.end ? 'text-success' : 'text-primary'"
+                          >
+                            {{ item?.operational.activity?.shift_cashier?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                            <span class="font-weight-bold">
+                              {{ getTimeDiff(item?.operational.activity?.shift_cashier?.end ?? item?.operational.activity?.shift_cashier?.start, !!item?.operational.activity?.shift_cashier?.end) }} 
+                            </span>
+                          </span>
+                          <span v-else class="text-subtitle-2 text-medium-emphasis">
+                            Tidak Aktif
                           </span>
                         </div>
-                      </div>
-                      <div>
-                        <div v-if="!item.operational.activity.shift_cashier.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
+                        <h6 class="text-h4 font-weight-bold">
+                          {{ item?.name }}
+                        </h6>
+                        <div v-if="item?.operational.activity?.shift_cashier?.id" class="text-subtitle-2 text-disabled">
+                          dimulai oleh: <span class="font-weight-bold">{{ item?.operational.activity?.shift_cashier?.meta?.created_by?.name }}</span>
+                        </div>
+                      </v-col>
+                      <v-col class="text-right">
+                        <div v-if="item?.operational.activity?.shift_cashier?.id" class="d-flex justify-end">  
+                          <div v-if="!item?.operational.activity?.shift_cashier?.end">
+                            <div class="text-disabled">
+                              Dimulai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.operational.activity?.shift_cashier?.start).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.operational.activity?.shift_cashier?.start).split(' pukul')[1] }}
+                            </div>
                           </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.operational.activity.shift_cashier.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.operational.activity.shift_cashier.start).split(' pukul')[1] }}
+                          <div v-else class="text-subtitle-2 text-disabled text-right">
+                            <div class="text-disabled">
+                              Selesai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.operational.activity?.shift_cashier?.end).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.operational.activity?.shift_cashier?.end).split(' pukul')[1] }}
+                            </div>
                           </div>
                         </div>
                         <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.operational.activity.shift_cashier.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.operational.activity.shift_cashier.start).split(' pukul')[1] }}
-                          </div>
+                          Belum ada shift
                         </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
+                      </v-col>
+                    </v-row>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -620,7 +695,7 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
             </div>
           </div>
           <div v-else>
-            <v-card class="bg-lightsecondary"
+            <v-card v-if="latestShiftCashier" class="bg-lightsecondary"
               @click="
                 openOverlay({
                   component: DetailShiftCashier,
@@ -631,54 +706,60 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
               "
             >
               <div v-if="latestShiftCashier" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div :class="(!latestShiftCashier?.start || latestShiftCashier?.end) ? 'text-disabled' : 'text-secondary'">
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestShiftCashier?.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestShiftCashier?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestShiftCashier?.start!, !!latestShiftCashier?.end) }} 
+                <v-row no-gutters align="center">
+                  <v-col>
+                    <div :class="(!latestShiftCashier?.start || latestShiftCashier?.end) ? 'text-disabled' : 'text-secondary'">
+                      <span 
+                        v-if="latestShiftCashier"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestShiftCashier?.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestShiftCashier?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestShiftCashier?.end ?? latestShiftCashier?.start, !!latestShiftCashier?.end) }} 
+                        </span>
                       </span>
-                    </span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis">
+                        Tidak Aktif
+                      </span>
+                    </div>
                     <h6 class="text-h4 font-weight-bold">
                       {{ latestShiftCashier?.branch?.name }}
                     </h6>
                     <div class="text-subtitle-2 text-disabled">
-                      dimulai oleh: <span class="font-weight-bold">{{ latestShiftCashier?.meta.created_by.name }}</span>
+                      dimulai oleh: <span class="font-weight-bold">{{ latestShiftCashier?.meta?.created_by?.name }}</span>
                     </div>
-                    <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span>
-                  </div>
-                  <div>
-                    <div class="d-flex justify-end">  
-                      <div v-if="!latestShiftCashier?.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestShiftCashier?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestShiftCashier?.start).split(' pukul')[1] }}
-                          </div>
+                  </v-col>
+                  <v-col class="text-right">
+                    <div v-if="latestShiftCashier?.id" class="d-flex justify-end">  
+                      <div v-if="!latestShiftCashier?.end">
+                        <div class="text-disabled">
+                          Dimulai pada: 
                         </div>
-                        <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestShiftCashier?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestShiftCashier?.start).split(' pukul')[1] }}
-                          </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestShiftCashier?.start).split(' pukul')[0] }}
                         </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestShiftCashier?.start).split(' pukul')[1] }}
+                        </div>
+                      </div>
+                      <div v-else class="text-subtitle-2 text-disabled text-right">
+                        <div class="text-disabled">
+                          Selesai pada: 
+                        </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestShiftCashier?.end).split(' pukul')[0] }}
+                        </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestShiftCashier?.end).split(' pukul')[1] }}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    <div v-else class="text-subtitle-2 text-disabled text-right">
+                      Belum ada shift
+                    </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -689,7 +770,7 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     :key="i" 
                     :value="item"
                     color="secondary"
-                    :class="item.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
+                    :class="item?.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
                     rounded="sm"
                     @click="
                       openOverlay({
@@ -700,55 +781,64 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                       })
                     "
                   >
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="item.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ item.end ? 'Selesai: ' : 'Aktif: ' }}
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(item.start!, !!item.end) }} 
-                      </span>
-                    </span>
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <div :class="(!item.start || item.end) ? 'text-disabled' : 'text-secondary'">
-                          <h6 class="text-h4 font-weight-bold">
-                            {{ item.branch?.name }}
-                          </h6>
-                          <div class="text-subtitle-2 text-disabled">
-                            Dimulai oleh: <span class="font-weight-bold">{{ item.meta.created_by.name }}</span>
-                          </div>
-                          <span class="text-subtitle-2 text-disabled">
-                            Lihat Detail
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <v-row no-gutters align="center">
+                      <v-col>
+                        <div :class="(!item?.start || item?.end) ? 'text-disabled' : 'text-secondary'">
+                          <span 
+                            v-if="item"
+                            class="text-subtitle-2 text-medium-emphasis"
+                            :class="item?.end ? 'text-success' : 'text-primary'"
+                          >
+                            {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                            <span class="font-weight-bold">
+                              {{ getTimeDiff(item?.end ?? item?.start, !!item?.end) }} 
+                            </span>
+                          </span>
+                          <span v-else class="text-subtitle-2 text-medium-emphasis">
+                            Tidak Aktif
                           </span>
                         </div>
-                      </div>
-                      <div>
-                        <div v-if="!item.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
+                        <h6 class="text-h4 font-weight-bold">
+                          {{ item?.branch?.name }}
+                        </h6>
+                        <div v-if="item?.id" class="text-subtitle-2 text-disabled">
+                          dimulai oleh: <span class="font-weight-bold">{{ item?.meta?.created_by?.name }}</span>
+                        </div>
+                        <span class="text-subtitle-2 text-disabled">
+                          Lihat Detail
+                        </span>
+                      </v-col>
+                      <v-col class="text-right">
+                        <div v-if="item" class="d-flex justify-end">  
+                          <div v-if="!item?.end">
+                            <div class="text-disabled">
+                              Dimulai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.start).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.start).split(' pukul')[1] }}
+                            </div>
                           </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.start).split(' pukul')[1] }}
+                          <div v-else class="text-subtitle-2 text-disabled text-right">
+                            <div class="text-disabled">
+                              Selesai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.end).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.end).split(' pukul')[1] }}
+                            </div>
                           </div>
                         </div>
                         <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.start).split(' pukul')[1] }}
-                          </div>
+                          Belum ada shift
                         </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
+                      </v-col>
+                    </v-row>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -764,65 +854,62 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
         </div>
         <div v-if="!props.loading && selectedTab === 2">
           <div v-if="!byShift">
-            <v-card class="bg-lightsecondary"
-              @click="
-                openOverlay({
-                  component: DetailShiftKitchen,
-                  props: {
-                    data: latestBranch?.operational.activity.shift_kitchen
-                  }
-                })
-              "
-            >
-              <div v-if="latestBranch?.operational.activity.shift_kitchen" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div :class="(!latestBranch?.operational.activity.shift_kitchen?.start || latestBranch?.operational.activity.shift_kitchen?.end) ? 'text-disabled' : 'text-secondary'">
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestBranch?.operational.activity.shift_kitchen?.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestBranch?.operational.activity.shift_kitchen?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestBranch?.operational.activity.shift_kitchen?.start!, !!latestBranch?.operational.activity.shift_kitchen?.end) }} 
+            <v-card v-if="latestBranch" class="bg-lightsecondary">
+              <div class="pa-5 text-subtitle-2 text-medium-emphasis">
+                <v-row no-gutters align="center">
+                  <v-col>
+                    <div :class="(!latestBranch?.operational.activity?.shift_kitchen?.start || latestBranch?.operational.activity?.shift_kitchen?.end) ? 'text-disabled' : 'text-secondary'">
+                      <span 
+                        v-if="latestBranch?.operational.activity?.shift_kitchen.id"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestBranch?.operational.activity?.shift_kitchen?.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestBranch?.operational.activity?.shift_kitchen?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestBranch?.operational.activity?.shift_kitchen?.end ?? latestBranch?.operational.activity?.shift_kitchen?.start, !!latestBranch?.operational.activity?.shift_kitchen?.end) }} 
+                        </span>
                       </span>
-                    </span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis">
+                        Tidak Aktif
+                      </span>
+                    </div>
                     <h6 class="text-h4 font-weight-bold">
                       {{ latestBranch?.name }}
                     </h6>
                     <div class="text-subtitle-2 text-disabled">
-                      dimulai oleh: <span class="font-weight-bold">{{ latestBranch?.operational.activity.shift_kitchen?.meta.created_by.name }}</span>
+                      dimulai oleh: <span class="font-weight-bold">{{ latestBranch?.operational.activity?.shift_kitchen?.meta?.created_by?.name }}</span>
                     </div>
-                    <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span>
-                  </div>
-                  <div>
-                    <div class="d-flex justify-end">  
-                      <div v-if="!latestBranch?.operational.activity.shift_kitchen?.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestBranch?.operational.activity.shift_kitchen?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestBranch?.operational.activity.shift_kitchen?.start).split(' pukul')[1] }}
-                          </div>
+                  </v-col>
+                  <v-col class="text-subtitle-2 text-medium-emphasis text-right">
+                    <div v-if="latestBranch?.operational.activity?.shift_kitchen?.id" class="d-flex justify-end">  
+                      <div v-if="!latestBranch?.operational.activity?.shift_kitchen?.end">
+                        <div class="text-disabled">
+                          Dimulai pada: 
                         </div>
-                        <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestBranch?.operational.activity.shift_kitchen?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestBranch?.operational.activity.shift_kitchen?.start).split(' pukul')[1] }}
-                          </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestBranch?.operational.activity?.shift_kitchen?.start).split(' pukul')[0] }}
                         </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestBranch?.operational.activity?.shift_kitchen?.start).split(' pukul')[1] }}
+                        </div>
+                      </div>
+                      <div v-else class="text-subtitle-2 text-disabled text-right">
+                        <div class="text-disabled">
+                          Selesai pada: 
+                        </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestBranch?.operational.activity?.shift_kitchen?.end).split(' pukul')[0] }}
+                        </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestBranch?.operational.activity?.shift_kitchen?.end).split(' pukul')[1] }}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    <div v-else class="text-subtitle-2 text-disabled text-right">
+                      Belum ada shift
+                    </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -833,66 +920,64 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     :key="i" 
                     :value="item"
                     color="secondary"
-                    :class="item.operational.activity.shift_kitchen.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
+                    :class="(item?.operational.activity?.shift_kitchen.end || !item?.operational.activity?.shift_kitchen.id) ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
                     rounded="sm"
-                    @click="
-                      openOverlay({
-                        component: DetailShiftKitchen,
-                        props: {
-                          data: item
-                        }
-                      })
-                    "
                   >
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="item.operational.activity.shift_kitchen.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ item.operational.activity.shift_kitchen.end ? 'Selesai: ' : 'Aktif: ' }}
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(item.operational.activity.shift_kitchen.start!, !!item.operational.activity.shift_kitchen.end) }} 
-                      </span>
-                    </span>
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <div :class="(!item.operational.activity.shift_kitchen.start || item.operational.activity.shift_kitchen.end) ? 'text-disabled' : 'text-secondary'">
-                          <h6 class="text-h4 font-weight-bold">
-                            {{ item.name }}
-                          </h6>
-                          <div class="text-subtitle-2 text-disabled">
-                            Dimulai oleh: <span class="font-weight-bold">{{ item.operational.activity.shift_kitchen.meta.created_by.name }}</span>
-                          </div>
-                          <span class="text-subtitle-2 text-disabled">
-                            Lihat Detail
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <v-row no-gutters align="center">
+                      <v-col>
+                        <div :class="(!item?.operational.activity?.shift_kitchen?.start || item?.operational.activity?.shift_kitchen?.end) ? 'text-disabled' : 'text-secondary'">
+                          <span 
+                            v-if="item?.operational.activity?.shift_kitchen.id"
+                            class="text-subtitle-2 text-medium-emphasis"
+                            :class="item?.operational.activity?.shift_kitchen?.end ? 'text-success' : 'text-primary'"
+                          >
+                            {{ item?.operational.activity?.shift_kitchen?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                            <span class="font-weight-bold">
+                              {{ getTimeDiff(item?.operational.activity?.shift_kitchen?.end ?? item?.operational.activity?.shift_kitchen?.start, !!item?.operational.activity?.shift_kitchen?.end) }} 
+                            </span>
+                          </span>
+                          <span v-else class="text-subtitle-2 text-medium-emphasis">
+                            Tidak Aktif
                           </span>
                         </div>
-                      </div>
-                      <div>
-                        <div v-if="!item.operational.activity.shift_kitchen.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
+                        <h6 class="text-h4 font-weight-bold">
+                          {{ item?.name }}
+                        </h6>
+                        <div v-if="item?.operational.activity?.shift_kitchen?.id" class="text-subtitle-2 text-disabled">
+                          dimulai oleh: <span class="font-weight-bold">{{ item?.operational.activity?.shift_kitchen?.meta?.created_by?.name }}</span>
+                        </div>
+                      </v-col>
+                      <v-col class="text-subtitle-2 text-medium-emphasis text-right">
+                        <div v-if="item?.operational.activity?.shift_kitchen?.id" class="d-flex justify-end">  
+                          <div v-if="!item?.operational.activity?.shift_kitchen?.end">
+                            <div class="text-disabled">
+                              Dimulai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.operational.activity?.shift_kitchen?.start).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.operational.activity?.shift_kitchen?.start).split(' pukul')[1] }}
+                            </div>
                           </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.operational.activity.shift_kitchen.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.operational.activity.shift_kitchen.start).split(' pukul')[1] }}
+                          <div v-else class="text-subtitle-2 text-disabled text-right">
+                            <div class="text-disabled">
+                              Selesai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.operational.activity?.shift_kitchen?.end).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.operational.activity?.shift_kitchen?.end).split(' pukul')[1] }}
+                            </div>
                           </div>
                         </div>
                         <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.operational.activity.shift_kitchen.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.operational.activity.shift_kitchen.start).split(' pukul')[1] }}
-                          </div>
+                          Belum ada shift
                         </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
+                      </v-col>
+                    </v-row>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -906,10 +991,10 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
             </div>
           </div>
           <div v-else>
-            <v-card class="bg-lightsecondary"
+            <v-card v-if="latestShiftKitchen" class="bg-lightsecondary"
               @click="
                 openOverlay({
-                  component: DetailShiftCashier,
+                  component: DetailShiftKitchen,
                   props: {
                     data: latestShiftKitchen
                   }
@@ -917,54 +1002,60 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
               "
             >
               <div v-if="latestShiftKitchen" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div :class="(!latestShiftKitchen?.start || latestShiftKitchen?.end) ? 'text-disabled' : 'text-secondary'">
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestShiftKitchen?.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestShiftKitchen?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestShiftKitchen?.start!, !!latestShiftKitchen?.end) }} 
+                <v-row no-gutters align="center">
+                  <v-col>
+                    <div :class="(!latestShiftKitchen?.start || latestShiftKitchen?.end) ? 'text-disabled' : 'text-secondary'">
+                      <span 
+                        v-if="latestShiftKitchen"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestShiftKitchen?.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestShiftKitchen?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestShiftKitchen?.end ?? latestShiftKitchen?.start, !!latestShiftKitchen?.end) }} 
+                        </span>
                       </span>
-                    </span>
+                      <span v-else class="text-subtitle-2 text-medium-emphasis">
+                        Tidak Aktif
+                      </span>
+                    </div>
                     <h6 class="text-h4 font-weight-bold">
                       {{ latestShiftKitchen?.branch?.name }}
                     </h6>
                     <div class="text-subtitle-2 text-disabled">
-                      dimulai oleh: <span class="font-weight-bold">{{ latestShiftKitchen?.meta.created_by.name }}</span>
+                      dimulai oleh: <span class="font-weight-bold">{{ latestShiftKitchen?.meta?.created_by?.name }}</span>
                     </div>
-                    <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span>
-                  </div>
-                  <div>
-                    <div class="d-flex justify-end">  
-                      <div v-if="!latestShiftKitchen?.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestShiftKitchen?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestShiftKitchen?.start).split(' pukul')[1] }}
-                          </div>
+                  </v-col>
+                  <v-col class="text-subtitle-2 text-disabled text-right">
+                    <div v-if="latestShiftKitchen?.id" class="d-flex justify-end">  
+                      <div v-if="!latestShiftKitchen?.end" >
+                        <div class="text-disabled">
+                          Dimulai pada: 
                         </div>
-                        <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(latestShiftKitchen?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(latestShiftKitchen?.start).split(' pukul')[1] }}
-                          </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestShiftKitchen?.start).split(' pukul')[0] }}
                         </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestShiftKitchen?.start).split(' pukul')[1] }}
+                        </div>
+                      </div>
+                      <div v-else class="text-subtitle-2 text-disabled text-right">
+                        <div class="text-disabled">
+                          Selesai pada: 
+                        </div>
+                        <div class="font-weight-bold">  
+                          {{ formatDate(latestShiftKitchen?.end).split(' pukul')[0] }}
+                        </div>
+                        <div class="text-h4">
+                          {{ formatDate(latestShiftKitchen?.end).split(' pukul')[1] }}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    <div v-else class="text-subtitle-2 text-disabled text-right">
+                      Belum ada shift
+                    </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -975,66 +1066,72 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                     :key="i" 
                     :value="item"
                     color="secondary"
-                    :class="item.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
+                    :class="item?.end ? 'text-disabled' : 'text-medium-emphasis text-secondary'"
                     rounded="sm"
                     @click="
                       openOverlay({
-                        component: DetailShiftCashier,
+                        component: DetailShiftKitchen,
                         props: {
                           data: item
                         }
                       })
                     "
                   >
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="item.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ item.end ? 'Selesai: ' : 'Aktif: ' }}
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(item.start!, !!item.end) }} 
-                      </span>
-                    </span>
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <div :class="(!item.start || item.end) ? 'text-disabled' : 'text-secondary'">
-                          <h6 class="text-h4 font-weight-bold">
-                            {{ item.branch?.name }}
-                          </h6>
-                          <div class="text-subtitle-2 text-disabled">
-                            Dimulai oleh: <span class="font-weight-bold">{{ item.meta.created_by.name }}</span>
-                          </div>
-                          <span class="text-subtitle-2 text-disabled">
-                            Lihat Detail
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <v-row no-gutters align="center">
+                      <v-col>
+                        <div :class="(!item?.start || item?.end) ? 'text-disabled' : 'text-secondary'">
+                          <span 
+                            v-if="item"
+                            class="text-subtitle-2 text-medium-emphasis"
+                            :class="item?.end ? 'text-success' : 'text-primary'"
+                          >
+                            {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                            <span class="font-weight-bold">
+                              {{ getTimeDiff(item?.end ?? item?.start, !!item?.end) }} 
+                            </span>
+                          </span>
+                          <span v-else class="text-subtitle-2 text-medium-emphasis">
+                            Tidak Aktif
                           </span>
                         </div>
-                      </div>
-                      <div>
-                        <div v-if="!item.end" class="text-subtitle-2 text-medium-emphasis text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
+                        <h6 class="text-h4 font-weight-bold">
+                          {{ item?.branch?.name }}
+                        </h6>
+                        <div v-if="item?.id" class="text-subtitle-2 text-disabled">
+                          dimulai oleh: <span class="font-weight-bold">{{ item?.meta?.created_by?.name }}</span>
+                        </div>
+                      </v-col>
+                      <v-col class="text-subtitle-2 text-disabled text-right">
+                        <div v-if="item" class="d-flex justify-end">  
+                          <div v-if="!item?.end">
+                            <div class="text-disabled">
+                              Dimulai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.start).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.start).split(' pukul')[1] }}
+                            </div>
                           </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.start).split(' pukul')[1] }}
+                          <div v-else class="text-subtitle-2 text-disabled text-right">
+                            <div class="text-disabled">
+                              Selesai pada: 
+                            </div>
+                            <div class="font-weight-bold">  
+                              {{ formatDate(item?.end).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.end).split(' pukul')[1] }}
+                            </div>
                           </div>
                         </div>
                         <div v-else class="text-subtitle-2 text-disabled text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="font-weight-bold">  
-                            {{ formatDate(item.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item.start).split(' pukul')[1] }}
-                          </div>
+                          Belum ada shift
                         </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
+                      </v-col>
+                    </v-row>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -1049,9 +1146,10 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
           </div>
         </div>
         <div v-if="!props.loading && selectedTab === 3">
-          <div v-if="byShift">
+          <div>
             <v-card 
-              class="bg-lightsecondary"
+              v-if="latestShiftWarehouse"
+              class="bg-lightsecondary pa-5"
               :class="latestShiftWarehouse?.end ? 'text-disabled' : 'text-medium-emphasis'"
               @click="
                 openOverlay({
@@ -1062,58 +1160,54 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                 })
               "
             >
-              <div v-if="latestShiftWarehouse" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div>
-                    <span 
-                      v-if="latestShiftWarehouse.start"
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestShiftWarehouse.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestShiftWarehouse.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestShiftWarehouse.start!, !!latestShiftWarehouse.end) }}
+              <div class="text-subtitle-2 text-medium-emphasis">
+                <v-row class="align-center justify-space-between">
+                  <v-col>
+                      <span 
+                        v-if="latestShiftWarehouse?.start"
+                        class="text-subtitle-2 text-medium-emphasis"
+                        :class="latestShiftWarehouse?.end ? 'text-success' : 'text-primary'"
+                      >
+                        {{ latestShiftWarehouse?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                        <span class="font-weight-bold">
+                          {{ getTimeDiff(latestShiftWarehouse?.end ?? latestShiftWarehouse?.start, !!latestShiftWarehouse?.end) }}
+                        </span>
                       </span>
-                    </span>
-                    <span
-                      v-else
-                      class="text-subtitle-2 text-medium-emphasis"
-                    >
-                      Tidak Aktif
-                    </span>
-                    <h6 :class="(!latestShiftWarehouse?.start || latestShiftWarehouse?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
-                      {{ latestShiftWarehouse?.meta.created_by.name }}
-                    </h6>
-                    <div :class="(!latestShiftWarehouse?.start || latestShiftWarehouse?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                      {{ latestShiftWarehouse?.meta.created_by.role }}
+                      <span
+                        v-else
+                        class="text-subtitle-2 text-medium-emphasis"
+                      >
+                        Tidak Aktif
+                      </span>
+                      <h6 :class="(!latestShiftWarehouse?.start || latestShiftWarehouse?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                        {{ latestShiftWarehouse?.meta?.created_by?.name }}
+                      </h6>
+                  </v-col>
+                  <v-col class="text-right">
+                    <div v-if="!latestShiftWarehouse?.end">
+                      <div class="text-disabled">
+                        Dimulai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[1] }}
+                      </div>
                     </div>
-                    <!-- <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span> -->
-                  </div>
-                  <div v-if="!latestShiftWarehouse?.end" class="text-right">
-                    <div class="text-disabled">
-                      Dimulai pada: 
+                    <div v-else>
+                      <div class="text-disabled">
+                        Selesai pada: 
+                      </div>
+                      <div class="text-subtitle-2 font-weight-bold">  
+                        {{ formatDate(latestShiftWarehouse?.end).split(' pukul')[0] }}
+                      </div>
+                      <div class="text-h4">
+                        {{ formatDate(latestShiftWarehouse?.end).split(' pukul')[1] }}
+                      </div>
                     </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                  <div v-else class="text-right">
-                    <div class="text-disabled">
-                      Selesai pada: 
-                    </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestShiftWarehouse?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                </div>
+                  </v-col>
+                </v-row>
               </div>
             </v-card>
             <div class="mt-4" >
@@ -1135,58 +1229,56 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
                       })
                     "
                   >
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <span 
-                          v-if="item?.start"
-                          class="text-subtitle-2 text-medium-emphasis"
-                          :class="item?.end ? 'text-success' : 'text-primary'"
-                        >
-                          {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                          <span class="font-weight-bold">
-                            {{ getTimeDiff(item?.start!, !!item?.end) }}
-                          </span>
-                        </span>
-                        <span
-                          v-else
-                          class="text-subtitle-2 text-medium-emphasis"
-                        >
-                          Tidak Aktif
-                        </span>
-                        <h6 :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
-                          {{ item?.meta.created_by.name }}
-                        </h6>
-                        <div :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                          {{ item?.meta.created_by.role }}
-                        </div>
-                        <!-- <span class="text-subtitle-2 text-disabled">
-                          Lihat Detail
-                        </span> -->
-                      </div>
-                      <div v-if="!item?.end" class="text-subtitle-2 text-right">
-                        <div class="text-disabled">
-                          Dimulai pada: 
-                        </div>
-                        <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.start).split(' pukul')[0] }}
-                        </div>
-                        <div class="text-h4">
-                          {{ formatDate(item?.start).split(' pukul')[1] }}
-                        </div>
-                      </div>
-                      <div v-else class="text-subtitle-2 text-right">
-                        <div class="text-disabled">
-                          Selesai pada: 
-                        </div>
-                        <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.start).split(' pukul')[0] }}
-                        </div>
-                        <div class="text-h4">
-                          {{ formatDate(item?.start).split(' pukul')[1] }}
-                        </div>
-                      </div>
+                    <v-divider v-if="i !== 0" class="my-3"/>
+                    <div class="text-subtitle-2 text-medium-emphasis">
+                      <v-row no-gutters class="align-center justify-space-between">
+                        <v-col>
+                            <span 
+                              v-if="item?.start"
+                              class="text-subtitle-2 text-medium-emphasis"
+                              :class="item?.end ? 'text-success' : 'text-primary'"
+                            >
+                              {{ item?.end ? 'Selesai: ' : 'Aktif: ' }} 
+                              <span class="font-weight-bold">
+                                {{ getTimeDiff(item?.end ?? item?.start, !!item?.end) }}
+                              </span>
+                            </span>
+                            <span
+                              v-else
+                              class="text-subtitle-2 text-medium-emphasis"
+                            >
+                              Tidak Aktif
+                            </span>
+                            <h6 :class="(!item?.start || item?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
+                              {{ item?.meta?.created_by?.name }}
+                            </h6>
+                        </v-col>
+                        <v-col class="text-right">
+                          <div v-if="!item?.end">
+                            <div class="text-disabled">
+                              Dimulai pada: 
+                            </div>
+                            <div class="text-subtitle-2 font-weight-bold">  
+                              {{ formatDate(item?.start).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.start).split(' pukul')[1] }}
+                            </div>
+                          </div>
+                          <div v-else>
+                            <div class="text-disabled">
+                              Selesai pada: 
+                            </div>
+                            <div class="text-subtitle-2 font-weight-bold">  
+                              {{ formatDate(item?.end).split(' pukul')[0] }}
+                            </div>
+                            <div class="text-h4">
+                              {{ formatDate(item?.end).split(' pukul')[1] }}
+                            </div>
+                          </div>
+                        </v-col>
+                      </v-row>
                     </div>
-                    <v-divider class="my-3"/>
                   </v-list-item>
                 </v-list>
               </ScrollContainer>
@@ -1199,160 +1291,6 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
               </div>
             </div>
 
-          </div>
-          <div v-else>
-            <v-card class="bg-lightsecondary"
-              @click="
-                openOverlay({
-                  component: DetailShiftWarehouse,
-                  props: {
-                    data: latestEmployee?.activity.shift_op!
-                  }
-                })
-              "
-            >
-              <div v-if="latestEmployee?.activity.shift_op" class="pa-5 text-subtitle-2 text-medium-emphasis">
-                <div class="d-inline-flex align-center justify-space-between w-100">
-                  <div>
-                    <span 
-                      class="text-subtitle-2 text-medium-emphasis"
-                      :class="latestEmployee?.activity.shift_op?.end ? 'text-success' : 'text-primary'"
-                    >
-                      {{ latestEmployee?.activity.shift_op?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                      <span class="font-weight-bold">
-                        {{ getTimeDiff(latestEmployee?.activity.shift_op?.start, !!latestEmployee?.activity.shift_op?.end) }}</span>
-                      </span>
-                    <h6 :class="!latestEmployee?.activity.shift_op?.start || latestEmployee?.activity.shift_op?.end ? '' : 'text-secondary'" class="text-secondary text-h4 font-weight-bold">
-                      {{ latestEmployee?.activity.shift_op?.meta.created_by.name }}
-                    </h6>
-                    <div :class="!latestEmployee?.activity.shift_op?.start || latestEmployee?.activity.shift_op?.end ? '' : 'text-secondary'" class="text-secondary text-subtitle-2 text-medium-emphasis">
-                      {{ latestEmployee?.role }}
-                    </div>
-                    <!-- <span class="text-subtitle-2 text-disabled">
-                      Lihat Detail
-                    </span> -->
-                  </div>
-                  <div v-if="!latestEmployee?.activity.shift_op?.end" class="text-right">
-                    <div class="text-disabled">
-                      Dimulai pada: 
-                    </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestEmployee.activity.shift_op?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestEmployee.activity.shift_op?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                  <div v-else class="text-right">
-                    <div class="text-disabled">
-                      Selesai pada: 
-                    </div>
-                    <div class="text-subtitle-2 font-weight-bold">  
-                      {{ formatDate(latestEmployee.activity.shift_op?.start).split(' pukul')[0] }}
-                    </div>
-                    <div class="text-h4">
-                      {{ formatDate(latestEmployee.activity.shift_op?.start).split(' pukul')[1] }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </v-card>
-            <div class="mt-4" >
-              <ScrollContainer :style="{ maxHeight: mdAndUp? '33rem' : '18rem'}">
-                <v-list v-if="listEmployee?.length > 0" class="py-0">
-                  <v-list-item 
-                    v-for="(item, i) in listEmployee" 
-                    :key="i" 
-                    :value="item"
-                    color="secondary"
-                    rounded="sm"
-                    :disabled="!item?.activity.shift_op?.start"
-                    :class="(!item?.activity.shift_op?.start || item?.activity.shift_op?.end) ? 'text-disabled' : 'text-medium-emphasis'"
-                    @click="
-                      openOverlay({
-                        component: DetailShiftWarehouse,
-                        props: {
-                          data: item.activity.shift_op!
-                        }
-                      })
-                    "
-                  >
-                    <div class="d-inline-flex align-center justify-space-between w-100">
-                      <div>
-                        <span 
-                          v-if="item?.activity.shift_op?.start"
-                          class="text-subtitle-2 text-medium-emphasis"
-                          :class="item?.activity.shift_op?.end ? 'text-success' : 'text-primary'"
-                        >
-                          {{ item?.activity.shift_op?.end ? 'Selesai: ' : 'Aktif: ' }} 
-                          <span class="font-weight-bold">
-                            {{ getTimeDiff(item?.activity.shift_op?.start!, !!item?.activity.shift_op?.end) }}
-                          </span>
-                        </span>
-                        <span
-                          v-else
-                          class="text-subtitle-2 text-medium-emphasis"
-                        >
-                          Tidak Aktif
-                        </span>
-                        <h6 :class="(!item?.activity.shift_op?.start || item?.activity.shift_op?.end) ? '' : 'text-secondary'" class="text-h4 font-weight-bold">
-                          {{ item?.name }}
-                        </h6>
-                        <div :class="(!item?.activity.shift_op?.start || item?.activity.shift_op?.end) ? '' : 'text-secondary'" class="text-subtitle-2 text-medium-emphasis">
-                          {{ item?.role }}
-                        </div>
-                        <!-- <span class="text-subtitle-2 text-disabled">
-                          Lihat Detail
-                        </span> -->
-                      </div>
-                      <div v-if="item?.activity.shift_op?.start">
-                        <div v-if="!item?.activity.shift_op?.end" class="text-subtitle-2 text-right">
-                          <div class="text-disabled">
-                            Dimulai pada: 
-                          </div>
-                          <div class="text-subtitle-2 font-weight-bold">  
-                            {{ formatDate(item?.activity.shift_op?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item?.activity.shift_op?.start).split(' pukul')[1] }}
-                          </div>
-                        </div>
-                        <div v-else class="text-subtitle-2 text-right">
-                          <div class="text-disabled">
-                            Selesai pada: 
-                          </div>
-                          <div class="text-subtitle-2 font-weight-bold">  
-                            {{ formatDate(item?.activity.shift_op?.start).split(' pukul')[0] }}
-                          </div>
-                          <div class="text-h4">
-                            {{ formatDate(item?.activity.shift_op?.start).split(' pukul')[1] }}
-                          </div>
-                        </div>
-                      </div>
-                      <div v-else class="text-subtitle-2 text-right text-disabled">
-                        <div>
-                          Terakhir aktif: 
-                        </div>
-                        <div class="text-subtitle-2 font-weight-bold">  
-                          {{ formatDate(item?.activity.last_active).split(' pukul')[0] }}
-                        </div>
-                        <div class="text-h4">
-                          {{ formatDate(item?.activity.last_active).split(' pukul')[1] }}
-                        </div>
-                      </div>
-                    </div>
-                    <v-divider class="my-3"/>
-                  </v-list-item>
-                </v-list>
-              </ScrollContainer>
-              <!-- jika data kosong -->
-              <div 
-                v-if="!latestEmployee && listEmployee?.length === 0" 
-                class="text-center text-subtitle-2 text-disabled mt-4"
-              >
-                Data Pegawai Kosong
-              </div>
-            </div>
           </div>
         </div>
         <div v-if="props.loading" class="ml-auto">

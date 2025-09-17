@@ -9,7 +9,8 @@ import type {
   Shift,
   ShiftWarehouse,
   UpdateShiftWarehousePayload,
-  EndShiftCashierPayload
+  EndShiftCashierPayload,
+  ShiftEmployee
 } from '@/types/shift'
 
 // Dummy fallback (opsional, bisa kamu isi nanti)
@@ -21,6 +22,50 @@ import { dummyShiftWarehouse } from './dummyShiftWarehouse'
 /* ================================
    💼 EMPLOYEE
 ================================ */
+
+export async function fetchCurrentShiftEmployee({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
+  filter?: Record<string, any>
+} = {}): Promise<Shift> {
+  try {
+    const url = `/shift/employee/current`;
+    const query = new URLSearchParams();
+    
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    if (filter) {
+      for (const [key, value] of Object.entries(filter)) {
+        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
+          query.append(key, value);
+        }
+      }
+    }
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return res.data.data
+  } catch (error) {
+    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
+    return dummyShiftEmployee[0];
+  }
+}
 
 export async function fetchShiftEmployee({
   branchId,
@@ -38,7 +83,7 @@ export async function fetchShiftEmployee({
   sortBy?: string
   sortDesc?: boolean
   filter?: Record<string, any>
-} = {}): Promise<{data: Shift[]; total: number}> {
+} = {}): Promise<{data: ShiftEmployee[]; total: number}> {
   try {
     const url = `/shift/employees`;
     const query = new URLSearchParams();
@@ -176,6 +221,49 @@ export async function endShiftEmployee(): Promise<Shift> {
 /* ================================
    💼 WAREHOUSE
 ================================ */
+export async function fetchCurrentShiftWarehouse({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
+  filter?: Record<string, any>
+} = {}): Promise<ShiftWarehouse> {
+  try {
+    const url = `/shift/warehouse/current`;
+    const query = new URLSearchParams();
+    
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    if (filter) {
+      for (const [key, value] of Object.entries(filter)) {
+        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
+          query.append(key, value);
+        }
+      }
+    }
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return res.data.data
+  } catch (error) {
+    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
+    return dummyShiftWarehouse[0];
+  }
+}
 
 export async function fetchShiftWarehouse({
   page,
@@ -333,6 +421,49 @@ export async function endShiftWarehouse(id: string): Promise<ShiftWarehouse> {
 /* ================================
    💼 CASHIER
 ================================ */
+export async function fetchCurrentShiftCashier({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
+  filter?: Record<string, any>
+} = {}): Promise<ShiftCashier> {
+  try {
+    const url = `/shift/cashier/current`;
+    const query = new URLSearchParams();
+    
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    if (filter) {
+      for (const [key, value] of Object.entries(filter)) {
+        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
+          query.append(key, value);
+        }
+      }
+    }
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return res.data.data
+  } catch (error) {
+    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
+    return dummyShiftCashier[0];
+  }
+}
 
 export async function fetchShiftCashier({
   branchId,
@@ -497,6 +628,49 @@ export async function endShiftCashier(payload: EndShiftCashierPayload): Promise<
 /* ================================
    🍱 KITCHEN
 ================================ */
+export async function fetchCurrentShiftKitchen({
+  branchId,
+  page,
+  limit,
+  search,
+  sortBy,
+  sortDesc = false,
+  filter,
+}: {
+  branchId?: string
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: string
+  sortDesc?: boolean
+  filter?: Record<string, any>
+} = {}): Promise<ShiftKitchen> {
+  try {
+    const url = `/shift/kitchen/current`;
+    const query = new URLSearchParams();
+    
+    if (branchId) query.append('branch', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    if (filter) {
+      for (const [key, value] of Object.entries(filter)) {
+        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
+          query.append(key, value);
+        }
+      }
+    }
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return res.data.data
+  } catch (error) {
+    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
+    return dummyShiftKitchen[0];
+  }
+}
 
 export async function fetchShiftKitchen({
   branchId,
@@ -639,13 +813,23 @@ export async function startShiftKitchen(payload: StartShiftKitchenPayload): Prom
   }
 }
 
-export async function updateShiftKitchen(payload: UpdateShiftKitchenPayload): Promise<ShiftKitchen> {
+export async function updateShiftKitchen(payload: UpdateShiftKitchenPayload | Omit<UpdateShiftKitchenPayload, 'notes'>): Promise<ShiftKitchen> {
   try {
     const res = await api.put<ShiftKitchen>(`/shift/kitchen/${payload.id}`, payload)
     return res.data
   } catch (error) {
     console.warn('End shift dapur failed, fallback dummy.', error)
     throw error
+  }
+}
+
+export async function qtyMenuUpdate(payload: Omit<UpdateShiftKitchenPayload, 'notes'>): Promise<void> {
+  try {
+    const res = await api.put(`/shift/kitchen/${payload.id}/manage-qty`, payload);
+    return res.data;
+  } catch (error) {
+    console.error('Failed to restock menu:', error);
+    throw error;
   }
 }
 

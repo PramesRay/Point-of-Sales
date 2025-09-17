@@ -57,7 +57,8 @@ function openDetail(request: StockRequest) {
   openOverlay({
     component: DetailStockRequest,
     props: {
-      data: request
+      data: request,
+      refresh: props.refresh
     }
   })
 }
@@ -115,9 +116,9 @@ function openDetail(request: StockRequest) {
                       <span v-else-if="latestRequest?.status === 'Selesai'" class="text-subtitle-2 text-medium-emphasis text-secondary">{{ latestRequest?.status }}</span>
                       <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ latestRequest?.status }}</span>
                     </div>
-                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.meta.created_at) }}</h4>
-                    <i v-if="latestRequest.meta.updated_at !== null" class="text-subtitle-2 text-medium-emphasis">
-                      Diubah {{ getTimeDiff(latestRequest.meta.updated_at) }}
+                    <h4 class="text-h4 text-right">{{ getTimeDiff(latestRequest.meta.updated_at) }}</h4>
+                    <i v-if="latestRequest.meta.created_at !== null" class="text-subtitle-2 text-medium-emphasis">
+                      Dibuat {{ getTimeDiff(latestRequest.meta.created_at) }}
                     </i>
                   </div>
                 </div>
@@ -127,6 +128,7 @@ function openDetail(request: StockRequest) {
               <ScrollContainer v-bind:style="{ maxHeight: mdAndUp? `30rem` : '18rem' }">
                 <v-list v-if="listRequest.length > 0" class="py-0">
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
+                    <v-divider v-if="i !== 0" class="my-3" />
                     <span class="text-subtitle-2 text-disabled">
                       <span class="text-medium-emphasis" v-if="!props.branch">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
                     </span>
@@ -147,13 +149,12 @@ function openDetail(request: StockRequest) {
                           <span v-else-if="listRequest?.status === 'Selesai'" class="text-subtitle-2 text-medium-emphasis text-secondary">{{ listRequest?.status }}</span>
                           <span v-else class="text-subtitle-2 text-medium-emphasis text-error">{{ listRequest?.status }}</span>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.meta.created_at) }}</div>
-                        <i v-if="listRequest.meta.updated_at" class="text-subtitle-2 text-medium-emphasis">
-                          Diubah {{ getTimeDiff(listRequest.meta.updated_at) }}
+                        <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(listRequest.meta.updated_at) }}</div>
+                        <i v-if="listRequest.meta.created_at" class="text-subtitle-2 text-medium-emphasis">
+                          Dibuat {{ getTimeDiff(listRequest.meta.created_at) }}
                         </i>
                       </div>
                     </div>
-                    <v-divider class="my-3"/>
                   </v-list-item>
                 </v-list>
                 <!-- jika data kosong -->

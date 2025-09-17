@@ -183,7 +183,19 @@ export async function createFundRequest(payload: CreateFundRequest): Promise<Fun
 
 export async function updateFundRequest(payload: UpdateFundRequest | ApproveFundRequest): Promise<FundRequest> {
   try {
-    const res = await api.put<FundRequest>(`/finance/fund-requests`, payload);
+    const res = await api.put<FundRequest>(`/finance/fund-requests`, {...payload, type: 'updateFundRequest'});
+    alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');
+    return res.data;
+  } catch (error) {
+    alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'error');
+    console.warn(`Update fund request failed, using dummy.`, error);
+    throw error
+  }
+}
+
+export async function approveFundRequest(payload: ApproveFundRequest): Promise<FundRequest> {
+  try {
+    const res = await api.put<FundRequest>(`/finance/fund-requests`, {...payload, type: 'approveFundRequest'});
     alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');
     return res.data;
   } catch (error) {

@@ -34,6 +34,7 @@ onMounted(() => {
 const payload = ref<{[K in keyof CreateMenuPayload]: CreateMenuPayload[K] | null}>({
   name: props.is_create ? null : props.data?.name ?? null,
   description: props.is_create ? null : props.data?.description ?? null,
+  threshold: props.is_create ? null : props.data?.threshold ?? null,
   price: props.is_create ? null : props.data?.price ?? null,
   category_id: props.is_create ? null : props.data?.category.id ?? null,
   branch: props.is_create ? null : props.data?.branch.id ? [props.data.branch.id] : null,
@@ -46,7 +47,8 @@ const priceRaw = ref(props.data?.price !== undefined ? formatRupiahInput(props.d
 const rules = {
   required: [(v: string) => !!v || 'Data tidak boleh kosing'],
   required_number: [(v: number) => !!v || 'Data tidak boleh kosing'],
-  required_array: [(v: any) => v.length > 0 || 'Data tidak boleh kosing']
+  required_array: [(v: any) => v.length > 0 || 'Data tidak boleh kosing'],
+  positive: [(v: any) => v > 0 || 'Harus lebih dari 0'],
 }
 
 const isChanged = computed(() => {
@@ -81,6 +83,7 @@ function clearPayload() {
     payload.value = {
       name: null,
       description: null,
+      threshold: null,
       price: null,
       category_id: null,
       branch: null
@@ -89,6 +92,7 @@ function clearPayload() {
     payload.value = {
       name: props.data?.name ?? null,
       description: props.data?.description ?? null,
+      threshold: props.data?.threshold ?? null,
       price: props.data?.price ?? null,
       category_id: props.data?.category.id ?? null,
       branch: props.data?.branch.id ? [props.data.branch.id] : null
@@ -115,6 +119,7 @@ async function processSubmit() {
       const updatePayload: UpdateMenuPayload = {
         id: props.data!.id,
         name: payload.value.name!,
+        threshold: payload.value.threshold!,
         description: payload.value.description!,
         price: payload.value.price!,
         category_id: payload.value.category_id!,
@@ -216,7 +221,7 @@ function handleClose() {
             :rules="rules.required"
           />
         </v-col>
-        <v-col cols="12">
+        <v-col cols="7" class="pe-4">
           <v-autocomplete
             v-model="payload.branch"
             label="Cabang"
@@ -242,6 +247,17 @@ function handleClose() {
               </span>
             </template>
           </v-autocomplete>
+        </v-col>
+        <v-col cols="5">
+          <v-number-input 
+            v-model="payload.threshold" 
+            label="Threshold"
+            control-variant="split"
+            variant="plain"
+            :min="1" 
+            :rules="rules.positive"
+            single-line
+          />
         </v-col>
       </v-row>
 

@@ -11,7 +11,7 @@ const props = defineProps<{
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredData = computed(() => {
-  return props.data.filter(tx => tx.payment_status === 'Pending');
+  return props.data.filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');
 });
 
 const currentOrder = computed(() => filteredData.value.length || 0);

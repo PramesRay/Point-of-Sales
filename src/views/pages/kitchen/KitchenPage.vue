@@ -22,67 +22,43 @@ import type { ShiftKitchen } from '@/types/shift';
 import { useShift } from '@/composables/useShift';
 import { useBranchList } from '@/composables/useBranchList';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
+import { useMenuItems } from '@/composables/useMenuItems';
 
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, } = useCurrentOrders();
 const { load: loadStockRequests, list: stockRequestlist, loading: lsr } = useStockRequests();
-const { loadKitchen, shiftKitchen } = useShift()
+const { loadShiftbyRole, shiftCurrentKitchen } = useShift()
 const alertStore = useAlertStore();
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (!userStore.me?.activity?.is_active) { 
     alertStore.showAlert('Anda belum memulai shift!', 'warning');
     return
   }
 
-  loadBranch()
+  await loadBranch()
   
-  if (userStore.hasRole(['Admin', 'Pemilik'])) {
-    loadCurrentOrder({
-      filter: {
-        'branch.id': selectedBranch.value
-      },
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
-    loadStockRequests({
-      limit: 20,
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
-    loadKitchen({
-      sortBy: 'meta.created_at',
-      sortDesc: true
-    })
+  if (userStore.hasRole(['admin', 'pemilik'])) {
+    loadCurrentOrder()
+    loadStockRequests()
+    loadShiftbyRole()
   } else {
-    loadCurrentOrder({
-      filter: {
-        'shift.kitchen': userStore.me?.activity?.shift_op?.id
-      },
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
-    loadStockRequests({
-      filter: {
-        'shift.kitchen': userStore.me?.activity?.shift_op?.id
-      },
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
+    loadCurrentOrder()
+    loadStockRequests()
   }
 })
 const branchOptions = computed(() => branches.value);
 const selectedBranch = ref<string | undefined>( 
-  userStore.hasRole(['Admin', 'Pemilik']) 
-  ? branchOptions?.value[0]?.id
+  userStore.hasRole(['admin', 'pemilik']) 
+  ? undefined
   : userStore.me?.activity?.branch?.id 
     ? userStore.me.activity.branch.id 
-    : branchOptions?.value[0]?.id
+    : undefined
 );
 const selectedBranchObject = computed(() => {
   return branchOptions.value
@@ -90,21 +66,21 @@ const selectedBranchObject = computed(() => {
   ) || undefined
 })
 
-watch(
-  () => branchOptions.value,
-  (newVal) => {
-    if (newVal.length > 0 && !selectedBranch.value) {
-      selectedBranch.value = newVal[0].id
-    }
-  },
-  { immediate: true }
-)
+const currentKitchenShift = computed(() => {
+  if (!userStore.hasRole(['admin', 'pemilik'])) return userStore.me?.activity?.shift_op as ShiftKitchen
+
+  if (!selectedBranch.value) {
+    return shiftCurrentKitchen.value as ShiftKitchen
+  } else if (shiftCurrentKitchen.value?.branch?.id === selectedBranch.value) return shiftCurrentKitchen.value as ShiftKitchen
+  
+  return null
+})
 
 watch(
   () => selectedBranch.value,
   (newVal) => {
     if (newVal) {
-      if (userStore.hasRole(['Admin', 'Pemilik'])) {
+      if (userStore.hasRole(['admin', 'pemilik'])) {
         loadCurrentOrder({
           filter: {
             'branch.id': selectedBranch.value
@@ -117,7 +93,7 @@ watch(
           sortBy: 'meta.updated_at',
           sortDesc: true
         })
-        loadKitchen({
+        loadShiftbyRole({
           sortBy: 'meta.created_at',
           sortDesc: true
         })
@@ -146,7 +122,7 @@ const pinBranch = ref(false)
 <template>
   <BaseBreadcrumb
     title="Halaman Dapur"
-    v-if="mdAndUp && userStore.hasRole(['Admin', 'Pemilik'])"
+    v-if="mdAndUp && userStore.hasRole(['admin', 'pemilik'])"
     :breadcrumbs="[
       { title: 'Dapur', href: '/halaman/dapur' }
     ]"
@@ -155,7 +131,7 @@ const pinBranch = ref(false)
       <div >
         <v-select
           class="ma-0 pa-0 align-center text-subtitle-1"
-          style="max-width: fit-content; min-width: 8rem;"
+          style="max-width: max-content; min-width: 8rem;"
           variant="plain"
           v-model="selectedBranch"
           :items="branchOptions"
@@ -165,6 +141,8 @@ const pinBranch = ref(false)
           :loading="lb"
           hide-details
           density="compact"
+          clearable
+          clear-icon="mdi-close"
         />
       </div>
     </template>
@@ -172,7 +150,7 @@ const pinBranch = ref(false)
 
   <!-- sticky branch selector button -->
   <div
-    v-else
+    v-else-if="userStore.hasRole(['admin', 'pemilik'])"
     class="d-flex align-center justify-end mb-4"
     :style="pinBranch ? 'position: sticky;' : ''"
     style="top: 90px; z-index: 1; background: transparent;"
@@ -197,70 +175,73 @@ const pinBranch = ref(false)
 
   <v-row>
     <!-- Text jika belum mulai shift -->
-    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.hasRole(['admin', 'pemilik']) && !userStore.me?.activity?.is_active">
       <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
     </v-col>
 
-    <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12">
-          <CurrentOrder 
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')"
-            :data="currentOrder.data" 
-            :branch="selectedBranchObject"
-            :loading="lco" 
-            class="flex-grow-1" 
-          />
-        </v-col>
-        <v-col cols="12">
-          <CurrentOrderQue
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')"
-            :data="currentOrder.data"
-            :branch="selectedBranchObject"
-            :loading="lco"
-
-            :refresh="loadCurrentOrder"
-            class="flex-grow-1" 
-          />
-        </v-col>
-      </v-row>
-    </v-col>
-
-    <!-- Kolom Kanan: Create Order + Current Order Que -->
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12">
-          <CurrentStockRequestList 
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-persediaan')"
-            :data="stockRequestlist.data" 
-            :branch="selectedBranchObject"
-            :loading="lsr" 
-            class="flex-grow-1" 
-            :refresh="loadStockRequests"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
-    
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12">
-          <MenuQuantityManagement 
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-persediaan')"
-            :data="userStore.hasRole(['Admin', 'Pemilik']) ? shiftKitchen.data[0] : userStore.me?.activity?.shift_op as ShiftKitchen" 
-            :branch="selectedBranchObject"
-            :loading="lsr" 
-            class="flex-grow-1" 
-            :refresh="() => userStore.hasRole(['Admin', 'Pemilik']) 
-            ? loadKitchen({
-                sortBy: 'meta.created_at',
-                sortDesc: true
-              }) 
-            : userStore.fetchShift()"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
+    <template v-else>
+      <!-- Kolom Kiri: Current Order + Current Transaction -->
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12">
+            <CurrentOrder 
+              v-if="(!visibleComponent || visibleComponent === 'pesanan')"
+              :data="currentOrder.data" 
+              :branch="selectedBranchObject"
+              :loading="lco" 
+              class="flex-grow-1" 
+            />
+          </v-col>
+          <v-col cols="12">
+            <CurrentOrderQue
+              v-if="(!visibleComponent || visibleComponent === 'pesanan')"
+              :data="currentOrder.data"
+              :kitchen_shift="currentKitchenShift!"
+              :branch="selectedBranchObject"
+              :loading="lco"
+  
+              :refresh="loadCurrentOrder"
+              class="flex-grow-1" 
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+  
+      <!-- Kolom Kanan: Create Order + Current Order Que -->
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12">
+            <CurrentStockRequestList 
+              v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
+              :data="stockRequestlist.data" 
+              :branch="selectedBranchObject"
+              :loading="lsr" 
+              class="flex-grow-1" 
+              :refresh="loadStockRequests"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+      
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12">
+            <MenuQuantityManagement 
+              v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
+              :data="currentKitchenShift!" 
+              :branch="selectedBranchObject"
+              :loading="lsr" 
+              class="flex-grow-1" 
+              :refresh="() => userStore.hasRole(['admin', 'pemilik']) 
+              ? loadShiftbyRole({
+                  sortBy: 'meta.created_at',
+                  sortDesc: true
+                }) 
+              : userStore.fetchShift()"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+    </template>
   </v-row>
 </template>

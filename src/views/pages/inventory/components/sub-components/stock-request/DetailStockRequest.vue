@@ -13,7 +13,7 @@ import UpdateStockRequest from './UpdateStockRequest.vue';
 const { openOverlay } = useOverlayManager()
 const userStore = useUserStore()
 const alertStore = useAlertStore()
-const { loading: lsr, update, finish } = useStockRequests();
+const { loading: lsr, update, ready, finish } = useStockRequests();
 
 const props = defineProps<{
   data: StockRequest
@@ -64,6 +64,7 @@ function processApprovalItems() {
   const payload: ApproveStockRequestPayload = {
     id: props.data.id,
     note: approvalNote.value || '',
+    type: 'approveStock',
     items: approvalItems.value.map(item => ({
       id: item.item.id,
       approved: item.approved!
@@ -74,7 +75,7 @@ function processApprovalItems() {
     component: Blank,
     props: {
       confirmToContinue: true,
-      confirmMessage: 'Apakah anda yakin ingin menyetujui permintaan ini?',
+      confirmMessage: 'Apakah anda yakin ingin memproses permintaan ini?',
       onConfirm: async () => {
         update(payload).then(() => {
           props.refresh()
@@ -103,10 +104,26 @@ const handleUpdate = () => {
       props: {
         branch: props.data.branch,
         data: props.data,
-        refresh: props.refresh
+        refresh: () => props.refresh()
       }
     })
   }
+}
+
+const handleReady = () => {
+  openOverlay({
+    component: Blank,
+    props: {
+      confirmToContinue: true,
+      confirmMessage: 'Apakah anda yakin permintaan ini sudah siap diambil/diantar?',
+      onConfirm: async () => {
+        ready(props.data.id).then(() => {
+          props.refresh()
+          emit('close')
+        })
+      }
+    }
+  })
 }
 
 const handleFinish = () => {
@@ -174,9 +191,9 @@ const handleFinish = () => {
               }"
             >{{ props.data.status }}</span>
           </div>
-          <h4 v-if="props.data.meta.created_at" class="text-h4">{{ getTimeDiff(props.data.meta.created_at) }}</h4>
-          <i v-if="props.data.meta.updated_at" class="text-subtitle-2 text-medium-emphasis">
-            Diubah {{ getTimeDiff(props.data.meta.updated_at) }}
+          <h4 v-if="props.data.meta.updated_at" class="text-h4">{{ getTimeDiff(props.data.meta.updated_at) }}</h4>
+          <i v-if="props.data.meta.created_at" class="text-subtitle-2 text-medium-emphasis">
+            Dibuat {{ getTimeDiff(props.data.meta.created_at) }}
           </i>
         </v-col>
       </v-row>
@@ -267,6 +284,16 @@ const handleFinish = () => {
         </v-btn>
       </div>
       
+      <v-btn 
+        v-if="props.data.status === 'Diproses' && userStore.hasRole(['admin', 'pemilik', 'gudang'])"
+        class="mt-2"
+        block
+        color="success" 
+        @click="handleReady"
+      >
+        Permintaan Siap
+      </v-btn>
+
       <v-btn 
         v-if="props.data.status === 'Siap' && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
         class="mt-2"

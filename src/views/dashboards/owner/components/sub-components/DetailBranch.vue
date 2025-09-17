@@ -6,7 +6,8 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import Blank from '@/components/shared/Blank.vue';
 import type { Branch, CreateBranchPayload, UpdateBranchPayload } from '@/types/branch';
-
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore()
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
@@ -108,6 +109,7 @@ async function processSubmit() {
   try {
     if (props.is_create) {
       await create(payload.value as CreateBranchPayload)
+      alertStore.showAlert('Berhasil menambahkan cabang baru', 'success')
     }
     else {
       const updatePayload: UpdateBranchPayload = {
@@ -115,6 +117,7 @@ async function processSubmit() {
         ...payload.value as CreateBranchPayload
       }
       await update(updatePayload)
+      alertStore.showAlert('Berhasil memperbarui cabang', 'success')
     }
     props.refresh()
     handleClose()
@@ -130,6 +133,7 @@ async function processSubmit() {
 async function processDelete() {
   try {
     await remove(props.data!.id)
+    alertStore.showAlert('Berhasil menghapus cabang', 'success')
     props.refresh()
     handleClose()
   } catch (error) {
@@ -170,7 +174,7 @@ function handleClose() {
             v-model="payload.name"
             label="Nama"
             variant="underlined"
-            prepend-icon="mdi-account"
+            prepend-icon="mdi-store"
             :rules="rules.required"
           />
         </v-col>  

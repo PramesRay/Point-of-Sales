@@ -30,9 +30,8 @@ import ShiftList from '../owner/components/ShiftList.vue';
 // Data Loading
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
-const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
+const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, loadShiftbyRole, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
-const { load: loadTransactions, data: transactions, loading: ltx } = useTransactions();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
 const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
 
@@ -44,16 +43,10 @@ const visibleComponent = computed(() => {
 onMounted(() => {
   loadBranch();
   loadUser()
-
-  loadCashier()
-  loadEmployee()
-  loadKitchen()
-  loadWarehouse()
-
+  loadShiftbyRole()
   loadSummary();
   initItems();
   loadFundRequest();
-  loadTransactions(selectedBranch.value ?? '');
 })
 
 const branchOptions = computed(() => branches.value);
@@ -63,13 +56,10 @@ const selectedBranchObject = computed(() => {
   .find(branch => branch.id === selectedBranch.value
   ) || undefined
 })
-console.log('me', userStore.me)
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
   loadFundRequest({ filter: { 'branch.id': selectedBranch.value } })
-  loadTransactions(selectedBranch.value)
-  console.log('selectedBranch', selectedBranch.value)
 });
 
 const pinBranch = ref(false)
@@ -136,7 +126,7 @@ const pinBranch = ref(false)
   <v-row v-else >
     <v-col cols="12" md="4">
       <v-row v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
-        <v-col cols="12" class="d-flex">
+        <v-col cols="12">
           <TotalEarning 
           :data="summary" 
           :loading="lf" 
@@ -144,7 +134,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" class="d-flex">
+        <v-col cols="12">
           <TotalOrder 
           :data="summary" 
           :branch="selectedBranchObject"
@@ -153,7 +143,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" class="d-flex">
+        <v-col cols="12">
           <TotalIncome
             :data="summary"
             :loading="lf"
@@ -163,7 +153,7 @@ const pinBranch = ref(false)
     </v-col>
     <v-col cols="12" md="8">
       <v-row>
-        <v-col cols="12"class="d-flex" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
+        <v-col cols="12" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
           <TotalExpense
             :data="summary"
             :branch="selectedBranchObject"
@@ -172,7 +162,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'shift'">
+        <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'shift'">
           <ShiftList
             :branch="selectedBranchObject"
             :loading="ls"
@@ -195,7 +185,7 @@ const pinBranch = ref(false)
           />
         </v-col>
         
-        <v-col cols="12" md="6" class="d-flex" v-if="!visibleComponent || visibleComponent === 'permintaan-dana'">
+        <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'permintaan-dana'">
           <CurrentFundRequest
             :data="fundRequestList.data"
             :branch="selectedBranchObject"

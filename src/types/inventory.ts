@@ -45,11 +45,13 @@ export type CreateStockRequestPayload = Pick<StockRequest, 'note'> & {
 }
 
 export type UpdateStockRequestPayload = CreateStockRequestPayload & {
+  type: 'updateStock'
   id: string
 }
 
 export interface ApproveStockRequestPayload {
   id: string
+  type: 'approveStock'
   items: { 
     id: string, 
     approved: boolean

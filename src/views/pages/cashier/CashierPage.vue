@@ -19,11 +19,15 @@ import CurrentOrderQue from '../kitchen/components/CurrentOrderQue.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useMenuItems } from '@/composables/useMenuItems';
+import type { ShiftKitchen } from '@/types/shift';
+import { useShift } from '@/composables/useShift';
 
 // Data Loading
 const { data: branches, loading: lb } = useBranchList();
-const { load: loadCurrentOrder, data: currentOrder, loading: lco, update: updateOrder, create: createOrder } = useCurrentOrders();
+const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
 const { load: loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { loadShiftbyRole, shiftCurrentKitchen } = useShift()
+
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
@@ -35,24 +39,20 @@ onMounted(() => {
     return
   }
 
-  if (userStore.hasRole(['admin', 'pemilik'])) {
-    loadCurrentOrder({
-      filter: {
+  loadCurrentOrder({
+    filter: userStore.hasRole(['admin', 'pemilik'])
+      ? {
         'meta.created_at': new Date().toISOString().split('T')[0]
-      },
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
-  } else {
-    loadCurrentOrder({
-      filter: {
+      }
+      : {
         'shift_cashier_id': userStore.me?.activity?.shift_op?.id
       },
-      sortBy: 'meta.updated_at',
-      sortDesc: true
-    })
-  }
-  loadItemSales(userStore.me?.activity?.branch?.id);
+    sortBy: 'meta.updated_at',
+    sortDesc: true
+  })
+
+  loadItemSales(userStore.me?.activity?.branch?.id);  
+  loadShiftbyRole()
 })
 
 const branchOptions = computed(() => [
@@ -71,6 +71,16 @@ const selectedBranchObject = computed(() => {
   .find(branch => branch.id === selectedBranch.value
   ) || undefined
 })
+
+const currentKitchenShift = computed(() => {
+  if (!userStore.hasRole(['admin', 'pemilik'])) return userStore.me?.activity?.shift_op as ShiftKitchen
+
+  if (!selectedBranch.value) {
+    return shiftCurrentKitchen.value as ShiftKitchen
+  } else if (shiftCurrentKitchen.value?.branch?.id === selectedBranch.value) return shiftCurrentKitchen.value as ShiftKitchen
+  
+  return null
+})
 </script>
 
 <template>
@@ -81,42 +91,44 @@ const selectedBranchObject = computed(() => {
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="6" v-if="(userStore.me?.activity?.is_active || mdAndUp) && (!visibleComponent || visibleComponent === 'rekapitulasi-pesanan')">
-      <v-row>
-        <v-col cols="12">
-          <CurrentOrder 
-            :data="currentOrder.data" 
-            :branch="selectedBranchObject"
-            :loading="lco" 
-            class="flex-grow-1" 
-          />
-        </v-col>
-        <v-col cols="12">
-          <CreateOrder 
-            :data_menu="menuSales"
-            :categories="categories"
-            :refresh="loadCurrentOrder"
-            class="flex-grow-1" 
-          />
-        </v-col>
-      </v-row>
-    </v-col>
-
-    <!-- Kolom Kanan: Create Order + Current Order Que -->
-    <v-col cols="12" md="6">
-      <v-row>
-        <v-col cols="12" v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'pesanan')">
-          <CurrentOrderQue
-            :data="currentOrder.data"
-            :branch="selectedBranchObject"
-            :loading="lco"
-
-            :load="loadCurrentOrder"
-            :refresh="loadCurrentOrder"
-            class="flex-grow-1" 
-          />
-        </v-col>
-      </v-row>
-    </v-col>
+     <template v-else>
+       <v-col cols="12" md="6" v-if="(mdAndUp) && (!visibleComponent || visibleComponent === 'rekapitulasi-pesanan')">
+         <v-row>
+           <v-col cols="12">
+             <CurrentOrder 
+               :data="currentOrder.data" 
+               :branch="selectedBranchObject"
+               :loading="lco" 
+               class="flex-grow-1" 
+             />
+           </v-col>
+           <v-col cols="12">
+             <CreateOrder 
+               :kitchen_shift="currentKitchenShift!"
+               :categories="categories"
+               :refresh="loadCurrentOrder"
+               class="flex-grow-1" 
+             />
+           </v-col>
+         </v-row>
+       </v-col>
+   
+       <!-- Kolom Kanan: Create Order + Current Order Que -->
+       <v-col cols="12" md="6">
+         <v-row>
+           <v-col cols="12" v-if="(!visibleComponent || visibleComponent === 'pesanan')">
+             <CurrentOrderQue
+               :data="currentOrder.data"
+               :kitchen_shift="currentKitchenShift!"
+               :branch="selectedBranchObject"
+               :loading="lco"
+   
+               :refresh="loadCurrentOrder"
+               class="flex-grow-1" 
+             />
+           </v-col>
+         </v-row>
+       </v-col>
+     </template>
   </v-row>
 </template>

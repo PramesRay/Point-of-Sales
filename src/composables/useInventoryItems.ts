@@ -13,7 +13,7 @@ export function useInventoryItems() {
     error.value   = null;
     try {
       data.value = await fetchInventoryItem();
-      console.log('data.value', data.value)
+      console.log('inventory.value', data.value)
       categories.value = await fetchCategoryInvItem()
       console.log('categories.value', categories.value)
     } catch (e: any) {

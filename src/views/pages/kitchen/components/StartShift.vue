@@ -19,7 +19,7 @@ const { load, dataItemSales, categories, loading: loadingMenu } = useMenuItems()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 
 onMounted(() => {
-  load(userStore.me?.activity?.branch?.id)
+  load(userStore.me?.assigned_branch?.id)
   loadBranch()
 })
 
@@ -33,7 +33,7 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const payload = ref<{[K in keyof StartShiftKitchenPayload]: StartShiftKitchenPayload[K] | null}>({
-  branch_id: userStore.me?.activity?.branch?.id || null,
+  branch_id: userStore.me?.assigned_branch?.id || null,
   initial_menu: null,
 })
 

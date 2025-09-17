@@ -5,13 +5,11 @@ import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 const { openOverlay } = useOverlayManager()
 
-import type { Category, StockMovement, CreateStockMovementPayload, UpdateStockMovementPayload, InventoryItem } from '@/types/inventory';
+import type { Category, StockMovement, InventoryItem } from '@/types/inventory';
 import type { Branch } from '@/types/branch';
 
 import { formatDate } from '@/utils/helpers/format-date';
-import { useAlertStore } from '@/stores/alert';
 import { useUserStore } from '@/stores/authUser';
-const alertStore = useAlertStore();
 
 import { useInventoryItems } from '@/composables/useInventoryItems';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
@@ -31,12 +29,18 @@ const props = defineProps<{
   categories: Category[];
   branches: Branch[];
   loading: boolean;
+  refresh: () => void
 }>();
 
-const categories = computed(() => [
-  {id: 'all', name: 'Semua'},
-  ...props.categories
-])
+const categories = computed(() => {
+  if (!props.categories.length) return []
+  return [{ id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' }, ...props.categories];
+})
+
+const branches = computed(() => {
+  if (!props.branches.length) return []
+  return props.branches;
+})
 
 const isChanged = ref(false)
 
@@ -54,9 +58,10 @@ function openDetail(data: StockMovement) {
       data,
       inv_item: props.inv_item,
       categories: props.categories,
-      branches: userStore.me!.assigned_branch!,
+      branches,
       isChanged,
-      confirmBeforeClose: true
+      confirmBeforeClose: true,
+      refresh: () => props.refresh()
     }
   })
 }
@@ -68,9 +73,10 @@ function openAddNew() {
       is_create: true,
       inv_item: props.inv_item,
       categories: props.categories,
-      branches: userStore.me!.assigned_branch!,
+      branches: branches,
       isChanged,
-      confirmBeforeClose: true
+      confirmBeforeClose: true,
+      refresh: () => props.refresh()
     }
   })
 }
@@ -126,6 +132,7 @@ function openAddNew() {
                 rounded="sm"
                 @click="openDetail(item)"
               >
+              <v-divider v-if="i !== 0" class="my-3" />
               <i class="text-subtitle-2 text-disabled">
                 {{ item.time ? formatDate(new Date(item?.time)).slice(0, -12)+': '+formatDate(new Date(item?.time)).slice(-5) : '-' }}
               </i>
@@ -133,15 +140,16 @@ function openAddNew() {
                 <div class="d-flex justify-space-between align-start w-100" >
                   <!-- Kolom kiri -->
                   <div class="pe-4" style="flex: 1">
+                    <span class="text-subtitle-2 text-disabled">
+                      {{ item?.branch?.name }}
+                    </span>
                     <h6
-                    class="text-h4 text-medium-emphasis font-weight-bold"
-                    style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                      class="text-h4 text-medium-emphasis font-weight-bold"
+                      style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
                     >
-                    {{ item?.item.name }}
-                  </h6>
-                  <span class="text-subtitle-2 text-disabled">
-                    {{ item?.branch?.name }}
-                  </span>
+                      {{ item?.item.name }}
+                    </h6>
+                    <i class="text-subtitle-2 text-disabled">{{ item?.description }}</i>
                   </div>
 
                   <!-- Kolom kanan -->
@@ -166,8 +174,6 @@ function openAddNew() {
                     </div>
                   </div>
                 </div>
-
-                <v-divider class="my-3" />
               </v-list-item>
             </v-list>
             <!-- jika data kosong -->

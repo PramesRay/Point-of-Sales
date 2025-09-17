@@ -19,16 +19,10 @@ const currentData = computed(() => {
 })
 
 const data = computed(() => {
-  console.log('currentData', currentData.value)
-  return currentData.value
+  return currentData?.value
 });
 
 const tab = ref('1');
-
-// watcher untuk props loading
-watch(() => props.loading, () => {
-  console.log('props.loading', props.loading)
-})
 
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
@@ -37,7 +31,7 @@ const currentSeries = computed(() => {
     series: [
       {
         name: 'series1',
-        data: data.value[range]
+        data: data?.value?.[range] || []
       }
     ]
   };
@@ -97,18 +91,18 @@ const chartOptions = computed(() => {
         <div class="mx-3 my-auto">
           <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch ? props.branch?.name : 'Semua Cabang' }}</span>
         </div>
-        <div v-if="!props.loading && data" class="ml-auto z-1">
+        <div v-if="!props.loading" class="ml-auto z-1">
           <v-tabs v-model="tab" class="theme-tab" density="compact" align-tabs="end" color="transparant bg-secondary">
             <v-tab value="1" hide-slider >Minggu</v-tab>
             <v-tab value="2" hide-slider >Bulan</v-tab>
           </v-tabs>
         </div>
       </div>
-      <v-row v-if="!props.loading && data">
+      <v-row v-if="!props.loading">
         <v-col cols="6">
           <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
             <div class="d-flex align-baseline">
-              <span class="mx-1"> {{ data.active }} </span>
+              <span class="mx-1"> {{ data?.active || 0 }} </span>
               <span class="text-body-2"> Aktif </span>
             </div>
           </h2>

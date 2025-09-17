@@ -14,22 +14,33 @@ import DetailOrder from '../../cashier/components/sub-components/DetailOrder.vue
 import { useMenuItems } from '@/composables/useMenuItems';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
+import type { ShiftKitchen } from '@/types/shift';
 
-const { load, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { loadCategory, categories, loading: lm } = useMenuItems();
 const { openOverlay } = useOverlayManager()
 
 onMounted(() => {
-  load()
+  loadCategory()
 })
 
 const props = defineProps<{
   data: Order[];
+  kitchen_shift: ShiftKitchen;
   branch: IdName | undefined | null;
   loading: boolean;
 
   // load: (filter: Record<string, any>) => Order
   refresh: () => void
 }>();
+
+const data_menu = computed(() => {
+  return props.kitchen_shift.quantity_menu.map(item => {
+    return {
+      ...item,
+      quantity: item.final
+    }
+  })
+})
 
 // Computed untuk filter transaksi berdasarkan branch
 const filteredDataByBranch = computed(() => {
@@ -54,7 +65,7 @@ const filteredData = computed(() => {
 
     return isActiveMatch && isDineInMatch;
   });
-  return data
+  return isActive.value ? data : data.slice().sort((a, b) => new Date(b?.meta.updated_at).getTime() - new Date(a?.meta.updated_at).getTime());
 })
 
 // Ambil permintaan terbaru
@@ -63,78 +74,28 @@ const latestOrderQue = computed(() => filteredData?.value[0] || null);
 // Sisanya untuk list biasa
 const listOrderQue = computed(() => filteredData?.value.slice(1) || []);
 
-const selectedOrder = ref<Order | null>(null)
-
-const showOverlay = ref(false)
-const showConfirmDialog = ref(false)
-const pendingOverlayClose = ref(false)
-const isManuallySaving = ref(false)
-
-const paymentMethod = ref('')
-const inPayment = ref(false)
 const cashInput = ref('')
 const cashNumber = ref(0)
-const copied = ref(false)
 const isActive = ref(true)
 const isDineIn = ref()
-
-const amtRules = [
-  (v: string) => !!v || 'Jumlah tidak boleh kosong',
-  (v: string) => {
-    const numeric = Number(v.replace(/\D/g, ''))
-    return numeric >= 0 || 'Jumlah tidak boleh kurang dari 0'
-  }
-]
-
-const copyToClipboard = (text: string) => {
-  navigator.clipboard.writeText(text);
-  copied.value = true
-}
-
-
-function openDetail(order: Order) {
-  selectedOrder.value = cloneDeep(order)
-  showOverlay.value = true
-  copied.value = false
-}
-
-function confirmCancel() {
-  pendingOverlayClose.value = true
-  showConfirmDialog.value = false
-  showOverlay.value = false
-  inPayment.value = false
-
-  if (selectedOrder.value) selectedOrder.value = null
-
-  paymentMethod.value = ''
-  inPayment.value = false
-  cashInput.value = ''
-  cashNumber.value = 0
-  copied.value = false
-}
-
-
-watch(showOverlay, (isOpen, wasOpen) => {
-  // Ketika overlay akan ditutup (false) dari keadaan terbuka (true)
-  if (!isOpen && wasOpen) {
-    if (isManuallySaving.value) {
-      // 👇 Reset dan biarkan overlay benar-benar tertutup
-      isManuallySaving.value = false
-      return
-    }
-    
-    if (pendingOverlayClose.value) {
-      // Jika user sudah setuju menutup lewat konfirmasi
-      pendingOverlayClose.value = false
-      return
-    }
-  }
-})
 
 watch(() => cashInput.value, (val) => {
   const numeric = val.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
   cashNumber.value = numeric ? Number(numeric) : 0
 })
+
+function openDetailOrder(order: Order) {
+  openOverlay({
+    component: DetailOrder,
+    props: {
+      get data_order() { return order },
+      data_menu: data_menu,
+      categories: categories,
+      loading: props.loading,
+      refresh: () => props.refresh()
+    },
+  })
+}
 </script>
 
 <template>
@@ -189,11 +150,12 @@ watch(() => cashInput.value, (val) => {
               openOverlay({
                 component: DetailOrder,
                 props: {
-                  data_order: latestOrderQue,
-                  data_menu: menuSales,
+                  get data_order() { return latestOrderQue },
+                  data_menu: data_menu,
                   categories: categories,
+                  loading: props.loading,
                   refresh: () => props.refresh()
-                }
+                },
               })
             "
           >
@@ -228,9 +190,9 @@ watch(() => cashInput.value, (val) => {
                       }"
                     >{{ latestOrderQue?.status }}</span>
                   </div>
-                  <h4 class="text-h4 text-right">{{ getTimeDiff(latestOrderQue.meta.updated_at) }}</h4>
-                  <i v-if="latestOrderQue?.meta?.updated_at.getTime() !== latestOrderQue?.meta?.created_at.getTime()" class="text-subtitle-2 text-disabled">
-                    Diubah {{ getTimeDiff(latestOrderQue.meta.updated_at) }}
+                  <h4 class="text-h4 text-right">{{ getTimeDiff(latestOrderQue?.meta.updated_at) }}</h4>
+                  <i v-if="latestOrderQue?.meta?.updated_at !== latestOrderQue?.meta?.created_at" class="text-subtitle-2 text-disabled">
+                    Dibuat {{ getTimeDiff(latestOrderQue?.meta.created_at) }}
                   </i>
                 </div>
               </div>
@@ -246,16 +208,16 @@ watch(() => cashInput.value, (val) => {
                   color="secondary"
                   rounded="sm"
                   @click="
-                    openOverlay({
-                      component: DetailOrder,
-                      props: {
-                        data_order: item,
-                        data_menu: menuSales,
-                        categories: categories,
-                        refresh: () => props.refresh()
-                      }
-                    })
-                  "
+                  openOverlay({
+                    component: DetailOrder,
+                    props: {
+                      get data_order() { return item },
+                      data_menu: data_menu,
+                      categories: categories,
+                      loading: props.loading,
+                      refresh: () => props.refresh()
+                    },
+                  })"
                 >
                   <span class="text-subtitle-2 text-medium-emphasis">
                     {{ item?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 
@@ -287,9 +249,9 @@ watch(() => cashInput.value, (val) => {
                           }"
                         >{{ item?.status }}</span>
                       </div>
-                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(item.meta.updated_at) }}</div>
-                      <i v-if="item?.meta?.updated_at.getTime() !== item?.meta?.created_at.getTime()" class="text-subtitle-2.getTime() text-disabled">
-                        Diubah {{ getTimeDiff(item.meta.updated_at) }}
+                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(item?.meta.updated_at) }}</div>
+                      <i class="text-subtitle-2 text-disabled">
+                        Dibuat {{ getTimeDiff(item?.meta.created_at) }}
                       </i>
                     </div>
                   </div>

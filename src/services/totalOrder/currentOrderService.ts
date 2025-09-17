@@ -169,38 +169,79 @@ export async function fetchCurrentOrder({
     }
 }
 
-export async function updateOrderData(payload: UpdateOrderPaymentPayload | UpdateOrderStatusPayload | UpdateOrderItemStatusPayload | UpdateOrderPayload | RefundOrderItemPayload): Promise<Order> {
+export async function updateOrderData(payload: UpdateOrderPayload): Promise<Order> {
   try {
-    const res = await api.put(`/order/${payload.id}`, { payload });
+    const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateOrder'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
     return res.data;
   } catch (error) {
     console.error('Error updating order status:', error);
-    console.log('Payload:', payload);
+    throw error;
+  }
+}
+
+export async function updateOrderItemStatus(payload: UpdateOrderItemStatusPayload): Promise<Order> {
+  try {
+    const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateItems'});
+    alertStore.showAlert('Data Order telah berubah!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error;
+  }
+}
+
+export async function updateOrderPayment(payload: UpdateOrderPaymentPayload): Promise<Order> {
+  try {
+    const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updatePayment'});
+    alertStore.showAlert('Data Order telah berubah!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error;
+  }
+}
+
+export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Promise<Order> {
+  try {
+    const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateStatus'});
+    alertStore.showAlert('Data Order telah berubah!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    throw error;
+  }
+}
+
+export async function refundOrderItem(payload: RefundOrderItemPayload): Promise<Order> {
+  try {
+    const res = await api.put(`/order/${payload.id}/refund`, {...payload, type: 'refundItem'});
+    alertStore.showAlert('Data Order telah berubah!', 'success');
+    return res.data;
+  } catch (error) {
+    console.error('Error refunding order item:', error);
     throw error;
   }
 }
 
 export async function createOrderData(payload: CreateOrderPayload): Promise<Order> {
   try {
-    const res = await api.post('/order', { payload });
+    const res = await api.post('/order', payload);
     alertStore.showAlert('Order baru telah dibuat!', 'success');
     return res.data;
   } catch (error) {
     console.error('Error creating order:', error);
-    console.log('Payload:', payload);
     throw error;
   }
 }
 
 export async function processDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload): Promise<Order> {
   try {
-    const res = await api.post('/order/process-direct-payment', { payload });
+    const res = await api.post('/order/process-direct-payment', payload);
     alertStore.showAlert('Order baru telah dibuat!', 'success');
     return res.data;
   } catch (error) {
     console.error('Error creating order:', error);
-    console.log('Payload:', payload);
     throw error;
   }
 }

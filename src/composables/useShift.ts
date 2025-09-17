@@ -2,15 +2,10 @@ import { ref } from 'vue'
 import { useAlertStore } from '@/stores/alert'
 import { useUserStore } from '@/stores/authUser'
 import { 
-  fetchShiftCashier, startShiftCashier, updateShiftCashier, endShiftCashier,
-  fetchShiftKitchen, startShiftKitchen, updateShiftKitchen, endShiftKitchen,
-  startShiftEmployee,
-  endShiftEmployee,
-  fetchShiftEmployee,
-  fetchShiftWarehouse,
-  startShiftWarehouse,
-  endShiftWarehouse,
-  updateShiftWarehouse
+  fetchShiftEmployee, startShiftEmployee, endShiftEmployee,
+  fetchCurrentShiftCashier, fetchShiftCashier, startShiftCashier, updateShiftCashier, endShiftCashier,
+  fetchCurrentShiftKitchen, fetchShiftKitchen, startShiftKitchen, updateShiftKitchen, endShiftKitchen,
+  fetchCurrentShiftWarehouse, fetchShiftWarehouse, startShiftWarehouse, updateShiftWarehouse, endShiftWarehouse,
 } from '@/services/shift/shiftService'
 import {
   type StartShiftCashierPayload,
@@ -22,7 +17,8 @@ import {
   type Shift,
   type ShiftWarehouse,
   type UpdateShiftWarehousePayload,
-  type EndShiftCashierPayload
+  type EndShiftCashierPayload,
+  type ShiftEmployee
 } from '@/types/shift'
 
 const alert = useAlertStore()
@@ -30,10 +26,14 @@ const userStore = useUserStore()
 
 export function useShift() {
   const loading = ref(false)
+  const shiftCurrentCashier = ref<ShiftCashier | null>(null)
+  const shiftCurrentKitchen = ref<ShiftKitchen | null>(null)
+  const shiftCurrentWarehouse = ref<ShiftWarehouse | null>(null)
   const shiftCashier = ref<{ data: ShiftCashier[]; total: number; }>({ data: [], total: 0 });
   const shiftKitchen = ref<{ data: ShiftKitchen[]; total: number; }>({ data: [], total: 0 });
   const shiftWarehouse = ref<{ data: ShiftWarehouse[]; total: number; }>({ data: [], total: 0 });
-  const shiftEmployee = ref<{ data: Shift[]; total: number; }>({ data: [], total: 0 });
+  const shiftCurrentEmployee = ref<ShiftEmployee | null>(null)
+  const shiftEmployee = ref<{ data: ShiftEmployee[]; total: number; }>({ data: [], total: 0 });
 
   async function loadShiftbyRole({
     page,
@@ -54,7 +54,7 @@ export function useShift() {
       loading.value = true
       const branchId = userStore.me?.activity?.branch?.id;
       if (userStore.hasRole('kasir')) {
-        const { data, total } = await fetchShiftCashier({
+        const cashier = await fetchCurrentShiftCashier({
           page,
           limit,
           search,
@@ -64,9 +64,9 @@ export function useShift() {
             'branch_id': branchId
           }
         });
-        shiftCashier.value = { data, total };
+        shiftCurrentCashier.value = cashier
       } else if (userStore.hasRole('dapur')) {
-        const { data, total } = await fetchShiftKitchen({
+        const kitchen = await fetchCurrentShiftKitchen({
           page,
           limit,
           search,
@@ -76,9 +76,9 @@ export function useShift() {
             'branch_id': branchId
           }
         });
-        shiftKitchen.value = { data, total };
+        shiftCurrentKitchen.value = kitchen
       } else if (userStore.hasRole('gudang')) {
-        const { data, total } = await fetchShiftWarehouse({
+        const warehouse = await fetchCurrentShiftWarehouse({
           page,
           limit,
           search,
@@ -86,9 +86,9 @@ export function useShift() {
           sortDesc,
           filter
         });
-        shiftWarehouse.value = { data, total };
-      } else if (userStore.hasRole(['admin', 'pemilik'])) {
-        const cashier = await fetchShiftCashier({
+        shiftCurrentWarehouse.value = warehouse
+      } else if (userStore.hasRole(['admin', 'pemilik', 'bendahara'])) {
+        const cashier = await fetchCurrentShiftCashier({
           page,
           limit,
           search,
@@ -98,7 +98,7 @@ export function useShift() {
             'branch_id': branchId
           }
         });
-        const kitchen = await fetchShiftKitchen({
+        const kitchen = await fetchCurrentShiftKitchen({
           page,
           limit,
           search,
@@ -108,7 +108,7 @@ export function useShift() {
             'branch_id': branchId
           }
         });
-        const warehouse = await fetchShiftWarehouse({
+        const warehouse = await fetchCurrentShiftWarehouse({
           page,
           limit,
           search,
@@ -116,9 +116,12 @@ export function useShift() {
           sortDesc,
           filter
         });
-        shiftCashier.value = { data: cashier.data, total: cashier.total };
-        shiftKitchen.value = { data: kitchen.data, total: kitchen.total };
-        shiftWarehouse.value = { data: warehouse.data, total: warehouse.total };
+        shiftCurrentCashier.value = cashier
+        shiftCurrentKitchen.value = kitchen
+        shiftCurrentWarehouse.value = warehouse
+        console.log('shiftCurrentCashier.value', shiftCurrentCashier.value)
+        console.log('shiftCurrentKitchen.value', shiftCurrentKitchen.value)
+        console.log('shiftCurrentWarehouse.value', shiftCurrentWarehouse.value)
       }
     } catch (err) {
       throw err
@@ -428,7 +431,7 @@ export function useShift() {
     }
   }
 
-  async function updateKitchen(payload: UpdateShiftKitchenPayload) {
+  async function updateKitchen(payload: UpdateShiftKitchenPayload | Omit<UpdateShiftKitchenPayload, 'notes'>) {
     try {
       loading.value = true
       const res = await updateShiftKitchen(payload)
@@ -461,23 +464,27 @@ export function useShift() {
     
     loadShiftbyRole,
 
+    shiftCurrentWarehouse,
     shiftWarehouse,
     loadWarehouse,
     startWarehouse,
     updateWarehouse,
     endWarehouse,
 
+    shiftCurrentEmployee,
     shiftEmployee,
     loadEmployee,
     startEmployee,
     endEmployee,
 
+    shiftCurrentCashier,
     shiftCashier,
     loadCashier,
     startCashier,
     updateCashier,
     endCashier,
 
+    shiftCurrentKitchen,
     shiftKitchen,
     loadKitchen,
     startKitchen,
