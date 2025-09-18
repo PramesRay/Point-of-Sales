@@ -17,12 +17,10 @@ export type CreateReservationPayload = Omit<Reservation, 'id' | 'branch' | 'stat
   branch_id: string
 }
 
-export type CreateReservationByOwnerPayload = CreateReservationPayload & {
-  status: 'Disetujui'
+export type UpdateReservationPayload = CreateReservationPayload & {
+  id: string
 }
 
-export type UpdateReservationPayload = Omit<Reservation, 'branch' | 'meta'> & {
-  branch_id: string
+export type ReservationApprovalPayload = Pick<Reservation, 'id'> & {
+  approved: boolean
 }
-
-export type ReservationApprovalPayload = Pick<Reservation, 'id' | 'status'>

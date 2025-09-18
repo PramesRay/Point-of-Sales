@@ -114,28 +114,35 @@ async function processOrder() {
     note: item.note!,
   }))
   payload.value.amount = totalPrice.value
-  console.log('items: ',payload.value.items)
-
-  if (props.is_create) {
-    await create(payload.value)
-  } else {
-    const updatePayload: UpdateOrderPayload = {
-      id: props.data_order?.id ?? '',
-      branch_id: payload.value.branch_id ?? '',
-      table_number: payload.value.table_number ?? '',
-      customer:  {
-        name: payload.value.customer.name ?? '',
-        phone: payload.value.customer.phone ?? '',
-      },
-      is_take_away: payload.value.is_take_away,
-      items: payload.value.items,
-      amount: payload.value.amount
-    }
-
-    await update(updatePayload)
+  
+  if (payload.value.is_take_away) {
+    payload.value.table_number = null
   }
-  props.refresh()
-  emit('close')
+
+  try{
+    if (props.is_create) {
+      await create(payload.value)
+    } else {
+      const updatePayload: UpdateOrderPayload = {
+        id: props.data_order?.id ?? '',
+        branch_id: payload.value.branch_id ?? '',
+        table_number: payload.value.table_number ?? '',
+        customer:  {
+          name: payload.value.customer.name ?? '',
+          phone: payload.value.customer.phone ?? '',
+        },
+        is_take_away: payload.value.is_take_away,
+        items: payload.value.items,
+        amount: payload.value.amount
+      }
+  
+      await update(updatePayload)
+    }
+    props.refresh()
+    emit('close')
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 /* ================
@@ -298,6 +305,10 @@ function handleDirectPayment() {
     note: item.note!,
   }))
   
+  if (payload.value.is_take_away) {
+    payload.value.table_number = null
+  }
+
   openOverlay({
     component: Payment,
     props: {

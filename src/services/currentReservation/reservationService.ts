@@ -25,7 +25,7 @@ export async function fetchReservationData({
   filter?: Record<string, any>
 } = {}): Promise<{data: Reservation[], total: number}> {
   try {
-    const url = `/reservation`;
+    const url = `/reservations`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -182,7 +182,19 @@ export async function createReservation(payload: CreateReservationPayload): Prom
 
 export async function updateReservation(payload: UpdateReservationPayload | ReservationApprovalPayload): Promise<Reservation> {
   try {
-    const response = await api.put<Reservation>('/reservation', payload);
+    const response = await api.put<Reservation>('/reservation', {...payload, type : 'updateReservation'});
+    alertStore.showAlert('Reservasi berhasil diubah!', 'info');
+    return response.data;
+  } catch (error) {
+    console.warn('API error creating reservation, using dummy data.', error);
+    alertStore.showAlert('Reservasi gagal diubah!', 'error');
+    throw error;
+  }
+}
+
+export async function approveReservation(payload: ReservationApprovalPayload): Promise<Reservation> {
+  try {
+    const response = await api.put<Reservation>('/reservation', {...payload, type : 'updateReservationStatus' });
     alertStore.showAlert('Reservasi berhasil diubah!', 'info');
     return response.data;
   } catch (error) {

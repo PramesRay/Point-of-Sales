@@ -31,7 +31,19 @@ async function create(payload: CreateReservationPayload) {
   }
 }
 
-async function update(payload: UpdateReservationPayload | ReservationApprovalPayload) {
+async function update(payload: UpdateReservationPayload) {
+  try {
+    loading.value = true;
+    await updateReservation(payload);
+    // await load(branchId.value);
+  } catch (e: any) {
+    throw e
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function approve(payload: ReservationApprovalPayload) {
   try {
     loading.value = true;
     await updateReservation(payload);
@@ -62,6 +74,7 @@ async function remove(id: string) {
     load,
     create,
     update,
+    approve,
     remove
   };
 }

@@ -26,14 +26,15 @@ import { useInventoryItems } from '@/composables/useInventoryItems';
 import { useShift } from '@/composables/useShift';
 import { useUser } from '@/composables/useUser';
 import ShiftList from '../owner/components/ShiftList.vue';
+import { useTotalOrder } from '@/composables/useTotalOrder';
 
 // Data Loading
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, loadShiftbyRole, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
+const { load: loadTotalOrder, data: totalOrderData, loading: lo } = useTotalOrder();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
-const { init: initItems, data: dataInventory, categories, loading: li, createItem, updateItem } = useInventoryItems();
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
@@ -45,7 +46,7 @@ onMounted(() => {
   loadUser()
   loadShiftbyRole()
   loadSummary();
-  initItems();
+  loadTotalOrder();
   loadFundRequest();
 })
 
@@ -59,6 +60,7 @@ const selectedBranchObject = computed(() => {
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadSummary({ filter: { 'branch.id': selectedBranch.value } })
+  loadTotalOrder(selectedBranch.value)
   loadFundRequest({ filter: { 'branch.id': selectedBranch.value } })
 });
 
@@ -119,7 +121,7 @@ const pinBranch = ref(false)
 
   <v-row v-if="lb">
     <v-col cols="12">
-      <v-skeleton-loader type="card" class="mb-4" />
+      <v-skeleton-loader type="article" />
     </v-col>
   </v-row>
 
@@ -128,18 +130,19 @@ const pinBranch = ref(false)
       <v-row v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
         <v-col cols="12">
           <TotalEarning 
-          :data="summary" 
-          :loading="lf" 
-          class="flex-grow-1" 
+            :data="summary" 
+            :loading="lf" 
+            class="flex-grow-1" 
           />
         </v-col>
         
         <v-col cols="12">
           <TotalOrder 
-          :data="summary" 
-          :branch="selectedBranchObject"
-          :loading="lf" 
-          class="flex-grow-1" 
+            :data="totalOrderData!" 
+            :branch="selectedBranchObject"
+            :loading="lf" 
+            :refresh="() => loadTotalOrder(selectedBranch)"
+            class="flex-grow-1" 
           />
         </v-col>
         

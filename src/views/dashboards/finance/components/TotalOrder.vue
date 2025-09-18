@@ -1,25 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
-import { useTotalOrder } from '@/composables/useTotalOrder'
-import type { FinanceSummary } from '@/types/finance';
+import { ref, computed } from 'vue';
 import type { IdName } from '@/types/common';
+import type { TotalOrder } from '@/types/order';
 
 const props = defineProps<{
-  data: FinanceSummary[];
+  data: TotalOrder;
   branch: IdName | undefined | null;
   loading: boolean;
 }>();
 
 const orderData = computed(() => {
-  if (!props.data?.length) return undefined;
   return props.data
-    // .filter(tx => tx.branch.id === (props.branch?.id || 'all'))
-    .map(item => ({order: item.order}))[0]
 });
 
 const tab = ref('1');
 
-const currentOrder = computed(() => orderData.value?.order.current || 0);
+const currentOrder = computed(() => orderData.value?.current || 0);
 
 const currentSeries = computed(() => {
   const range = tab.value === "1" ? "week" : "month";
@@ -28,7 +24,7 @@ const currentSeries = computed(() => {
     series: [
       {
         name: 'series1',
-        data: orderData.value?.order[range]
+        data: orderData.value?.[range]
       }
     ]
   };
@@ -86,21 +82,6 @@ const chartOptions = computed(() => {
           <ShoppingCartIcon stroke-width="1.5" width="20" />
         </v-btn>
         <div class="mx-3 my-auto">
-          <!-- <v-select
-              class="custom-select font-weight-medium"
-              variant="plain"
-              hide-details
-              density="compact"
-              v-model="selectedBranch"
-              :items="branches"
-              item-title="name"
-              item-value="id"
-              label="Pilih Restoran"
-              :loading="loadingBranches"
-              :return-object="false"
-              single-line
-            >
-          </v-select> -->
           <span class="text-subtitle-2 text-medium-emphasis font-weight-medium text-white">{{ props.branch ? props.branch?.name : 'Semua Cabang' }}</span>
         </div>
         <div v-if="!props.loading" class="ml-auto z-1">
@@ -117,11 +98,8 @@ const chartOptions = computed(() => {
                 <span class="mx-1"> {{ currentOrder }} </span>
                 <span class="text-body-2"> Pesanan</span>
               </div>
-              <a href="#">
-                <CircleArrowDownLeftIcon stroke-width="1.5" width="28" class="text-white ml-2" />
-              </a>
             </h2>
-            <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan</span>
+            <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan Masuk</span>
           </v-col>
         <v-col cols="6">
           <v-tabs-window v-model="tab" class="z-1">

@@ -212,7 +212,10 @@ const resetRefundItem = () => {
                   component: RefundOrder,
                   props: {
                     payload: refund_item,
-                    refresh: () => props.refresh(),
+                    refresh: () => {
+                      resetRefundItem()
+                      props.refresh()
+                    },
                   },
                 })
               "
@@ -307,7 +310,7 @@ const resetRefundItem = () => {
                   </div>
                 </div>
                 <div 
-                  v-if="currentOrder?.payment_status === 'Selesai'"
+                  v-if="currentOrder?.payment_status === 'Lunas'"
                   class="text-subtitle-2 text-medium-emphasis"
                 >
                   <div class="text-error" v-if="item.status === 'Refund'" >
@@ -368,7 +371,7 @@ const resetRefundItem = () => {
               <span
                 class="text-h5 text-high-emphasis ml-1"
                 :class="{
-                  'text-success': currentOrder?.payment_status === 'Selesai',
+                  'text-success': currentOrder?.payment_status === 'Lunas',
                   'text-error': currentOrder?.payment_status === 'Gagal',
                   'text-warning': currentOrder?.payment_status === 'Pending',
                 }"

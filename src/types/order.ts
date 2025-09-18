@@ -17,13 +17,13 @@ export interface Order {
     kitchen: string
   }
   branch: IdName
-  table_number: string
+  table_number: string | null
   customer: Customer 
   is_take_away: boolean
   items: OrderItem[]
   status: 'Pending' | 'Diproses' | 'Tersaji' | 'Selesai' | 'Batal' | 'Refund'
   amount: number
-  payment_status: 'Pending' | 'Selesai' | 'Gagal' | 'Batal'
+  payment_status: 'Pending' | 'Lunas' | 'Gagal' | 'Batal'
   meta: MetaDetail
 }
 

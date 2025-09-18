@@ -4,7 +4,85 @@ import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, Update
 import { dummyMenuCategories } from "./dummyMenuCategories";
 import { dummyMenuSale } from "./dummyMenuSale";
 
-export async function fetchMenuSales(
+export async function fetchMenus(
+  branchId?: string,
+  page?: number,
+  limit?: number,
+  search?: string,
+  sortBy?: string,
+  sortDesc: boolean = false
+): Promise<{ data: Menu[]; total: number }> {
+  try {
+    const url = `/menus`
+    const query = new URLSearchParams()
+
+    if (branchId) query.append('branch_id', branchId)
+    if (search) query.append('search', search)
+    if (sortBy) query.append('sort', `${sortBy}:${sortDesc ? 'desc' : 'asc'}`)
+    if (typeof page === 'number') query.append('page', page.toString())
+    if (typeof limit === 'number') query.append('limit', limit.toString())
+
+    const res = await api.get(`${url}?${query.toString()}`)
+
+    return {
+      data: res.data.data,
+      total: res.data.meta?.total ?? res.data.data.length,
+    }
+  } catch (error) {
+    console.warn('Fetch Menu Item failed, using dummy.', error)
+    let dummy = dummyMenuSale
+
+    // 1. Filter by branch
+    if (branchId) {
+      dummy = dummy.filter(item =>
+        item.branch.id === branchId
+      )
+    }
+
+    // 2. Search global by string match semua field yang bisa di-string-kan
+    if (search) {
+      const keyword = search.toLowerCase()
+      dummy = dummy.filter(item =>
+        Object.values(item).some(val => {
+          if (val == null) return false
+          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
+          return String(val).toLowerCase().includes(keyword)
+        })
+      )
+    }
+
+    // 3. Optional: sort
+    if (sortBy && dummy.length > 0 && Object.prototype.hasOwnProperty.call(dummy[0], sortBy)) {
+      dummy = dummy.sort((a, b) => {
+        const valA = a[sortBy as keyof Menu]
+        const valB = b[sortBy as keyof Menu]
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB)
+        }
+
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDesc ? valB - valA : valA - valB
+        }
+
+        return 0
+      })
+    }
+
+
+    const total = dummy.length
+
+    // 4. Optional: pagination
+    if (typeof page === 'number' && typeof limit === 'number') {
+      const start = (page - 1) * limit
+      dummy = dummy.slice(start, start + limit)
+    }
+
+    return { data: dummy, total }
+  }
+}
+
+export async function fetchMenusales(
   branchId?: string,
   page?: number,
   limit?: number,
@@ -13,7 +91,7 @@ export async function fetchMenuSales(
   sortDesc: boolean = false
 ): Promise<{ data: MenuSale[]; total: number }> {
   try {
-    const url = `/menus`
+    const url = `/menu-sales`
     const query = new URLSearchParams()
 
     if (branchId) query.append('branch_id', branchId)

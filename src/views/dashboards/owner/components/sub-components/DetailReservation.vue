@@ -17,7 +17,7 @@ import { useAlertStore } from '@/stores/alert';
 const userStore = useUserStore();
 const alertStore = useAlertStore()
 const { openOverlay } = useOverlayManager()
-const { update, loading } = useReservation()
+const { approve, loading } = useReservation()
 
 const emit = defineEmits(['close'])
 const props = defineProps<{
@@ -94,7 +94,7 @@ const handleUpdate = () => {
                 </span>
               </v-col>
             </v-row>
-            <v-row>
+            <v-row align="center">
               <v-col cols="7">
                 <div class="mb-3">
                   <h4 class="text-secondary text-h4 font-weight-bold">
@@ -127,6 +127,26 @@ const handleUpdate = () => {
                     </v-btn>
                   </div>
                 </div>
+              </v-col>
+              <v-col cols="5">  
+                <div class="text-right">
+                  <div 
+                  class="text-subtitle-2 text-medium-emphasis"
+                  :class="{
+                    'text-success': props.data?.status === 'Disetujui',
+                    'text-error': props.data?.status === 'Ditolak',
+                    'text-warning': props.data?.status === 'Pending'
+                  }"
+                >{{ props.data?.status }}</div>
+                <h4 v-if="props.data?.meta.created_at" class="text-h4">{{ getTimeDiff(props.data?.meta.created_at) }}</h4>
+                <i v-if="props.data?.meta.updated_at" class="text-subtitle-2 text-disabled">
+                  Diubah {{ getTimeDiff(props.data?.meta.updated_at) }}
+                </i>
+              </div>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
                 <div class="mb-3">
                   <div class="text-subtitle-2 text-disabled">
                     <v-btn
@@ -158,29 +178,24 @@ const handleUpdate = () => {
                     </v-btn>
                     {{ props.data?.people }} orang
                   </div>
+                  <div class="mb-3">
+                    <div class="text-subtitle-2 text-disabled">
+                      <v-btn
+                        icon
+                        variant="text"
+                        size="x-small"
+                      >
+                        <v-icon size="x-large">mdi-text</v-icon>: 
+                      </v-btn>
+                      {{ props.data?.notes }}
+                    </div>
+                  </div>
                 </div>
-              </v-col>
-              <v-col cols="5">  
-                <div class="text-right">
-                  <div 
-                  class="text-subtitle-2 text-medium-emphasis"
-                  :class="{
-                    'text-success': props.data?.status === 'Disetujui',
-                    'text-error': props.data?.status === 'Ditolak',
-                    'text-warning': props.data?.status === 'Pending'
-                  }"
-                >{{ props.data?.status }}</div>
-                <h4 v-if="props.data?.meta.created_at" class="text-h4">{{ getTimeDiff(props.data?.meta.created_at) }}</h4>
-                <i v-if="props.data?.meta.updated_at" class="text-subtitle-2 text-disabled">
-                  Diubah {{ getTimeDiff(props.data?.meta.updated_at) }}
-                </i>
-              </div>
               </v-col>
             </v-row>
           </v-col>
         </v-row>
         
-        <!-- Tombol untuk Role Kasir -->
         <div v-if="(userStore.hasRole(['admin', 'pemilik'])) && props.data?.status === 'Pending'">
           <v-divider class="my-3"></v-divider>
           <v-row class="d-flex justify-space-between align-center">
@@ -198,10 +213,10 @@ const handleUpdate = () => {
                     props: {
                       confirmToContinue: true,
                       confirmMessage: 'Apakah anda yakin ingin menolak reservasi ini?',
-                      onConfirm: () => {
-                        update({
+                      onConfirm: async () => {
+                        await approve({
                           id: props.data?.id!,
-                          status: 'Ditolak',
+                          approved: false,
                         }),
                         props.refresh()
                         emit('close')
@@ -226,10 +241,10 @@ const handleUpdate = () => {
                     props: {
                       confirmToContinue: true,
                       confirmMessage: 'Apakah anda yakin ingin menyetujui reservasi ini?',
-                      onConfirm: () => {
-                        update({
+                      onConfirm: async () => {
+                        await approve({
                           id: props.data?.id!,
-                          status: 'Disetujui',
+                          approved: true,
                         }),
                         props.refresh()
                         emit('close')

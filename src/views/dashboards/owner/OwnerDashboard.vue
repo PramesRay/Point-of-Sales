@@ -16,17 +16,17 @@ import CurrentReservation from './components/CurrentReservation.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useUser } from '@/composables/useUser';
 import { useEmployeeActive } from '@/composables/useEmployeeActive';
-import { useFinanceDashboard } from '@/composables/useFinanceSummary';
 import { useReservation } from '@/composables/useReservation';
 import { useUserStore } from '@/stores/authUser';
 import { useMenuItems } from '@/composables/useMenuItems';
 import Management from './components/Management.vue';
 import ShiftList from './components/ShiftList.vue';
 import { useShift } from '@/composables/useShift';
+import { useTotalOrder } from '@/composables/useTotalOrder';
 
 // Data Loading
 const userStore = useUserStore();
-const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
+const { load: loadTotalOrder, data: totalOrderData, loading: lo } = useTotalOrder();
 const { load: loadEmployeeActive, data: employeeActiveData, loading: lea } = useEmployeeActive();
 const { data: reservationData, loading: lr, load: loadReservation } = useReservation()
 const { load: loadUser, data: userData, loading: lu } = useUser()
@@ -46,27 +46,26 @@ const selectedBranchObject = computed(() => {
 })
 
 onMounted(async () => {
-  // if(!userStore.me) userStore.fetchMe()
-
   await loadBranch()
 
   selectedBranch.value ? loadMenu(selectedBranch.value ?? branchOptions.value[0]?.id) : null
   loadUser()
-  loadSummary()
+  loadTotalOrder()
   loadReservation()
   loadEmployeeActive()
   loadShiftbyRole()
+  loadEmployee()
 })
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
   loadUser()
   loadMenu(selectedBranch.value ?? branchOptions?.value[0].id)
-  loadSummary({ filter: { 'branch.id': selectedBranch.value } })
-  // loadTimesheet({ filter: { 'branch.id': selectedBranch.value } })
+  loadTotalOrder(selectedBranch.value)
   loadEmployeeActive({ filter: { 'branch.id': selectedBranch.value } })
   loadReservation({ filter: { 'branch.id': selectedBranch.value } })
   loadShiftbyRole()
+  loadEmployee()
 });
 
 const pinBranch = ref(true)
@@ -145,10 +144,11 @@ const pinBranch = ref(true)
         <!-- -------------------------------------------------------------------- -->
         <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'aktifitas-karyawan'">
           <TotalOrder 
-          :data="summary" 
-          :branch="selectedBranchObject"
-          :loading="lf" 
-          class="flex-grow-1" 
+            :data="totalOrderData!" 
+            :branch="selectedBranchObject"
+            :loading="lo" 
+            :refresh="() => loadTotalOrder(selectedBranch)"
+            class="flex-grow-1" 
           />
         </v-col>
         <!-- -------------------------------------------------------------------- -->

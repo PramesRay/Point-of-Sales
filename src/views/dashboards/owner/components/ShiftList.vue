@@ -259,7 +259,7 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
             >
               <div v-if="latestShiftEmployee" class="text-subtitle-2 text-medium-emphasis">
                 <v-row no-gutters>
-                  <v-col cols="12" md="6" class="d-flex align-center justify-space-between">
+                  <v-col cols="auto" class="d-flex align-center justify-space-between">
                     <div>
                       <span 
                         v-if="latestShiftEmployee.start"

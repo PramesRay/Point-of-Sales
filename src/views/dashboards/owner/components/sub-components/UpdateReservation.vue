@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
@@ -11,6 +11,7 @@ import { formatDate } from '@/utils/helpers/format-date';
 import type { Customer } from '@/types/customer';
 import { useReservation } from '@/composables/useReservation';
 import type { CreateReservationPayload, Reservation, UpdateReservationPayload } from '@/types/reservation';
+import type { Branch } from '@/types/branch';
 
 const {create, update, remove, loading} = useReservation()
 
@@ -19,7 +20,7 @@ const emit = defineEmits(['close'])
 
 const props = defineProps<{
   data?: Reservation;
-  branches: IdName[]
+  branches: Branch[]
   is_create: boolean
 
   isChanged?: boolean 
@@ -31,14 +32,12 @@ const payload = ref<{
   branch_id: string | null;
   customer: Customer;
   time: Date | null;
-  status: 'Disetujui' | 'Pending' | 'Ditolak' | null;
   notes: string;
   people: number
 }>({
   branch_id: !props.is_create ? props.data?.branch.id! : null,
   customer: !props.is_create ? props.data?.customer! : { name: '', phone: '' },
-  time: !props.is_create ? props.data?.time! : null,
-  status: !props.is_create ? props.data?.status! : null,
+  time: !props.is_create ? new Date(props.data?.time!) : null,
   notes: !props.is_create ? props.data?.notes! : '',
   people: !props.is_create ? props.data?.people! : 0
 })
@@ -54,15 +53,31 @@ const isUpdatingTime = ref(false)
 
 const minTime = computed(() => {
   const now = new Date()
-  if(payload.value.time?.getDate() === now.getDate()) {
-    if(now.getHours() < 17) {
-      return '17:00'
-    } else {
-      return (now.getHours()+2) + ':00'
+  const branch = props.branches.find(branch => branch.id === payload.value.branch_id)
+  if (branch && payload.value.time?.getDate() === now.getDate()) {
+    const openingTime = branch.operational.open_time.split(':').map(Number);
+    const openingDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), openingTime[0], openingTime[1]);
+    if (now < openingDateTime) {
+      if (now.getHours() < branch.operational.open_time.split(':').map(Number)[0] - 3) {
+        return `${branch?.operational?.open_time}`
+      } else {
+        console.log('`${branch.operational.close_time}`', `${branch.operational.close_time}`)
+        return `${now.getHours() + 2}:00`
+      }
     }
-  } else {
-    return '17:00'
   }
+})
+
+// max is 2 hours before closing
+const maxTime = computed(() => {
+  const now = new Date()
+  const branch = props.branches.find(branch => branch.id === payload.value.branch_id)
+  if (!branch) return ''
+  const closingTime = branch.operational.close_time.split(':').map(Number);
+  const closingDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), closingTime[0], closingTime[1]);
+  console.log('closingDateTime', closingDateTime)
+  console.log('`${closingDateTime.getHours() - 2}:00`', `${(closingDateTime.getHours()) - 2}:00`)
+  return `${(closingDateTime.getHours()) - 2}:00`
 })
 
 const formatedDateTime = computed(() => {
@@ -77,7 +92,7 @@ const formatedClockTime = computed(() => {
 const rules = {
   required: [(v: string) => !!v || 'Data tidak boleh kosong'],
   phone: [(v: string) => v.length <= 15 || 'Nomor telepon maksimal 15 digit'],
-  people: [(v: number) => v >= 4 || 'Jumlah minimal 4 orang', (v: number) => v <= 20 || 'Jumlah maksimal 20 orang'],
+  positive: [(v: any) => v > 0 || 'Harus lebih dari 0'],
   notes: [(v: string) => v.length <= 100 || 'Catatan maksimal 100 karakter'],
 }
 
@@ -88,7 +103,6 @@ const isChanged = computed(() => {
       payload.value.customer.name !== '' ||
       payload.value.customer.phone !== '' ||
       payload.value.time !== null ||
-      payload.value.status !== null ||
       payload.value.notes !== '' ||
       payload.value.people !== null
     )
@@ -98,7 +112,6 @@ const isChanged = computed(() => {
       payload.value.customer.name !== props.data?.customer.name ||
       payload.value.customer.phone !== props.data?.customer.phone ||
       payload.value.time !== props.data?.time ||
-      payload.value.status !== props.data?.status ||
       payload.value.notes !== props.data?.notes ||
       payload.value.people !== props.data?.people
     )
@@ -161,20 +174,18 @@ function handleClose() {
   emit('close')
 }
 
-function processDelete() {
+async function processDelete() {
   try {
-    remove(props.data!.id)
+    await remove(props.data!.id)
     props.refresh()
     handleClose()
   } catch (error) {
-    props.refresh()
     console.log(error)
-    handleClose()
   }
 }
 
 function handleSubmit() {
-  formRef.value?.validate().then((res: boolean) => {
+  formRef.value?.validate().then(async (res: boolean) => {
     if (!res) return
     const createPayload: CreateReservationPayload = {
       branch_id: payload.value.branch_id!,
@@ -184,24 +195,39 @@ function handleSubmit() {
       people: payload.value.people!
     }
     if (props.is_create) {
-      create(createPayload).then(() => {
+      try {
+        await create(createPayload)
         props.refresh()
         handleClose()
-      })
-      
+      } catch (error) {
+        console.log(error)
+      }
     } else {
       const updatePayload: UpdateReservationPayload = {
         id: props.data!.id,
-        status: payload.value.status!,
         ...createPayload
       }
-      update(updatePayload).then(() => {
+      try {
+        await update(updatePayload)
         props.refresh()
         handleClose()
-      })
+      } catch (error) {
+        console.log(error)
+      } 
     }
   })
 }
+
+watch(() => payload.value.customer.phone, (val) => {
+  if (val === null) return;
+  // Remove non-digit characters
+  let digits = String(val).replace(/\D/g, '');
+  // Remove leading zeros
+  digits = digits.replace(/^0+/, '');
+  // Limit to 13 digits
+  if (digits.length > 15) digits = digits.slice(0, 13);
+  payload.value.customer.phone = digits;
+});
 </script>
 
 <template>
@@ -221,26 +247,14 @@ function handleSubmit() {
     </v-btn>
 
     <div class="d-flex align-center">
-      <h4 class="text-h4 mt-1"> {{ is_create ? 'Buat Perpindahan Stok' : 'Ubah Perpindahan Stok' }} </h4>
+      <h4 class="text-h4 mt-1"> {{ is_create ? 'Buat Reservasi' : 'Ubah Reservasi' }} </h4>
     </div>
     <i class="text-subtitle-2 text-disabled"> {{ is_create ? '' : props.data?.id }} </i>
 
     <v-divider class="my-3" />
 
     <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="handleSubmit">
-      <v-row no-gutters>
-        <v-col cols="12" md="6">
-          <v-autocomplete
-            v-model="payload.branch_id"
-            label="Cabang"
-            :items="props.branches"
-            item-title="name"
-            item-value="id"
-            variant="underlined"
-            prepend-icon="mdi-home"
-            :rules="rules.required"
-          />
-        </v-col>
+      <v-row no-gutters justify="center">
         <v-col cols="6">
           <v-text-field
             v-if="payload.customer"
@@ -252,28 +266,40 @@ function handleSubmit() {
           />
         </v-col>
         <v-col cols="6">
+          <v-text-field
+            v-if="payload.customer"
+            v-model="payload.customer.phone"
+            label="Nomor Telepon"
+            variant="underlined"
+            prepend-icon="mdi-phone"
+            prefix="+62"
+            :rules="[...rules.required, ...rules.phone]"
+          />
+        </v-col>
+        <v-col cols="7">
+          <v-autocomplete
+            v-model="payload.branch_id"
+            label="Cabang"
+            :items="props.branches"
+            item-title="name"
+            item-value="id"
+            variant="underlined"
+            prepend-icon="mdi-home"
+            :rules="rules.required"
+            @update:model-value="payload.time = null"
+          />
+        </v-col>
+        <v-col cols="5">
           <v-number-input 
             control-variant="split"
             v-model="payload.people"
             label="Jumlah Orang"
             variant="plain"
             max-width="14rem"
-            :rules="rules.people"
+            :rules="rules.positive"
             :min="0"
             :max="20"
             inset
-          />
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-text-field
-            type="number"
-            hide-spin-buttons
-            v-if="payload.customer"
-            v-model="payload.customer.phone"
-            label="Nomor Telepon"
-            variant="underlined"
-            prepend-icon="mdi-phone"
-            :rules="rules.required || rules.phone"
           />
         </v-col>
         <v-col cols="12" md="6">
@@ -284,6 +310,7 @@ function handleSubmit() {
             readonly
             :active="dateMenu"
             :focused="dateMenu"
+            :disabled="!payload.branch_id"
             variant="underlined"
             :rules="rules.required"
           />
@@ -314,6 +341,7 @@ function handleSubmit() {
             readonly
             :active="timeMenu"
             :focused="timeMenu"
+            :disabled="!payload.branch_id"
             variant="underlined"
             :rules="rules.required"
           >
@@ -330,7 +358,7 @@ function handleSubmit() {
               <v-time-picker
                 v-model="timeModel"
                 format="24hr"
-                max="22:59"
+                :max="maxTime"
                 :min="minTime"
                 @update:model-value="onTimePicked"
               />
@@ -340,9 +368,8 @@ function handleSubmit() {
         <v-col cols="12">
           <v-textarea
             v-model="payload.notes"
-            label="Catatan"
+            placeholder="Catatan"
             rows="3"
-            class="small-font"
             auto-grow
             prepend-inner-icon="mdi-text-long"
             clear-icon="mdi-close"

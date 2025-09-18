@@ -11,12 +11,13 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 import DetailReservation from './sub-components/DetailReservation.vue';
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 import UpdateReservation from './sub-components/UpdateReservation.vue';
+import type { Branch } from '@/types/branch';
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
   data: Reservation[];
   branch: IdName | undefined | null;
-  branch_option: IdName[]
+  branch_option: Branch[]
   loading: boolean;
 
   refresh: () => void;
