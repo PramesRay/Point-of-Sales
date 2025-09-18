@@ -206,7 +206,7 @@ const dummyOrdersQue: Order[] = [
   ],
   status: "Selesai",
   amount: 90000,
-  payment_status: "Selesai",
+  payment_status: "Lunas",
   meta: {
     created_at: new Date(),
     created_by: dummyUser[1],

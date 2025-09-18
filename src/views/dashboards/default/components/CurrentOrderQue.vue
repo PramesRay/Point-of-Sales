@@ -11,26 +11,32 @@ import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
 import DetailOrder from './sub-components/order/DetailOrder.vue';
-import { useMenuItems } from '@/composables/useMenuItems';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
-import type { MenuSale } from '@/types/menu';
+import type { ShiftKitchen } from '@/types/shift';
+import type { Menu } from '@/types/menu';
+import type { Category } from '@/types/inventory';
 
-const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
 const { openOverlay } = useOverlayManager()
-
-onMounted(() => {
-  loadItemSales()
-})
 
 const props = defineProps<{
   data: Order[];
-  data_menu: MenuSale[];
+  data_menu: Menu[];
+  data_category: Category[];
   branch: IdName | undefined | null;
   loading: boolean;
 
+  // load: (filter: Record<string, any>) => Order
   refresh: () => void
 }>();
+
+const data_menus = computed(() => {
+  return props.data_menu
+})
+
+const data_categories = computed(() => {
+  return props.data_category
+})
 
 const orders = computed(() => {
   return props.data || []
@@ -49,7 +55,7 @@ const filteredData = computed(() => {
 
     return isActiveMatch && isDineInMatch;
   });
-  return data
+  return isActive.value ? data : data.slice().sort((a, b) => new Date(b?.meta.updated_at).getTime() - new Date(a?.meta.updated_at).getTime());
 })
 
 // Ambil permintaan terbaru
@@ -58,9 +64,28 @@ const latestOrderQue = computed(() => filteredData?.value[0] || null);
 // Sisanya untuk list biasa
 const listOrderQue = computed(() => filteredData?.value.slice(1) || []);
 
+const cashInput = ref('')
+const cashNumber = ref(0)
 const isActive = ref(true)
 const isDineIn = ref()
-const isChanged = ref(false);
+
+watch(() => cashInput.value, (val) => {
+  const numeric = val.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
+  cashNumber.value = numeric ? Number(numeric) : 0
+})
+
+function openDetailOrder(order: Order) {
+  openOverlay({
+    component: DetailOrder,
+    props: {
+      get data_order() { return order },
+      data_menu: data_menus,
+      categories: data_categories,
+      loading: props.loading,
+      refresh: () => props.refresh()
+    },
+  })
+}
 </script>
 
 <template>
@@ -80,6 +105,7 @@ const isChanged = ref(false);
               >
                 <v-icon>mdi-swap-vertical</v-icon></v-btn>
             </h4>
+            <span class="text-subtitle-2 text-medium-emphasis">{{ props.branch?.name }}</span>
           </v-col>
           <v-col cols="auto">
             <!-- refresh button -->
@@ -114,11 +140,12 @@ const isChanged = ref(false);
               openOverlay({
                 component: DetailOrder,
                 props: {
-                  data_order: latestOrderQue,
-                  data_menu: menuSales,
-                  categories: categories,
+                  get data_order() { return latestOrderQue },
+                  data_menu: data_menu,
+                  categories: data_categories,
+                  loading: props.loading,
                   refresh: () => props.refresh()
-                }
+                },
               })
             "
           >
@@ -153,9 +180,9 @@ const isChanged = ref(false);
                       }"
                     >{{ latestOrderQue?.status }}</span>
                   </div>
-                  <h4 class="text-h4 text-right">{{ getTimeDiff(latestOrderQue.meta.updated_at) }}</h4>
-                  <i v-if="latestOrderQue?.meta?.updated_at.getTime() !== latestOrderQue?.meta?.created_at.getTime()" class="text-subtitle-2 text-disabled">
-                    Diubah {{ getTimeDiff(latestOrderQue.meta.updated_at) }}
+                  <h4 class="text-h4 text-right">{{ getTimeDiff(latestOrderQue?.meta.updated_at) }}</h4>
+                  <i v-if="latestOrderQue?.meta?.updated_at !== latestOrderQue?.meta?.created_at" class="text-subtitle-2 text-disabled">
+                    Dibuat {{ getTimeDiff(latestOrderQue?.meta.created_at) }}
                   </i>
                 </div>
               </div>
@@ -171,16 +198,16 @@ const isChanged = ref(false);
                   color="secondary"
                   rounded="sm"
                   @click="
-                    openOverlay({
-                      component: DetailOrder,
-                      props: {
-                        data_order: item,
-                        data_menu: menuSales,
-                        categories: categories,
-                        refresh: () => props.refresh()
-                      }
-                    })
-                  "
+                  openOverlay({
+                    component: DetailOrder,
+                    props: {
+                      get data_order() { return item },
+                      data_menu: data_menu,
+                      categories: data_categories,
+                      loading: props.loading,
+                      refresh: () => props.refresh()
+                    },
+                  })"
                 >
                   <span class="text-subtitle-2 text-medium-emphasis">
                     {{ item?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 
@@ -208,14 +235,13 @@ const isChanged = ref(false);
                             'text-success': item?.status === 'Selesai',
                             'text-error': item?.status === 'Batal',
                             'text-warning': item?.status === 'Pending',
-                            'text-primary': item?.status === 'Diproses',
-                            'text-secondary': item?.status === 'Tersaji'
+                            'text-primary': item?.status === 'Diproses'
                           }"
                         >{{ item?.status }}</span>
                       </div>
-                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(item.meta.created_at) }}</div>
-                      <i v-if="item?.meta?.updated_at.getTime() !== item?.meta?.created_at.getTime()" class="text-subtitle-2.getTime() text-disabled">
-                        Diubah {{ getTimeDiff(item.meta.updated_at) }}
+                      <div class="text-subtitle-1 text-medium-emphasis font-weight-bold text-right">{{ getTimeDiff(item?.meta.updated_at) }}</div>
+                      <i class="text-subtitle-2 text-disabled">
+                        Dibuat {{ getTimeDiff(item?.meta.created_at) }}
                       </i>
                     </div>
                   </div>
@@ -225,10 +251,10 @@ const isChanged = ref(false);
             </ScrollContainer>
             <!-- jika data kosong -->
             <div 
-              v-if="!latestOrderQue" 
-              class="text-center text-subtitle-2 text-disabled my-4"
+              v-if="!latestOrderQue && listOrderQue?.length === 0" 
+              class="text-center text-subtitle-2 text-disabled mt-4"
             >
-              Belum ada pesanan, nih!
+              Pesanan Kosong
             </div>
           </div>
         </div>

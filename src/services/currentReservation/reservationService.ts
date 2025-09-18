@@ -25,7 +25,7 @@ export async function fetchReservationData({
   filter?: Record<string, any>
 } = {}): Promise<{data: Reservation[], total: number}> {
   try {
-    const url = `/reservation`;
+    const url = `/reservations/customer`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -180,7 +180,7 @@ export async function fetchReservationData({
 
 export async function createReservation(payload: CreateReservationPayload): Promise<Reservation> {
   try {
-    const response = await api.post<Reservation>('/reservation', payload);
+    const response = await api.post('/reservation/customer', payload);
     alertStore.showAlert('Reservasi berhasil dibuat!', 'success');
     return response.data;
   } catch (error) {
@@ -192,8 +192,8 @@ export async function createReservation(payload: CreateReservationPayload): Prom
 
 export async function updateReservation(payload: UpdateReservationPayload | ReservationApprovalPayload): Promise<Reservation> {
   try {
-    const response = await api.put<Reservation>('/reservation', payload);
-    alertStore.showAlert('Reservasi berhasil diubah!', 'info');
+    const response = await api.put(`/reservation/customer/${payload.id}`, {...payload, type : 'updateReservation'});
+    alertStore.showAlert('Reservasi berhasil diubah!', 'success');
     return response.data;
   } catch (error) {
     console.warn('API error creating reservation, using dummy data.', error);
@@ -205,7 +205,7 @@ export async function updateReservation(payload: UpdateReservationPayload | Rese
 export async function deleteReservation(id: string): Promise<void> {
   try {
     await api.delete(`/reservation/${id}`);
-    alertStore.showAlert('Reservasi berhasil dihapus!', 'info');
+    alertStore.showAlert('Reservasi berhasil dihapus!', 'success');
   } catch (error) {
     console.warn('API error deleting reservation, using dummy data.', error);
     alertStore.showAlert('Reservasi gagal dihapus!', 'error');

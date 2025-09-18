@@ -38,7 +38,7 @@ const payload = ref<{
   phone: string | null
 }>({
   id: props.user?.id || '',
-  branch_id: props.user?.branch.id || null,
+  branch_id: props.user?.branch?.id || null,
   table: props.user?.table || null,
   name: props.user?.name || null,
   phone: props.user?.phone || null
@@ -102,13 +102,23 @@ watch(() => payload.value.phone, (val) => {
 async function processSubmit() {
   if (!props.user || props.user === null) {
     try {
-      await userStore.createMe({
-        branch_id: payload.value.branch_id!,
-        table: payload.value.table!,
+      const response = await userStore.createMe({
         name: payload.value.name!,
         phone: payload.value.phone!
       });
-      clearPayload();
+      const branch = branchData.value.find((branch: any) => branch.id === payload.value.branch_id)
+      const user: User = {
+        id: response.data.id,
+        fk_user_id: response.data.fk_user_id,
+        name: payload.value.name!,
+        phone: payload.value.phone!,
+        branch: {
+          id: branch?.id!,
+          name: branch?.name!
+        },
+        table: payload.value.table!
+      }
+      userStore.setMe(user);
       if (typeof props.onIsChangedUpdate === 'function') {
         props.onIsChangedUpdate(false);
       }
@@ -116,24 +126,29 @@ async function processSubmit() {
       emit('close');
     } catch (error) {
       console.error("Failed to create user:", error);
-      clearPayload();
-      if (typeof props.onIsChangedUpdate === 'function') {
-        props.onIsChangedUpdate(false);
-      }
-      props.refresh();
-      emit('close');
     }
     return;
   }
 
   try {
-    await userStore.updateMe({
+    const response = await userStore.updateMe({
       id: payload.value.id!,
-      branch_id: payload.value.branch_id!,
-      table: payload.value.table!,
       name: payload.value.name!,
       phone: payload.value.phone!
     });
+    const branch = branchData.value.find((branch: any) => branch.id === payload.value.branch_id)
+    const user: User = {
+      id: response.data.id,
+      fk_user_id: response.data.fk_user_id,
+      name: payload.value.name!,
+      phone: payload.value.phone!,
+      branch: {
+        id: branch?.id!,
+        name: branch?.name!
+      },
+      table: payload.value.table!
+    }
+    userStore.setMe(user);
     clearPayload();
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false);
@@ -142,12 +157,6 @@ async function processSubmit() {
     emit('close');
   } catch (error) {
     console.error("Failed to update user:", error);
-    clearPayload();
-    if (typeof props.onIsChangedUpdate === 'function') {
-      props.onIsChangedUpdate(false);
-    }
-    props.refresh();
-    emit('close');
   }
 }
 

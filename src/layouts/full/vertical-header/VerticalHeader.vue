@@ -13,17 +13,6 @@ const userStore = useUserStore();
 const isChanged = ref(false);
 
 const customizer = useCustomizerStore();
-
-function getUserFromLocalStorage() {
-  const userStr = localStorage.getItem('user');
-  try {
-    return userStr ? JSON.parse(userStr) : {};
-  } catch {
-    return {};
-  }
-}
-
-const userData = getUserFromLocalStorage();
 </script>
 
 <template>
@@ -68,9 +57,10 @@ const userData = getUserFromLocalStorage();
       openOverlay({
         component: ProfileDD,
         props: {
-          user: userData,
+          get user() {return userStore.me},
           confirmBeforeClose: true,
-          isChanged
+          isChanged,
+          onIsChangedUpdate: (val: boolean) => isChanged = val
         }
       })"
     >

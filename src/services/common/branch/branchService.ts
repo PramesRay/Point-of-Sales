@@ -4,9 +4,8 @@ import dummyBranchList from './dummyBranchList'
 
 export async function fetchBranches(): Promise<Branch[]> {
   try {
-    const res = await api.get('/branches?is_active=true');
-
-    return res.data;
+    const res = await api.get('/branch?is_active=true');
+    return res.data.data;
   } catch (error) {
     console.warn(`Fetch branches in failed, using dummy.`, error);
 

@@ -4,20 +4,17 @@ import { defineProps, ref } from 'vue';
 import { getTimeDiff } from "@/utils/helpers/time";
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import { useUserStore } from '@/stores/authUser';
 
-import Blank from '@/components/shared/Blank.vue';
 import type { Reservation } from '@/types/reservation';
 import type { IdName } from '@/types/common';
 import { formatDate } from '@/utils/helpers/format-date';
-import { useReservation } from '@/composables/useReservation';
 import UpdateReservation from './UpdateReservation.vue';
+import { useUserStore } from '@/stores/authUser';
 import { useAlertStore } from '@/stores/alert';
-
-const userStore = useUserStore();
+const userStore = useUserStore()
 const alertStore = useAlertStore()
+
 const { openOverlay } = useOverlayManager()
-const { update, loading } = useReservation()
 
 const emit = defineEmits(['close'])
 const props = defineProps<{
@@ -36,7 +33,7 @@ const copyToClipboard = (text: string) => {
 const handleUpdate = () => {
   if (userStore.me?.id !== props.data.meta.created_by.id) {
     alertStore.showAlert('Data Reservasi hanya dapat diubah oleh yang membuat', 'warning')
-  } else if (props.data.time < new Date()) {
+  } else if (props.data.status !== 'Pending') {
     alertStore.showAlert('Data Reservasi sudah tidak dapat diubah', 'warning')
   } else {
     openOverlay({
@@ -68,7 +65,7 @@ const handleUpdate = () => {
       <div class="d-flex align-center">
         <h4 class="text-h4">Detail Reservasi</h4>
         <v-btn 
-          v-if="props.data.status === 'Pending' && userStore.me?.id === props.data.meta.created_by.id"
+          v-if="props.data?.status === 'Pending'"
           icon
           variant="plain"
           size="x-small"
@@ -80,10 +77,7 @@ const handleUpdate = () => {
       <i class="text-subtitle-2 text-disabled">{{ props.data?.id }}</i>
       <v-divider class="my-2"></v-divider>
 
-      <div v-if="loading" class="text-center my-4">
-        <v-progress-circular indeterminate color="primary" height="1"></v-progress-circular>
-      </div>
-      <div v-else>
+      <div>
         <v-row>
           <v-col cols="12">
             <v-row>
@@ -94,7 +88,7 @@ const handleUpdate = () => {
                 </span>
               </v-col>
             </v-row>
-            <v-row>
+            <v-row align="center">
               <v-col cols="7">
                 <div class="mb-3">
                   <h4 class="text-secondary text-h4 font-weight-bold">
@@ -127,6 +121,26 @@ const handleUpdate = () => {
                     </v-btn>
                   </div>
                 </div>
+              </v-col>
+              <v-col cols="5">  
+                <div class="text-right">
+                  <div 
+                  class="text-subtitle-2 text-medium-emphasis"
+                  :class="{
+                    'text-success': props.data?.status === 'Disetujui',
+                    'text-error': props.data?.status === 'Ditolak',
+                    'text-warning': props.data?.status === 'Pending'
+                  }"
+                >{{ props.data?.status }}</div>
+                <h4 v-if="props.data?.meta.created_at" class="text-h4">{{ getTimeDiff(props.data?.meta.created_at) }}</h4>
+                <i v-if="props.data?.meta.updated_at" class="text-subtitle-2 text-disabled">
+                  Diubah {{ getTimeDiff(props.data?.meta.updated_at) }}
+                </i>
+              </div>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
                 <div class="mb-3">
                   <div class="text-subtitle-2 text-disabled">
                     <v-btn
@@ -158,37 +172,21 @@ const handleUpdate = () => {
                     </v-btn>
                     {{ props.data?.people }} orang
                   </div>
+                  <div class="mb-3">
+                    <div class="text-subtitle-2 text-disabled">
+                      <v-btn
+                        icon
+                        variant="text"
+                        size="x-small"
+                      >
+                        <v-icon size="x-large">mdi-text</v-icon>: 
+                      </v-btn>
+                      {{ props.data?.notes }}
+                    </div>
+                  </div>
                 </div>
               </v-col>
-              <v-col cols="5">  
-                <div class="text-right">
-                  <div 
-                  class="text-subtitle-2 text-medium-emphasis"
-                  :class="{
-                    'text-success': props.data?.status === 'Disetujui',
-                    'text-error': props.data?.status === 'Ditolak',
-                    'text-warning': props.data?.status === 'Pending'
-                  }"
-                >{{ props.data?.status }}</div>
-                <h4 v-if="props.data?.meta.created_at" class="text-h4">{{ getTimeDiff(props.data?.meta.created_at) }}</h4>
-                <i v-if="props.data?.meta.updated_at" class="text-subtitle-2 text-disabled">
-                  Diubah {{ getTimeDiff(props.data?.meta.updated_at) }}
-                </i>
-              </div>
-              </v-col>
             </v-row>
-          </v-col>
-        </v-row>
-        
-        <v-row>
-          <v-col cols="12">
-            <v-divider class="my-4"></v-divider>
-            <div class="text-subtitle-2 text-medium-emphasis mb-2">
-              <v-icon size="x-large">mdi-comment-text-outline</v-icon> Catatan:
-            </div>
-            <div class="text-subtitle-1 text-medium-emphasis">
-              {{ props.data?.notes || 'Tidak ada catatan' }}
-            </div>
           </v-col>
         </v-row>
       </div>

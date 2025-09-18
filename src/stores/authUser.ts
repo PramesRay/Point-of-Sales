@@ -8,30 +8,35 @@ export const useUserStore = defineStore({
   id: 'user',
   state: () => ({
     me: (() => {
-      const userStr = localStorage.getItem('user');
-      try {
-        return userStr ? JSON.parse(userStr) as User : null;
-      } catch {
-        return null;
-      }
+      const userStr = localStorage.getItem('user-nurchs');
+      return userStr ? JSON.parse(userStr) as User : null;
     })(),
     loading: false,
   }),
   actions: {
+    setMe(user: User) {
+      this.me = user;
+      localStorage.setItem('user-nurchs', JSON.stringify(user));
+    },
+    async getMe(id: string) {
+      this.loading = true;
+      try {
+        const res = await api.get(`/customer/${id}`);
+        return res.data;
+      } catch (error: any) {
+        console.error("Failed to fetch user data:", error);
+        return dummyUser;
+      } finally {
+        this.loading = false;
+      }
+    },
     async createMe(payload: CreateUser) {
       this.loading = true;
       try {
-        const user = await api.post('/users', { payload });
-        this.me = user.data;
-        // localStorage.setItem('user', JSON.stringify(this.me));
+        const res = await api.post('/customer', payload);
+        return res.data;
       } catch (error: any) {
         console.error("Failed to fetch user data:", error);
-
-        // delete section ====================================
-        this.me = dummyUser[0];
-        localStorage.setItem('user', JSON.stringify(this.me));
-        // delete section ====================================
-
         throw new Error("Gagal membuat user baru, menggunakan dummy user");
       } finally {
         this.loading = false;
@@ -41,15 +46,10 @@ export const useUserStore = defineStore({
     async updateMe(payload: UpdateUser) {
       this.loading = true;
       try {
-        const res = await api.put(`/users/${payload.id}`, payload);
-        this.me = res.data;
-        // localStorage.setItem('user', JSON.stringify(this.me));
+        const res = await api.put(`/customer/${payload.id}`, payload);
+        return res.data;
       } catch (error: any) {
         console.error("Failed to update user data:", error);
-        this.me = dummyUser[0]; // Fallback to dummy user
-        // delete section ====================================
-        localStorage.setItem('user', JSON.stringify(this.me));
-        // delete section ====================================
         throw new Error("Gagal memperbarui user");
       } finally {
         this.loading = false;

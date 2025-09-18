@@ -6,7 +6,7 @@ import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 
-const { createDirectPaymentOrder, update, loading: lo } = useCurrentOrders()
+const { createDirectPaymentOrder, updatePayment, loading: lo } = useCurrentOrders()
 
 const emit = defineEmits(['close'])
 
@@ -34,11 +34,19 @@ const amtRules = [
 
 const totalPrice = computed(() => {
   if (props.is_direct_payment && props.payload) {
-    return props.data?.items.reduce((prev, curr) => prev + (curr.price ?? 0) * curr.quantity, 0)
+    return props.payload?.amount
   } else {
    return props.data?.amount
   }
 })
+
+const canPay = computed(() => {
+  if (lo.value) return false
+  if (paymentMethod.value === 'qris') return true
+  
+  return isFormValid.value && (totalPrice.value ? cashNumber.value >= totalPrice.value : false)
+})
+
 
 async function processPayment() {
   try {
@@ -48,16 +56,16 @@ async function processPayment() {
           payment_method: paymentMethod.value
         })
       } else {
-        await update({
+        await updatePayment({
           id: props.data?.id!,
-          payment_method: paymentMethod.value
+          payment_method: paymentMethod.value,
+          amount: totalPrice.value!
         })
       }
 
       props.paymentSucceded()
       emit('close')
     } catch (error) {
-      props.paymentSucceded()
       console.log(error)
     }
 }
@@ -127,6 +135,7 @@ watch(() => cashInput.value, (val) => {
         <v-row class="mt-2">
           <v-col cols="12">
             <v-text-field 
+              v-if="paymentMethod === 'cash'"
               v-model="cashInput" 
               control-variant="hidden"
               variant="underlined"
@@ -156,17 +165,17 @@ watch(() => cashInput.value, (val) => {
             </v-btn>
           </v-col>
         </v-row>
+        <div 
+          v-if="paymentMethod === 'cash' && totalPrice && cashNumber !== 0 && cashNumber >= totalPrice"
+          class="text-subtitle-2 text-medium-emphasis mt-6 text-center"
+        >
+          Total Kembalian: 
+          <div class="text-h4">{{ formatRupiah(cashNumber - totalPrice) }}</div>
+        </div>
       </div>
   
       <div 
-        v-if="paymentMethod === 'cash' && totalPrice && cashNumber !== 0 && cashNumber >= totalPrice"
-        class="text-subtitle-2 text-medium-emphasis mt-6 text-center"
-      >
-        Total Kembalian: 
-        <div class="text-h4">{{ formatRupiah(cashNumber - totalPrice) }}</div>
-      </div>
-      <div 
-        v-if="paymentMethod === 'qris'"
+        v-else
         class="text-subtitle-1 text-disabled mt-6 text-center"
       >
         Pastikan pembayaran QRIS sudah berhasil, yaa!
@@ -180,7 +189,7 @@ watch(() => cashInput.value, (val) => {
             color="success"
             block
             type="submit"
-            :disabled="!isFormValid || lo"
+            :disabled="!canPay"
             :variant="lo ? 'outlined' : 'elevated'"
             :loading="lo"
           >

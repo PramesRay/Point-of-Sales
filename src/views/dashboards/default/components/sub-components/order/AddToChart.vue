@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MenuSale } from '@/types/menu';
+import type { Menu } from '@/types/menu';
 import type { OrderItem } from '@/types/order';
 import { formatRupiah } from '@/utils/helpers/currency'
 import { ref } from 'vue';
@@ -7,21 +7,20 @@ import { ref } from 'vue';
 const emit = defineEmits(['close'])
 
 const props = defineProps<{
-  menu: MenuSale
+  menu: Menu
   data?: OrderItem
+  max: number
   // menus: MenuSale[]
 
-  onSubmit: (data: OrderItem) => void
-  onUpdate: (data: OrderItem) => void
+  onSubmit: (data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>) => void
+  onUpdate: (data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>) => void
 }>()
 
-const payload = ref<OrderItem>({
-  id: props.menu.id,
-  name: props.menu.name,
+const payload = ref<Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>>({
+  id: props.data?.id || '',
+  item_id: props.menu.id,
   quantity: props.data ? props.data.quantity : 1,
-  note: props.data ? props.data.note || '' : '',
-  price: props.menu.price,
-  status: 'Pending'
+  note: props.data ? props.data.note || '' : ''
 })
 
 const formRef = ref()
@@ -79,8 +78,8 @@ function submitForm() {
           label="Jumlah"
           control-variant="split"
           variant="plain"
-          :min="1" 
-          :max="menu.quantity"
+          :min="0" 
+          :max="max"
           :rules="rules.positive"
           single-line
         />
@@ -110,6 +109,7 @@ function submitForm() {
           <v-btn
             color="primary" 
             type="submit"
+            :disabled="!isFormValid"
           >{{ props.data ? 'Perbarui' : 'Tambah' }}</v-btn>
         </v-col>
       </v-row>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useRoute } from 'vue-router'
 
@@ -26,12 +26,8 @@ import { useReservation } from '@/composables/useReservation';
 import { useBranchList } from '@/composables/useBranchList';
 
 function getUserFromLocalStorage() {
-  const userStr = localStorage.getItem('user');
-  try {
-    return userStr ? JSON.parse(userStr) : {};
-  } catch {
-    return {};
-  }
+  const user = localStorage.getItem('user-nurchs') ? JSON.parse(localStorage.getItem('user-nurchs') as string) : null
+  return user
 }
 
 // Data Loading
@@ -40,23 +36,18 @@ const { openOverlay } = useOverlayManager();
 const { load: loadBranch, data: branchData } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
 const { data: reservationData, loading: lr, load: loadReservation } = useReservation()
-const { loadItemSales, dataItemSales: menuSales, categories, loading: lm } = useMenuItems();
+const { loadItemSales, loadCategory, data: menuSales, categories, loading: lm } = useMenuItems();
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
 })
 
 const isChanged = ref(false);
-const loadParams = {
-  filter: {
-    'meta.created_by.id': userData.id,
-  },
-  sortBy: 'meta.updated_at',
-  sortDesc: true
-}
+const loadParams = {filter: {'created_by': userData?.fk_user_id}}
 
 onMounted(() => {
   if (!userData) { 
+    alertStore.showAlert('Ups, isi data diri dulu ya!', 'warning')
     openOverlay({
       component: ProfileDD,
       props: {
@@ -68,19 +59,28 @@ onMounted(() => {
         },
         refresh: () => {
           loadCurrentOrder(loadParams);
-          loadItemSales(userData?.branch.id);
+          loadItemSales(userData?.branch?.id);
+          loadCategory()
           loadReservation(loadParams);
         }
       }
     });
     return
+  } else {
+    loadBranch();
+    loadCategory()
+    loadCurrentOrder(loadParams);
+    loadItemSales(userData?.branch?.id);
+    loadReservation(loadParams);
   }
-
-  loadBranch();
-  loadCurrentOrder(loadParams);
-  loadItemSales(userData?.branch.id);
-  loadReservation(loadParams);
 })
+
+watch(() => userStore.me, () => {
+    loadCurrentOrder(loadParams);
+    loadItemSales(userStore.me?.branch.id);
+    loadReservation(loadParams);
+  }
+)
 
 const branchId = computed(() => route.query.branch_id as string | undefined);
 const table = computed(() => route.query.table as string | undefined);
@@ -103,7 +103,7 @@ if (branchId.value || table.value) {
         <v-col cols="12">
           <CreateOrder 
             :data_menu="menuSales"
-            :categories="categories"
+            :data_category="categories"
             :refresh="() => loadCurrentOrder(loadParams)"
             class="flex-grow-1" 
           />
@@ -112,8 +112,9 @@ if (branchId.value || table.value) {
           <CurrentOrderQue
             :data="currentOrder.data"
             :data_menu="menuSales"
+            :data_category="categories"
             :branch="userData?.branch"
-            :loading="lco"
+            :loading="lco || lm"
           
             :refresh="() => loadCurrentOrder(loadParams)"
             class="flex-grow-1" 
@@ -131,7 +132,7 @@ if (branchId.value || table.value) {
             :branch="userData?.branch"
             :branch_option="branchData"
             :loading="lr"
-            :refresh="loadReservation"
+            :refresh="() => loadReservation(loadParams)"
             class="flex-grow-1"
           />
         </v-col>

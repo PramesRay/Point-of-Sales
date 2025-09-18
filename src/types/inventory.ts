@@ -61,7 +61,6 @@ export interface Category {
   id: string
   name: string
   description: string
-  meta?: Meta
 }
 
 export type CreateCategoryPayload = Omit<Category, 'id' | 'meta'>

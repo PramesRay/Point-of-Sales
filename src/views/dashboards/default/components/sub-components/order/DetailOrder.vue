@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineProps, ref } from 'vue';
+import { computed, defineProps, ref, watch } from 'vue';
 
-import type { Order } from '@/types/order';
+import type { Order, OrderItem, UpdateOrderItemStatusPayload } from '@/types/order';
 
 import { formatRupiah } from '@/utils/helpers/currency';
 import { getTimeDiff } from "@/utils/helpers/time";
@@ -13,22 +13,67 @@ import { useUserStore } from '@/stores/authUser';
 import UpdateOrder from './UpdateOrder.vue';
 import Blank from '@/components/shared/Blank.vue';
 import Payment from './Payment.vue'
+import type { Menu } from '@/types/menu';
 
+const userStore = useUserStore();
 const { openOverlay } = useOverlayManager()
+const { updateItemStatus, updateStatus } = useCurrentOrders();
+
 
 const emit = defineEmits(['close'])
 const props = defineProps<{
   data_order: Order;
-  data_menu: any[];
+  data_menu: Menu[];
   categories: any;
+  loading: boolean;
   refresh: () => void;
 }>();
+
+const currentOrder = computed(() => {
+  return props.data_order
+})
+
+watch(
+  () => currentOrder.value,
+  (newVal) => {
+    if (newVal === null) {
+      emit('close')
+    }
+  }
+)
 
 const copied = ref(false)
 
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text);
   copied.value = true
+}
+
+const refund_item = ref<UpdateOrderItemStatusPayload & { amount_refund: number}>()
+
+const addRefundItem = (item: OrderItem) => {
+  if(!refund_item.value) refund_item.value = {
+    id: currentOrder?.value.id,
+    items: [],
+    amount_refund: 0,
+  }
+  
+  if(!refund_item.value.items) refund_item.value.items = []
+
+  refund_item.value.items.push({
+    id: item.id,
+    status: 'Refund',
+  })
+
+  refund_item.value.amount_refund += item.price * item.quantity
+}
+
+const resetRefundItem = () => {
+  refund_item.value = {
+    id: currentOrder?.value.id,
+    items: [],
+    amount_refund: 0,
+  }
 }
 </script>
 
@@ -48,10 +93,10 @@ const copyToClipboard = (text: string) => {
       </v-btn>
 
       <h4 class="text-h4">Detil Pesanan</h4>
-      <i class="text-subtitle-2 text-disabled">{{ props.data_order?.id }}</i>
+      <i class="text-subtitle-2 text-disabled">{{ currentOrder?.id }}</i>
       <v-divider class="my-2"></v-divider>
 
-      <div v-if="!props.data_order" class="text-center my-4">
+      <div v-if="props.loading" class="text-center my-4">
         <v-progress-circular indeterminate color="primary" height="1"></v-progress-circular>
       </div>
       <div v-else>
@@ -60,11 +105,11 @@ const copyToClipboard = (text: string) => {
             <v-row>
               <v-col cols="12">
                 <span class="font-weight-medium">
-                  <span>{{ props.data_order?.branch.name }}</span>
-                  <span v-if="!props.data_order?.is_take_away" class="text-caption"> Meja {{ props.data_order?.table_number }} </span>
+                  <span>{{ currentOrder?.branch.name }}</span>
+                  <span v-if="!currentOrder?.is_take_away" class="text-caption"> Meja {{ currentOrder?.table_number }} </span>
                 </span>
                 <div class="text-subtitle-2 text-medium-emphasis">
-                  <i >{{ props.data_order?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }}</i>
+                  <i >{{ currentOrder?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }}</i>
                 </div>
               </v-col>
             </v-row>
@@ -78,23 +123,23 @@ const copyToClipboard = (text: string) => {
                   >
                     <v-icon size="x-large">mdi-account</v-icon>: 
                   </v-btn>
-                  {{ props.data_order?.customer.name }}
+                  {{ currentOrder?.customer.name }}
                 </h4>
                 <div class="text-subtitle-2 text-medium-emphasis" >
                   <v-btn
                     icon
                     variant="text"
                     size="x-small"
-                    :href="`https://wa.me/${props.data_order?.customer.phone}`"
+                    :href="`https://wa.me/${currentOrder?.customer.phone}`"
                   >
                     <v-icon size="x-large">mdi-phone</v-icon>: 
                   </v-btn>
-                  {{ props.data_order?.customer.phone }}
+                  {{ currentOrder?.customer.phone }}
                   <v-btn
                     icon
                     variant="text"
                     size="x-small"
-                    @click="copyToClipboard(props.data_order?.customer.phone ?? '')"
+                    @click="copyToClipboard(currentOrder?.customer.phone ?? '')"
                   >
                     <v-icon>{{ copied ? 'mdi-clipboard-check-multiple-outline' : 'mdi-clipboard-multiple-outline'}}</v-icon>
                   </v-btn>
@@ -107,7 +152,7 @@ const copyToClipboard = (text: string) => {
                   >
                     <v-icon size="x-large">mdi-food</v-icon>: 
                   </v-btn>
-                  {{ props.data_order?.items.length }} item
+                  {{ currentOrder?.items.length }} item
                 </div>
               </v-col>
               <v-col cols="5">  
@@ -115,35 +160,17 @@ const copyToClipboard = (text: string) => {
                   <div 
                   class="text-subtitle-2 text-medium-emphasis"
                   :class="{
-                    'text-success': props.data_order?.status === 'Selesai',
-                    'text-error': props.data_order?.status === 'Batal',
-                    'text-warning': props.data_order?.status === 'Pending',
-                    'text-primary': props.data_order?.status === 'Diproses'
+                    'text-success': currentOrder?.status === 'Selesai',
+                    'text-error': currentOrder?.status === 'Batal',
+                    'text-warning': currentOrder?.status === 'Pending',
+                    'text-primary': currentOrder?.status === 'Diproses'
                   }"
-                >{{ props.data_order?.status }}</div>
-                <h4 v-if="props.data_order?.meta.created_at" class="text-h4">{{ getTimeDiff(props.data_order?.meta.created_at) }}</h4>
-                <i v-if="props.data_order?.meta.updated_at" class="text-subtitle-2 text-disabled">
-                  Diubah {{ getTimeDiff(props.data_order?.meta.updated_at) }}
+                >{{ currentOrder?.status }}</div>
+                <h4 v-if="currentOrder?.meta.updated_at" class="text-h4">{{ getTimeDiff(currentOrder?.meta.updated_at) }}</h4>
+                <i v-if="currentOrder?.meta.created_at" class="text-subtitle-2 text-disabled">
+                  Dibuat {{ getTimeDiff(currentOrder?.meta.created_at) }}
                 </i>
               </div>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12">
-                <div class="text-subtitle-2 text-disabled text-right">
-                  <span
-                    class="text-h5 text-high-emphasis ml-1"
-                    :class="{
-                      'text-success': props.data_order?.payment_status === 'Selesai',
-                      'text-error': props.data_order?.payment_status === 'Gagal',
-                      'text-warning': props.data_order?.payment_status === 'Pending',
-                    }"
-                  > Pembayaran {{ props.data_order?.payment_status }}
-                  </span>
-                  <div>
-                    Total Harga: <span class="text-h4 text-high-emphasis ml-1">{{ formatRupiah(props.data_order?.amount ?? 0) }}</span>
-                  </div>
-                </div>
               </v-col>
             </v-row>
           </v-col>
@@ -155,6 +182,7 @@ const copyToClipboard = (text: string) => {
           <!-- Add Item Button -->
           <span class="text-subtitle-2 text-medium-emphasis">
             <v-btn
+              v-if="currentOrder?.status !== 'Selesai' && currentOrder?.status !== 'Batal' && currentOrder?.payment_status === 'Pending'"
               append-icon="mdi-pencil"
               class="text-disabled"
               variant="plain"
@@ -163,21 +191,21 @@ const copyToClipboard = (text: string) => {
                 openOverlay({
                   component: UpdateOrder,
                   props: {
-                    data_order: props.data_order,
+                    data_order: currentOrder,
                     data_menu: props.data_menu,
-                    categories: categories,
+                    categories: props.categories,
                     refresh: () => props.refresh()
                   },
                 })
               "
             >
-              Tambah Item
+              Ubah Item
             </v-btn>
           </span>
         </div>
         <perfect-scrollbar class="scrollable" style="max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
           <v-list-item
-            v-for="(item, index) in props.data_order?.items" 
+            v-for="(item, index) in currentOrder?.items" 
             :key="index" 
             class="px-1"
           >
@@ -196,6 +224,28 @@ const copyToClipboard = (text: string) => {
               </v-col>
               <v-col cols="5" class="text-right">
                 <div class="text-subtitle-2 text-medium-emphasis">
+                  <div v-if="item.status === 'Tersaji'" class="text-success">
+                    Selesai
+                  </div>
+                  <div v-else-if="item.status === 'Pending'" class="text-warning">
+                    Pending
+                  </div>
+                  <div v-else-if="item.status === 'Diproses'" class="text-primary">
+                    Diproses
+                  </div>
+                  <div v-else class="text-error">
+                    Batal
+                  </div>
+                </div>
+                <div 
+                  v-if="currentOrder?.payment_status === 'Lunas'"
+                  class="text-subtitle-2 text-medium-emphasis"
+                >
+                  <div class="text-error" v-if="item.status === 'Refund'" >
+                    Refund
+                  </div>
+                </div>
+                <div v-else class="text-subtitle-2 text-medium-emphasis">
                   {{ formatRupiah(item.price) }}
                 </div>
               </v-col>
@@ -203,32 +253,46 @@ const copyToClipboard = (text: string) => {
           </v-list-item>
         </perfect-scrollbar>
         
-        <div v-if="props.data_order?.payment_status === 'Pending'">
-          <v-divider class="my-3"></v-divider>
-          <v-row class="d-flex justify-space-between align-center">
-            <v-col cols="12">
-              <v-btn
-                color="success"
-                block
-                :disabled="!props.data_order || props.data_order?.payment_status !== 'Pending'"
-                :loading="!props.data_order || props.data_order?.payment_status !== 'Pending'"
-                @click="
-                  openOverlay({
-                    component: Payment,
-                    props: {
-                      data: props.data_order,
-                      paymentSucceded: () => {
-                        props.refresh()
-                      }
-                    },
-                  })
-                "
-              >
-                Pembayaran
-              </v-btn>
-            </v-col>
-          </v-row>
-        </div>
+        <v-divider class="my-3"></v-divider>
+
+        <v-row class="my-2" no-gutters>
+          <v-col cols="12">
+            <div class="text-subtitle-2 text-disabled text-right">
+              <span
+                class="text-h5 text-high-emphasis ml-1"
+                :class="{
+                  'text-success': currentOrder?.payment_status === 'Lunas',
+                  'text-error': currentOrder?.payment_status === 'Gagal',
+                  'text-warning': currentOrder?.payment_status === 'Pending',
+                }"
+              > Pembayaran {{ currentOrder?.payment_status }}
+              </span>
+              <div>
+                Total Harga: <span class="text-h4 text-high-emphasis ml-1">{{ formatRupiah(currentOrder?.amount ?? 0) }}</span>
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+        <v-btn
+            v-if="!(currentOrder?.status === 'Selesai' || currentOrder?.status === 'Batal' || currentOrder?.status === 'Refund' || currentOrder?.payment_status === 'Lunas')"
+            color="success"
+            :disabled="props.loading"
+            :loading="props.loading"
+            @click="
+              openOverlay({
+                component: Payment,
+                props: {
+                  data: currentOrder,
+                  paymentSucceded: () => {
+                    props.refresh()
+                    emit('close')
+                  }
+                },
+              })
+            "
+          >
+            Pembayaran
+          </v-btn>
       </div>
     </v-card>
 </template>

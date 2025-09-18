@@ -3,7 +3,7 @@ import { ref, computed, watchEffect, watch } from 'vue'
 import { formatRupiah } from '@/utils/helpers/currency'
 
 import type { Category } from '@/types/inventory'
-import type { MenuSale } from '@/types/menu'
+import type { Menu } from '@/types/menu'
 import type { CreateOrderPayload, Order, OrderItem, UpdateOrderPayload } from '@/types/order'
 
 import { useUserStore } from '@/stores/authUser'
@@ -14,6 +14,8 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 import Payment from './Payment.vue'
 import AddToChart from './AddToChart.vue'
 import Blank from '@/components/shared/Blank.vue'
+import { cloneDeep } from 'lodash'
+import { useAlertStore } from '@/stores/alert'
 
 const { openOverlay } = useOverlayManager()
 const { create, update, loading: lo } = useCurrentOrders()
@@ -23,30 +25,26 @@ const emit = defineEmits(['close'])
 const props = defineProps<{
   is_create?: boolean
   data_order?: Order
-  data_menu: MenuSale[]
+  data_menu: Menu[]
   categories: Category[]
   refresh: () => void
   onIsChangedUpdate?: (val: boolean) => void
 }>()
+
+console.log('props.data_menu', props.data_menu)
 
 const formRef = ref()
 const isFormValid = ref(false)
 
 const selectedCtg = ref<string | null>('all')
 
-const itemInChart = ref<(OrderItem & { name: string; description: string; price: number })[]>(
-  props.data_order
-  ? props.data_order.items.map((item) => ({
-      ...item, // Menyalin properti yang ada dari item
-      name: (item as any).name || '', // Jika name tidak ada, beri default kosong
-      description: (item as any).description || '', // Sama seperti description
-      price: (item as any).price || 0, // Jika price tidak ada, beri default 0
-    }))
-  : []
+const itemInChart = ref<(Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'status' | 'note'> & Omit<Menu, "branch" | "meta" | "category">)[]>(
+  props.data_order ? cloneDeep(props.data_order.items) : []
 );
 
 const totalPrice = computed(() => {
-  return itemInChart.value.reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
+  payload.value.amount = itemInChart.value.reduce((acc, curr) => acc + curr.price * curr.quantity, 0)
+  return payload.value.amount
 })
 
 const showDetailOrder = ref(false)
@@ -54,13 +52,23 @@ const showDetailOrder = ref(false)
 const payload = ref<CreateOrderPayload>({
   branch_id: userStore.me?.branch?.id || '',
   table_number: props.data_order ? props.data_order.table_number : userStore.me?.table || '',
-  customer: props.data_order ? props.data_order.customer : {
+  customer: props.data_order 
+  ? {
+    id: userStore.me?.id!,
+    fk_user_id: userStore.me?.fk_user_id!,
+    name: props.data_order.customer.name || '',
+    phone: props.data_order.customer.phone || '',
+  } 
+  : {
+    id: userStore.me?.id || '',
+    fk_user_id: userStore.me?.fk_user_id || '',
     name: userStore.me?.name || '',
     phone: userStore.me?.phone || '',
   },
   is_take_away: props.data_order ? props.data_order.is_take_away : false,
   items: props.data_order ? props.data_order.items.map((item) => ({
     id: item.id,
+    item_id: item.item_id,
     quantity: item.quantity,
     note: item.note || '', // default to an empty string if note is undefined
   })) : [],
@@ -69,12 +77,11 @@ const payload = ref<CreateOrderPayload>({
 
 const requieredRules = [(v: string) => !!v || 'Data tidak boleh kosong']
 const booleanReqRules = [(v: boolean) => v !== null || 'Data tidak boleh kosong']
-const qtyRules = [(v: number) => !!v || 'Jumlah tidak boleh kosong', (v: number) => v >= 0 || 'Jumlah tidak boleh kurang dari 0']
 
 const select_ctgs = computed(() => [{ id: 'all', name: 'Semua' }, ...props.categories])
 
 const currentData = computed(() => {
-  if (!props.data_menu?.length || !selectedCtg.value) return []
+  // if (!props.data_menu?.length || !selectedCtg.value) return []
   if (selectedCtg.value === 'all') return props.data_menu
   return props.data_menu.filter(item => item.category?.id === selectedCtg.value)
 })
@@ -82,14 +89,16 @@ const currentData = computed(() => {
 const isChanged = computed(() => {
   if (props.is_create) {
     return (
-      payload.value.table_number !== (userStore.me?.table || '') ||
-      payload.value.customer?.name != (userStore.me?.name || '') ||
-      payload.value.customer?.phone != (userStore.me?.phone || '') ||
-      payload.value.is_take_away !== false ||
+      payload.value.branch_id !== null ||
+      payload.value.table_number !== null ||
+      payload.value.customer?.name !== null ||
+      payload.value.customer?.phone !== null ||
+      payload.value.is_take_away !== null ||
       itemInChart.value.length > 0
     )
   } else {
     return (
+      payload.value.branch_id !== props.data_order?.branch.id ||
       payload.value.table_number !== props.data_order?.table_number ||
       payload.value.customer?.name !== props.data_order?.customer.name ||
       payload.value.customer?.phone !== props.data_order?.customer.phone ||
@@ -106,62 +115,6 @@ watchEffect(() => {
   }
 })
 
-function resetOrder() {
-  payload.value = {
-    branch_id: userStore.me?.branch?.id || '',
-    table_number: props.data_order ? props.data_order.table_number : '',
-    customer: props.data_order ? props.data_order.customer : {
-      name: userStore.me?.name || '',
-      phone: userStore.me?.phone || '',
-    },
-    is_take_away: props.data_order ? props.data_order.is_take_away : false,
-    items: props.data_order ? props.data_order.items.map((item) => ({
-      id: item.id,
-      quantity: item.quantity,
-      note: item.note || '', // default to an empty string if note is undefined
-    })) : [],
-    amount: props.data_order ? props.data_order.amount : 0
-  }
-
-  itemInChart.value = []
-
-  if (props.onIsChangedUpdate) {
-    props.onIsChangedUpdate(false)
-  }
-}
-
-function processOrder() {
-  if (!payload.value) return
-
-  payload.value.items = itemInChart.value.map((item) => ({
-    id: item.id,
-    quantity: item.quantity,
-    note: item.note!,
-  }))
-  payload.value.amount = totalPrice.value
-  console.log('items: ',payload.value.items)
-
-  if (props.is_create) {
-    
-    create(payload.value)
-  } else {
-    const updatePayload: UpdateOrderPayload = {
-      id: props.data_order?.id!,
-      table_number: payload.value.table_number!,
-      customer:  {
-        name: payload.value.customer.name!,
-        phone: payload.value.customer.phone!,
-      },
-      is_take_away: payload.value.is_take_away,
-      items: payload.value.items,
-      amount: payload.value.amount
-    }
-
-    update(updatePayload)
-  }
-  props.refresh()
-}
-
 /* ================
 ADD ITEM SECTION
 =============== */
@@ -172,24 +125,64 @@ const currentItem = ref({
   price: 0
 })
 
-// const isItemChanged = computed(() => {
-//   if (!itemInChart.value) return false
-//   return itemInChart.value.quantity > 1 || itemInChart.value.note !== ''
-// })
+const qtyRules = (idx: number) => [
+  (v: number) => !!v || 'Wajib isi',
+  (v: number) => v >= 1 || 'Minimal 1',
+  (v: number) => v <= getMaxForRow(idx) || `Maksimal ${getMaxForRow(idx)}`
+]
 
-function openAddItem(menu: MenuSale) {
+function onQtyChange(idx: number, val: number) {
+  const max = getMaxForRow(idx)
+  if (val > max) itemInChart.value[idx].quantity = max
+  if (val < 1) itemInChart.value[idx].quantity = 1
+}
+
+
+// sisa stok real-time untuk suatu menu (memperhitungkan keranjang saat ini)
+const getRemainingStock = (menuId: string) => {
+  const menu = props.data_menu.find(m => m.id === menuId)
+  if (!menu) return 0
+  const taken = itemInChart.value
+    .filter(i => i.status === 'Pending' && i.item_id === menuId)
+    .reduce((sum, i) => sum + i.quantity, 0)
+  return Math.max(menu.quantity - taken, 0)
+}
+
+// maksimum untuk membuat BARIS BARU (add item)
+const getMaxForNewLine = (menuId: string) => {
+  return getRemainingStock(menuId)
+}
+
+// maksimum untuk MENGEDIT baris yang sudah ada
+// logika: (sisa stok di luar baris ini) + (qty baris ini)
+const getMaxForRow = (rowIndex: number) => {
+  const row = itemInChart.value[rowIndex]
+  if (!row) return 0
+  const menu = props.data_menu.find(m => m.id === row.item_id)
+  if (!menu) return 0
+
+  const takenByOthers = itemInChart.value
+    .filter((i, idx) => i.status === 'Pending' && i.item_id === row.item_id && idx !== rowIndex)
+    .reduce((sum, i) => sum + i.quantity, 0)
+
+  const remainingExcludingThis = Math.max(menu.quantity - takenByOthers, 0)
+  return remainingExcludingThis // ini sudah termasuk “+ current row qty” karena row.qty tidak dihitung di takenByOthers
+}
+
+function openAddItem(menu: Menu) {
   if (!currentItem.value) return
 
   currentItem.value.id = menu.id
   currentItem.value.name = menu.name
   currentItem.value.description = menu.description
   currentItem.value.price = menu.price
-  
+
   // openOverlay input item
   openOverlay({
     component: AddToChart,
     props: {
       menu: menu,
+      max: getMaxForNewLine(menu.id),
       // menus: props.data_menu,
       onSubmit: (data: OrderItem) => {
         addItemToCart(data)
@@ -208,11 +201,21 @@ function resetItem() {
   }
 }
 
-function addItemToCart(data: OrderItem) {
+function addItemToCart(data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>) {
+  const menu = props.data_menu.find(m => m.id === data.item_id)
+  if (!menu) return
+
+  // Sisa stok untuk baris BARU (sebelum gabung)
+  const maxNew = getMaxForNewLine(data.item_id)
+  if (maxNew <= 0) {
+    useAlertStore().showAlert('Stok menu tidak cukup', 'error')
+    return
+  }
+
   // Cek apakah item dengan id dan note yang sama sudah ada
   const existingItem = itemInChart.value
     .filter(item => item.status === 'Pending')
-    .find(item => item.id === data.id && item.note?.trim() === data.note?.trim()
+    .find(item => item.item_id === data.item_id && item.note?.trim() === data.note?.trim()
   );
 
   if (existingItem) {
@@ -220,22 +223,24 @@ function addItemToCart(data: OrderItem) {
     existingItem.quantity += data.quantity;
   } else {
     // Jika item belum ada, tambahkan item baru ke keranjang
-    const menu = props.data_menu.find(item => item.id === data.id)
+    
     itemInChart.value.push({
       id: data.id,
+      item_id: menu?.id ?? '',
       name: menu?.name ?? '',
       description: menu?.description ?? '',
+      threshold: menu?.threshold ?? 0,
       price: menu?.price ?? 0,
       quantity: data.quantity,
       note: data.note ?? '',
-      status: data.status
+      status: 'Pending'
     });
   }
 
   resetItem()
 }
 
-function updateItemCart(data: OrderItem, index: number) {
+function updateItemCart(data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>, index: number) {
   itemInChart.value[index] = {
     ...itemInChart.value[index],
     quantity: data.quantity,
@@ -243,34 +248,30 @@ function updateItemCart(data: OrderItem, index: number) {
   }
 }
 
-function isItemExist(data: OrderItem, index: number) {
-  const existingIndex = itemInChart.value
-    .filter((item, i) => i !== index && item.status === 'Pending')
-    .findIndex(item => item.id === data.id && item.note === data.note);
-
-  if (existingIndex !== -1) {
-    itemInChart.value[existingIndex].quantity += data.quantity;
-    removeItem(index);
-  }
-}
-
-/* ================
-PAYMENT SECTION
-=============== */
 function handleDirectPayment() {
   payload.value.items = itemInChart.value.map((item) => ({
-    id: item.id,
+    id: item.item_id,
+    item_id: item.item_id,
     quantity: item.quantity,
     note: item.note!,
   }))
+
+  if (payload.value.is_take_away) {
+    payload.value.table_number = null
+  }
   
   openOverlay({
     component: Payment,
     props: {
       is_direct_payment: true,
       payload: payload.value,
+      amount: totalPrice.value,
       item_in_chart: itemInChart.value,
       paymentSucceded: () => {
+        props.refresh()
+        if (typeof props.onIsChangedUpdate === 'function') {
+          props.onIsChangedUpdate(false);
+        }
         emit('close')
       }
     }
@@ -280,7 +281,7 @@ function handleDirectPayment() {
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    processOrder()
+    handleDirectPayment()
   })
 }
 
@@ -322,17 +323,20 @@ watch(
           </v-btn>
           <v-row>
             <v-col cols="12">
-              <div class="d-flex align-center">
+              <div class="d-flex align-center w-100">
                 <h4 class="text-h4 font-weight-medium"> {{ props.is_create ? 'Pesanan Baru: ' : 'Detail Pesanan: '}} </h4> 
-                <span>
+                <span v-if="!payload.is_take_away">
                   <v-text-field
+                    type="number"
+                    hide-spin-buttons
+                    readonly
                     v-model="payload.table_number"
                     placeholder="Nomor Meja"
                     prepend-inner-icon="mdi-select-place"
                     :rules="requieredRules"
                     variant="plain"
                     density="compact"
-                    style="min-width: 6rem"
+                    style="width: 6rem"
                     class="small-font text-medium-emphasis table-number-input ml-2"
                     single-line
                     hide-details
@@ -385,7 +389,7 @@ watch(
               </v-col>
             </v-row>
 
-            <perfect-scrollbar v-bind:style="{ height: '40dvh' }">
+            <perfect-scrollbar v-bind:style="{ maxHeight: '40dvh' }" class="mb-4">
               <v-list v-if="currentData.length > 0" class="py-0">
                 <v-list-item
                   v-for="(item, i) in currentData"
@@ -393,19 +397,21 @@ watch(
                   :value="item"
                   color="secondary"
                   rounded="sm"
+                  :disabled="item?.quantity == 0"
                   @click="openAddItem(item)"
                   >
                   <v-divider v-if="i > 0 && i < currentData.length" class="my-3"></v-divider>
                   <v-row>
                     <!-- Kolom kiri -->
                     <v-col cols="8">
-                      <div v-if="item?.quantity <= item.threshold" class="text-subtitle-2 text-medium-emphasis">
-                        <i> Stok sisa: {{ item?.quantity }} </i>
+                      <div class="text-subtitle-2 text-medium-emphasis">
+                        <i v-if="item?.quantity == 0" class="text-error"> Stok Habis </i>
+                        <i v-else-if="item?.quantity <= item.threshold" class="text-warning"> Stok Menipis </i>
                       </div>
                       <h4 class="text-h4 text-medium-emphasis font-weight-bold">
                         {{ item?.name }}
                       </h4>
-                      <div class="text-subtitle-2 text-medium-emphasis text-success">
+                      <div class="text-subtitle-2 text-medium-emphasis">
                         {{ item?.description }}
                       </div>
                     </v-col>
@@ -525,10 +531,11 @@ watch(
                         props: {
                           menu: currentData.find(menu => menu.id === item.id),
                           data: item,
-                          onSubmit: (data: OrderItem) => {
+                          max: getMaxForNewLine(item.id),
+                          onSubmit: (data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>) => {
                             addItemToCart(data)
                           },
-                          onUpdate: (data: OrderItem) => {
+                          onUpdate: (data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'note'>) => {
                             updateItemCart(data, index)
                           }
                         }
@@ -561,8 +568,8 @@ watch(
                           hide-spin-buttons
                           variant="plain"
                           :min="1"
-                          :max="currentData.find((item: any) => item.id === currentItem?.id)?.quantity"
-                          :rules="qtyRules"
+                          :max="getMaxForRow(index)"
+                          :rules="qtyRules(index)"
                           single-line
                           hide-details
                           inset
@@ -591,30 +598,30 @@ watch(
           </div>
         </v-expand-transition>
           
-          <!-- Tombol -->
-          <v-divider class="my-4"></v-divider>
-          <v-row >
-            <v-col cols="6" class="pa-2">
-              <v-btn 
-                block
-                color="error"
-                variant="outlined"
-                @click="emit('close')"
-              >Kembali</v-btn>
-            </v-col>
-            <v-col cols="6" class="pa-2">
-              <v-btn 
-                block
-                color="success"
-                :disabled="!isFormValid || itemInChart.length === 0 || lo"
-                :loading="lo"
-                @click="handleDirectPayment()"
-              >Bayar</v-btn>
-            </v-col>
-          </v-row>
-        </div>
-      </v-form>
-    </v-card>
+        <!-- Tombol -->
+        <v-divider class="my-4"></v-divider>
+        <v-row >
+          <v-col cols="6" class="pa-2">
+            <v-btn 
+              block
+              color="error"
+              variant="outlined"
+              @click="emit('close')"
+            >Kembali</v-btn>
+          </v-col>
+          <v-col cols="6" class="pa-2">
+            <v-btn 
+              block
+              color="success"
+              :disabled="!isFormValid || itemInChart.length === 0 || lo"
+              :loading="lo"
+              type="submit"
+            >Bayar</v-btn>
+          </v-col>
+        </v-row>
+      </div>
+    </v-form>
+  </v-card>
 </template>
 
 <!-- styling untuk mengecilkan ukuran text dalam input -->

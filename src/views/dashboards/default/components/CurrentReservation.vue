@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useDisplay } from 'vuetify'
-const { mdAndUp } = useDisplay()
 
 import type { IdName } from '@/types/common';
 import type { Reservation } from '@/types/reservation';
 
 import { formatDate } from '@/utils/helpers/format-date'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
-import UpdateReservation from './sub-components/reservation/UpdateReservation.vue';
+import DetailReservation from './sub-components/reservation/DetailReservation.vue';
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
+import UpdateReservation from './sub-components/reservation/UpdateReservation.vue';
+import type { Branch } from '@/types/branch';
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
   data: Reservation[];
   branch: IdName | undefined | null;
-  branch_option: IdName[]
+  branch_option: Branch[]
   loading: boolean;
 
   refresh: () => void;
@@ -25,13 +25,7 @@ const isChanged = ref(false)
 
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
-  console.log('props.data', props.data)
-  if (!props.branch || props.branch.id === 'all') {
     return props.data;
-  }
-  return props.data.filter(
-    (tx) => tx.branch.id === props.branch?.id
-  );
 })
 const latestReservation = computed(() => currentData.value[0])
 const listReservation = computed(() => currentData.value.slice(1))
@@ -45,7 +39,6 @@ function openAddNew() {
 
       isChanged,
       confirmBeforeClose: true,
-      onIsChangedUpdate: (val: boolean) => isChanged.value = val,
       refresh: props.refresh
     }
   })
@@ -53,7 +46,7 @@ function openAddNew() {
 
 function openDetail(data: Reservation) {
   openOverlay({
-    component: UpdateReservation,
+    component: DetailReservation,
     props: {
       data: data,
       branches: props.branch_option,
@@ -115,7 +108,7 @@ function openDetail(data: Reservation) {
             </div>
           </div>
         </v-card>
-        <div v-if="!props.loading" class="my-4">
+        <div v-if="!props.loading && listReservation.length > 0" class="my-4">
           <ScrollContainer :style="{ maxHeight: '18rem'}">
             <v-list lines="two" class="py-0" v-if="listReservation.length > 0">
               <v-list-item 
@@ -145,27 +138,12 @@ function openDetail(data: Reservation) {
                 </div>
               </v-list-item>
             </v-list>
-            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
-              Belum ada data reservasi
-            </div>
           </ScrollContainer>
-
-          <!-- <div class="text-center mt-3">
-            <v-btn color="primary" variant="text" href="/reservations"
-              >View All
-              <template v-slot:append>
-                <ChevronRightIcon stroke-width="1.5" width="20" />
-              </template>
-            </v-btn>
-          </div> -->
+        </div>
+        <div v-if="!props.loading && !latestReservation && listReservation.length === 0" class="text-center text-subtitle-2 text-disabled mt-4">
+          Tidak ada data reservasi
         </div>
       </v-card-text>
     </v-card>
   </v-card>
 </template>
-
-<style>
-.small-font .v-field__input {
-  font-size: 0.8rem !important;
-}
-</style>
