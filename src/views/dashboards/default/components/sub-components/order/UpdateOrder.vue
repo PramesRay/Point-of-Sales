@@ -11,14 +11,16 @@ const userStore = useUserStore()
 
 import { useCurrentOrders } from '@/composables/useCurrentOrder'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
-import Payment from './Payment.vue'
 import AddToChart from './AddToChart.vue'
 import Blank from '@/components/shared/Blank.vue'
 import { cloneDeep } from 'lodash'
 import { useAlertStore } from '@/stores/alert'
+import { router } from '@/router'
 
 const { openOverlay } = useOverlayManager()
-const { create, update, loading: lo } = useCurrentOrders()
+const { createDirectPaymentOrder, loading: lo } = useCurrentOrders()
+
+const alertStore = useAlertStore()
 
 const emit = defineEmits(['close'])
 
@@ -248,7 +250,7 @@ function updateItemCart(data: Pick<OrderItem, 'id' | 'item_id' | 'quantity' | 'n
   }
 }
 
-function handleDirectPayment() {
+async function handleDirectPayment() {
   payload.value.items = itemInChart.value.map((item) => ({
     id: item.item_id,
     item_id: item.item_id,
@@ -259,23 +261,32 @@ function handleDirectPayment() {
   if (payload.value.is_take_away) {
     payload.value.table_number = null
   }
-  
-  openOverlay({
-    component: Payment,
-    props: {
-      is_direct_payment: true,
-      payload: payload.value,
-      amount: totalPrice.value,
-      item_in_chart: itemInChart.value,
-      paymentSucceded: () => {
-        props.refresh()
-        if (typeof props.onIsChangedUpdate === 'function') {
-          props.onIsChangedUpdate(false);
-        }
-        emit('close')
-      }
+
+  const data = await createDirectPaymentOrder({
+    ...payload.value,
+    payment_method: 'midtrans'
+  })
+
+  // @ts-ignore
+  await window.snap.pay(data.snap_token, {
+    onSuccess: (result: any) => {
+      alertStore.showAlert('Pembayaran Berhasil', 'success')
+      console.log('result', result)
+    },
+    onPending: (result: any) => {
+      alertStore.showAlert('Pembayaran Pending, silahkan selesaikan pembayaran', 'warning')
+      console.log('result', result)
+    },
+    onError: (result: any) => {
+      alertStore.showAlert('Pembayaran Gagal', 'error')
+      console.log('result', result)
+    },
+    onClose: () => {
+      console.log('Payment ditutup')
     }
   })
+  emit('close')
+  props.refresh()
 }
 
 function submitForm() {

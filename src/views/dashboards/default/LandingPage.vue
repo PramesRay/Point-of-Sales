@@ -58,6 +58,7 @@ onMounted(() => {
           isChanged.value = val;
         },
         refresh: () => {
+          const userData = getUserFromLocalStorage();
           loadCurrentOrder(loadParams);
           loadItemSales(userData?.branch?.id);
           loadCategory()

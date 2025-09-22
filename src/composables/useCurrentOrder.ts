@@ -7,7 +7,8 @@ import {
   updateOrderItemStatus, 
   refundOrderItem,
   createOrderData, 
-  processDirectPaymentOrder 
+  processDirectPaymentOrder,
+  setPaymentExpired
 } from '@/services/totalOrder/currentOrderService'
 import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, RefundOrderItemPayload, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 
@@ -50,86 +51,104 @@ export function useCurrentOrders() {
     }
   }
 
-  async function update(payload: UpdateOrderPayload) {
+  async function update(payload: UpdateOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderData(payload);
+      return await updateOrderData(payload);
       // await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateItemStatus(payload: UpdateOrderItemStatusPayload) {
+  async function updateItemStatus(payload: UpdateOrderItemStatusPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderItemStatus(payload);
+      return await updateOrderItemStatus(payload);
       // await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateStatus(payload: UpdateOrderStatusPayload) {
+  async function updateStatus(payload: UpdateOrderStatusPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderStatus(payload);
+      return await updateOrderStatus(payload);
       // await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updatePayment(payload: UpdateOrderPaymentPayload) {
+  async function updatePayment(payload: UpdateOrderPaymentPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderPayment(payload);
+      return await updateOrderPayment(payload);
       // await load();
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function refund(payload: RefundOrderItemPayload) {
+  async function refund(payload: RefundOrderItemPayload): Promise<Order> {
     loading.value = true;
     try {
-      await refundOrderItem(payload);
+      return await refundOrderItem(payload);
       // await load();
     } catch (e) {
       console.error("Gagal refund item:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function create(payload: CreateOrderPayload) {
+  async function create(payload: CreateOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await createOrderData(payload);
+      return await createOrderData(payload);
       // await load();
     } catch (e) {
       console.error("Gagal membuat order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload) {
+  async function createDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await processDirectPaymentOrder(payload);
+      return await processDirectPaymentOrder(payload);
       // await load(branchId.value);
     } catch (error) {
       console.error('Error creating direct payment order:', error);
-      console.log('Payload:', payload);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function setPaymentToExpired(id: string) {
+    loading.value = true;
+    try {
+      return await setPaymentExpired(id);
+      // await load(branchId.value);
+    } catch (error) {
+      console.error('Error creating direct payment order:', error);
       throw error;
     } finally {
       loading.value = false;
@@ -145,6 +164,7 @@ export function useCurrentOrders() {
     refund,
     create,
     createDirectPaymentOrder,
+    setPaymentToExpired,
     data,
     loading,
     error

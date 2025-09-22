@@ -2,6 +2,7 @@ import api from '../api';
 import dummyOrderQue from './dummyOrderQueList';
 import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, RefundOrderItemPayload, UpdateOrderItemStatusPayload, UpdateOrderPayload, UpdateOrderPaymentPayload, UpdateOrderStatusPayload } from '@/types/order'
 import { useAlertStore } from '@/stores/alert';
+import axios from 'axios';
 const alertStore = useAlertStore();
 
 /**
@@ -173,7 +174,7 @@ export async function updateOrderData(payload: UpdateOrderPayload): Promise<Orde
   try {
     const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateOrder'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error updating order status:', error);
     throw error;
@@ -184,7 +185,7 @@ export async function updateOrderItemStatus(payload: UpdateOrderItemStatusPayloa
   try {
     const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateItems'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error updating order status:', error);
     throw error;
@@ -195,7 +196,7 @@ export async function updateOrderPayment(payload: UpdateOrderPaymentPayload): Pr
   try {
     const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updatePayment'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error updating order status:', error);
     throw error;
@@ -206,7 +207,7 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
   try {
     const res = await api.put(`/order/${payload.id}`, {...payload, type: 'updateStatus'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error updating order status:', error);
     throw error;
@@ -217,7 +218,7 @@ export async function refundOrderItem(payload: RefundOrderItemPayload): Promise<
   try {
     const res = await api.put(`/order/${payload.id}/refund`, {...payload, type: 'refundItem'});
     alertStore.showAlert('Data Order telah berubah!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error refunding order item:', error);
     throw error;
@@ -228,7 +229,7 @@ export async function createOrderData(payload: CreateOrderPayload): Promise<Orde
   try {
     const res = await api.post('/order/customer', payload);
     alertStore.showAlert('Order baru telah dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error creating order:', error);
     throw error;
@@ -239,9 +240,20 @@ export async function processDirectPaymentOrder(payload: CreateDirectPaymentOrde
   try {
     const res = await api.post('/order/customer', payload);
     alertStore.showAlert('Order baru telah dibuat!', 'success');
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error('Error creating order:', error);
+    throw error;
+  }
+}
+
+export async function setPaymentExpired(id: string): Promise<Order> {
+  try {
+    const res = await axios.post(`https://api.sandbox.midtrans.com/v2/${id}/expire`);
+    alertStore.showAlert('Data Order telah berubah!', 'success');
+    return res.data.data;
+  } catch (error) {
+    console.error('Error refunding order item:', error);
     throw error;
   }
 }
