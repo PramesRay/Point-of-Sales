@@ -5,8 +5,10 @@ import type { CreateOrderPayload, Order, OrderItem } from '@/types/order';
 import { getSuggestedTotalCash } from '@/utils/helpers/payment'
 import { formatRupiah, formatRupiahInput } from '@/utils/helpers/currency';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
+import { useAlertStore } from '@/stores/alert';
 
 const { createDirectPaymentOrder, updatePayment, loading: lo } = useCurrentOrders()
+const alertStore = useAlertStore()
 
 const emit = defineEmits(['close'])
 
@@ -42,7 +44,7 @@ const totalPrice = computed(() => {
 
 const canPay = computed(() => {
   if (lo.value) return false
-  if (paymentMethod.value === 'qris') return true
+  if (paymentMethod.value === 'qris' || paymentMethod.value === 'midtrans') return true
   
   return isFormValid.value && (totalPrice.value ? cashNumber.value >= totalPrice.value : false)
 })
@@ -50,24 +52,50 @@ const canPay = computed(() => {
 
 async function processPayment() {
   try {
-      if (props.is_direct_payment && props.payload) {
-        await createDirectPaymentOrder({
+    const isDirectPayment = props.is_direct_payment && props.payload
+    const data = isDirectPayment
+      ? await createDirectPaymentOrder({
           ...props.payload,
-          payment_method: paymentMethod.value
+          payment_method: paymentMethod.value,
         })
-      } else {
-        await updatePayment({
+      : paymentMethod.value === 'midtrans' && props.data?.snap_token
+        ? undefined
+        : await updatePayment({
           id: props.data?.id!,
           payment_method: paymentMethod.value,
-          amount: totalPrice.value!
+          amount: totalPrice.value!,
         })
-      }
 
+    if (paymentMethod.value !== 'midtrans') {
+      alertStore.showAlert('Pembayaran Berhasil', 'success')
       props.paymentSucceded()
       emit('close')
-    } catch (error) {
-      console.log(error)
+      return
     }
+    
+    // @ts-ignore
+    await window.snap.pay(props.data?.snap_token ?? data?.snap_token, {
+      onSuccess: () => {
+        alertStore.showAlert('Pembayaran Berhasil', 'success')
+        props.paymentSucceded()
+        emit('close')
+      },
+      onPending: () => {
+        alertStore.showAlert('Pembayaran Pending, silahkan selesaikan pembayaran', 'warning')
+        props.paymentSucceded()
+        emit('close')
+      },
+      onError: () => {
+        alertStore.showAlert('Pembayaran Gagal', 'error')
+      },
+      onClose: () => {
+        props.paymentSucceded()
+        emit('close')
+      },
+    })
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 function handleSubmit() {
@@ -108,8 +136,8 @@ watch(() => cashInput.value, (val) => {
       </div>
       
       <div class="text-subtitle-2 text-medium-emphasis mb-2">Pilih Metode Pembayaran: </div>
-      <v-row>
-        <v-col cols="6">
+      <v-row align="center" justify="center">
+        <v-col cols="auto">
           <v-btn
             block
             prepend-icon="mdi-cash"
@@ -119,7 +147,7 @@ watch(() => cashInput.value, (val) => {
             Cash  
           </v-btn>
         </v-col>
-        <v-col cols="6">
+        <v-col cols="auto">
           <v-btn
             block
             prepend-icon="mdi-qrcode-scan"
@@ -127,6 +155,18 @@ watch(() => cashInput.value, (val) => {
             :variant="paymentMethod === 'qris' ? 'tonal' : 'elevated'"
           >
             QRIS
+          </v-btn>
+        </v-col>
+        <v-col cols="auto">
+          <v-btn
+            block
+            :disabled="!!props.data?.snap_token && props.data?.payment_status === 'Gagal'"
+            prepend-icon="mdi-bank"
+            @click="paymentMethod = 'midtrans'"
+            :color="props.data?.snap_token ?  (props.data?.payment_status === 'Gagal' ? 'error': 'primary') : ''"
+            :variant="paymentMethod === 'midtrans' ? 'tonal' : 'elevated'"
+          >
+            Midtrans
           </v-btn>
         </v-col>
       </v-row>
@@ -175,10 +215,17 @@ watch(() => cashInput.value, (val) => {
       </div>
   
       <div 
-        v-else
+        v-else-if="paymentMethod === 'qris'"
         class="text-subtitle-1 text-disabled mt-6 text-center"
       >
         Pastikan pembayaran QRIS sudah berhasil, yaa!
+      </div>
+      
+      <div 
+        v-else-if="paymentMethod === 'midtrans'"
+        class="text-subtitle-1 text-disabled mt-6 text-center"
+      >
+        Biaya admin akan dikenakan oleh kepada pembeli!
       </div>
   
       <v-divider class="my-4"></v-divider>

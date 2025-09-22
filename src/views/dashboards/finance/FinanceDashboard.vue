@@ -14,15 +14,12 @@ import TotalEarning from './components/TotalEarning.vue';
 import TotalOrder from './components/TotalOrder.vue';
 import TotalIncome from './components/TotalIncome.vue';
 import TotalExpense from './components/TotalExpense.vue';
-import CurrentTransaction from './components/CurrentTransaction.vue';
 import CurrentFundRequest from '../../pages/inventory/components/CurrentFundRequest.vue';
 
 // Composables
 import { useBranchList } from '@/composables/useBranchList';
 import { useFinanceDashboard } from '@/composables/useFinanceSummary';
-import { useTransactions } from '@/composables/useTransactionList';
 import { useFundRequests } from '@/composables/useFundRequest';
-import { useInventoryItems } from '@/composables/useInventoryItems';
 import { useShift } from '@/composables/useShift';
 import { useUser } from '@/composables/useUser';
 import ShiftList from '../owner/components/ShiftList.vue';
@@ -41,8 +38,8 @@ const visibleComponent = computed(() => {
 })
 
 
-onMounted(() => {
-  loadBranch();
+onMounted(async () => {
+  await loadBranch();
   loadUser()
   loadShiftbyRole()
   loadSummary();
@@ -59,9 +56,9 @@ const selectedBranchObject = computed(() => {
 })
 // watcher perubahan selectedBranch yang memicu fetching stock request
 watch(selectedBranch, () => {
-  loadSummary({ filter: { 'branch.id': selectedBranch.value } })
+  loadSummary({ filter: { 'branch_id': selectedBranch.value } })
   loadTotalOrder(selectedBranch.value)
-  loadFundRequest({ filter: { 'branch.id': selectedBranch.value } })
+  loadFundRequest({ filter: { 'branch_id': selectedBranch.value } })
 });
 
 const pinBranch = ref(false)
@@ -90,6 +87,8 @@ const pinBranch = ref(false)
           :loading="lb"
           hide-details
           density="compact"
+          clearable
+          clear-icon="mdi-close"
         />
       </div>
     </template>
@@ -116,12 +115,13 @@ const pinBranch = ref(false)
       :loading="lb"
       hide-details
       density="compact"
+      clearable
     />
   </div>
 
-  <v-row v-if="lb">
+  <v-row v-if="lb" justify="center" align="center">
     <v-col cols="12">
-      <v-skeleton-loader type="article" />
+      <v-progress-circular indeterminate></v-progress-circular>
     </v-col>
   </v-row>
 
@@ -130,7 +130,7 @@ const pinBranch = ref(false)
       <v-row v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
         <v-col cols="12">
           <TotalEarning 
-            :data="summary" 
+            :data="summary!"
             :loading="lf" 
             class="flex-grow-1" 
           />
@@ -148,7 +148,8 @@ const pinBranch = ref(false)
         
         <v-col cols="12">
           <TotalIncome
-            :data="summary"
+            :data="summary!"
+            :data_branch="branchOptions"
             :loading="lf"
           />
         </v-col>
@@ -158,7 +159,7 @@ const pinBranch = ref(false)
       <v-row>
         <v-col cols="12" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-keuangan'">
           <TotalExpense
-            :data="summary"
+            :data="summary!"
             :branch="selectedBranchObject"
             :loading="lf"
             class="flex-grow-1"

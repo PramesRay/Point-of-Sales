@@ -10,18 +10,13 @@ import { computed } from 'vue';
 const { openOverlay } = useOverlayManager()
 
 const props = defineProps<{
-  kitchen_shift: ShiftKitchen;
+  data_menu: MenuSale[];
   categories: Category[];
   refresh: () => void
 }>();
 
 const data_menu = computed(() => {
-  return props.kitchen_shift.quantity_menu.map(item => {
-    return {
-      ...item,
-      quantity: item.final
-    }
-  })
+  return props.data_menu
 })
 
 </script>

@@ -101,7 +101,8 @@ const handleSubmit = () => {
 }
 
 const handleUpdate = () => {
-  if (userStore.me?.id !== props.data.meta.created_by.id) {
+  console.log(userStore.me?.activity?.shift_op?.id, props.data.shift_warehouse_id)
+  if (Number(userStore.me?.id) !== Number(props.data.meta.created_by.id)) {
     alertStore.showAlert('Data permintaan hanya dapat diubah oleh yang membuat', 'warning')
   } else if (userStore.me?.activity?.shift_op?.id !== props.data.shift_warehouse_id) {
     alertStore.showAlert('Data permintaan sudah tidak dapat diubah', 'warning')
@@ -127,7 +128,7 @@ const handleUpdate = () => {
     </v-btn>
     <div class="d-flex align-center">
       <h4 class="text-h4 mt-1"> Detail Permintaan Dana </h4>
-      <v-btn 
+      <!-- <v-btn 
         v-if="props.data.status === 'Pending'"
         icon
         variant="plain"
@@ -135,7 +136,7 @@ const handleUpdate = () => {
         @click="handleUpdate"
       >
         <v-icon>mdi-pencil</v-icon>
-      </v-btn>
+      </v-btn> -->
     </div>
     <i class="text-subtitle-2 text-disabled"> {{ props.data?.id }} </i>
 
@@ -148,7 +149,10 @@ const handleUpdate = () => {
             {{ props.data.subject }}
           </h6>
           <div class="text-subtitle-2 text-medium-emphasis">
-            {{ props.data.items.length }} item | {{ props.data.meta.created_by.name }}
+            <div>
+              {{ props.data.meta.created_by.name }}
+            </div>
+            {{ props.data.items.length }} item
           </div>
         </v-col>
         <v-col cols="5" class="text-right">  
@@ -161,9 +165,9 @@ const handleUpdate = () => {
               'text-primary': props.data.status === 'Beberapa Disetujui',
             }"
           >{{ props.data.status }}</span>
-          <h4 v-if="props.data.meta.created_at" class="text-h4 text-right">{{ getTimeDiff(props.data.meta.created_at) }}</h4>
-          <i v-if="props.data.meta.updated_at != props.data.meta.created_at" class="text-subtitle-2 text-disabled">
-            Diubah {{ getTimeDiff(props.data.meta.updated_at) }}
+          <h4 v-if="props.data.meta.created_at" class="text-h4 text-right">{{ getTimeDiff(props.data.meta.updated_at) }}</h4>
+          <i class="text-subtitle-2 text-disabled">
+            Dibuat {{ getTimeDiff(props.data.meta.created_at) }}
           </i>
         </v-col>
       </v-row>
@@ -174,22 +178,24 @@ const handleUpdate = () => {
           <i>{{ props.data.description || '-' }}</i>
         </div>
       </div>
-
-      <v-divider class="my-4"></v-divider>
       
-      <div class="d-flex align-center justify-center mb-5">
-        <div class="text-right">
-          <div class="text-subtitle-2 text-medium-emphasis">Total Permintaan Dana:</div>
-          <div class="text-h4 text-medium-emphasis font-weight-bold">{{ formatRupiah(props.data.amount) }}</div>
-        </div>
-        <v-divider vertical class="mx-4"></v-divider>
-        <div>
-          <div class="text-subtitle-2 text-medium-emphasis">Dana yang Disetujui:</div>
-          <div class="text-h4 text-success font-weight-bold">
-            {{ formatRupiah(approvalItems.filter(item => item.approved).reduce((acc, cur) => acc + (cur.item.purchase_price * cur.quantity), 0)) }}
+      <v-row align="center" justify="center" class="my-4">
+        <v-col cols="5">
+          <div class="text-right">
+            <div class="text-subtitle-2 text-medium-emphasis">Total Permintaan Dana:</div>
+            <div class="text-h4 text-medium-emphasis font-weight-bold">{{ formatRupiah(props.data.amount) }}</div>
           </div>
-        </div>
-      </div>
+        </v-col>
+        <v-divider vertical inset></v-divider>
+        <v-col cols="5">
+          <div>
+            <div class="text-subtitle-2 text-medium-emphasis">Dana yang Disetujui:</div>
+            <div class="text-h4 text-success font-weight-bold">
+              {{ formatRupiah(approvalItems.filter(item => item.approved).reduce((acc, cur) => acc + (cur.item.purchase_price * cur.quantity), 0)) }}
+            </div>
+          </div>
+        </v-col>
+      </v-row>
       
       <!-- Daftar Item -->
       <h4 class="text-subtitle-1 mb-2">Daftar Item:</h4>

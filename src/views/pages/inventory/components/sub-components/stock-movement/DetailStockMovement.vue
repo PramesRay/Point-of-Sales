@@ -57,7 +57,7 @@ const payload = ref<{
   },
   status: props.is_create ? null : props.data?.status ?? null,
   branch_id: props.is_create ? null : props.data?.branch?.id ?? null,
-  time: props.is_create ? null : props.data?.time ?? null,
+  time: props.is_create ? new Date() : props.data?.time ?? null,
 })
 
 const formRef = ref()
@@ -411,7 +411,7 @@ function handleClose() {
               v-model.number="payload.item.quantity"
               inset
               control-variant="split"
-              :label="'Jumlah' + (payload.status ? ' ' + payload.status : '')"
+              :label="'Jumlah' + (payload.status ? ' ' + payload.status : '') + ' ' + (payload.item.unit ? '(' + payload.item.unit + ')' : '')"
               variant="plain"
               :min="0"
               :rules="[...rules.qty, ...rules.item_required, ...rules.status_required]"

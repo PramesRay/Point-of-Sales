@@ -11,12 +11,13 @@ import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
 import DetailOrder from '../../cashier/components/sub-components/DetailOrder.vue';
-import { useMenuItems } from '@/composables/useMenuItems';
+import { useMenu } from '@/composables/useMenuItems';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
 import type { ShiftKitchen } from '@/types/shift';
+import type { MenuSale } from '@/types/menu';
 
-const { loadCategory, categories, loading: lm } = useMenuItems();
+const { loadCategory, categories, loading: lm } = useMenu();
 const { openOverlay } = useOverlayManager()
 
 onMounted(() => {
@@ -25,7 +26,7 @@ onMounted(() => {
 
 const props = defineProps<{
   data: Order[];
-  kitchen_shift: ShiftKitchen;
+  data_menu: MenuSale[];
   branch: IdName | undefined | null;
   loading: boolean;
 
@@ -34,12 +35,7 @@ const props = defineProps<{
 }>();
 
 const data_menu = computed(() => {
-  return props.kitchen_shift.quantity_menu.map(item => {
-    return {
-      ...item,
-      quantity: item.final
-    }
-  })
+  return props.data_menu
 })
 
 // Computed untuk filter transaksi berdasarkan branch
@@ -84,11 +80,11 @@ watch(() => cashInput.value, (val) => {
   cashNumber.value = numeric ? Number(numeric) : 0
 })
 
-function openDetailOrder(order: Order) {
+function openDetailOrder(id: string) {
   openOverlay({
     component: DetailOrder,
     props: {
-      get data_order() { return order },
+      get data_order() { return filteredData.value.find(tx => tx.id === id) },
       data_menu: data_menu,
       categories: categories,
       loading: props.loading,
@@ -146,18 +142,7 @@ function openDetailOrder(order: Order) {
 
         <div v-if="!props.loading">
           <v-card class="bg-lightsecondary mt-5"
-            @click="
-              openOverlay({
-                component: DetailOrder,
-                props: {
-                  get data_order() { return latestOrderQue },
-                  data_menu: data_menu,
-                  categories: categories,
-                  loading: props.loading,
-                  refresh: () => props.refresh()
-                },
-              })
-            "
+            @click="openDetailOrder(latestOrderQue?.id)"
           >
             <div v-if="latestOrderQue" class="pa-5">
               <span>
@@ -207,18 +192,9 @@ function openDetailOrder(order: Order) {
                   :value="item"
                   color="secondary"
                   rounded="sm"
-                  @click="
-                  openOverlay({
-                    component: DetailOrder,
-                    props: {
-                      get data_order() { return item },
-                      data_menu: data_menu,
-                      categories: categories,
-                      loading: props.loading,
-                      refresh: () => props.refresh()
-                    },
-                  })"
+                  @click="openDetailOrder(item?.id)"
                 >
+                  <v-divider v-if="i !== 0" class="my-3"/>
                   <span class="text-subtitle-2 text-medium-emphasis">
                     {{ item?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 
                   </span> 
@@ -255,7 +231,6 @@ function openDetailOrder(order: Order) {
                       </i>
                     </div>
                   </div>
-                  <v-divider class="my-3"/>
                 </v-list-item>
               </v-list>
             </ScrollContainer>

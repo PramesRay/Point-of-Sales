@@ -108,7 +108,7 @@ function openDetail(request: StockRequest) {
                       Lihat Detail
                     </span>
                   </div>
-                  <div>
+                  <div class="text-right">
                     <div class="d-flex justify-end">  
                       <span v-if="latestRequest?.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ latestRequest?.status }}</span>
                       <span v-else-if="latestRequest?.status === 'Diproses'" class="text-subtitle-2 text-medium-emphasis text-primary">{{ latestRequest?.status }}</span>
@@ -141,7 +141,7 @@ function openDetail(request: StockRequest) {
                           Lihat Detail
                         </span>
                       </div>
-                      <div>
+                      <div class="text-right">
                         <div class="d-flex justify-end">
                           <span v-if="listRequest?.status === 'Pending'" class="text-subtitle-2 text-medium-emphasis text-warning">{{ listRequest?.status }}</span>
                           <span v-else-if="listRequest?.status === 'Diproses'" class="text-subtitle-2 text-medium-emphasis text-primary">{{ listRequest?.status }}</span>
@@ -158,7 +158,7 @@ function openDetail(request: StockRequest) {
                   </v-list-item>
                 </v-list>
                 <!-- jika data kosong -->
-                <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+                <div v-if="!listRequest.length && !latestRequest" class="text-center text-subtitle-2 text-disabled mt-4">
                   Data Permintaan Stok tidak ditemukan
                 </div>
               </ScrollContainer>

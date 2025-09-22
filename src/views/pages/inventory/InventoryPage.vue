@@ -25,7 +25,7 @@ import { useInventoryItems } from "@/composables/useInventoryItems";
 
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
-const { load: loadStockRequest, summary, list: stockRequestlist, loading: lsr } = useStockRequests();
+const { load: loadStockRequest, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
@@ -62,19 +62,13 @@ const selectedBranchObject = computed(() => {
 })
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
-watch(selectedBranch, () => {
-  loadStockRequest({
-    filter: { 
-      'branch.id': selectedBranch.value,
-      'meta.created_at': new Date().toISOString().split('T')[0] 
-    },
-    sortBy: 'meta.created_at',
-    sortDesc: true
-  })
-  console.log('selectedBranch', selectedBranch.value)
+watch(
+  () => selectedBranch.value,
+  () => {
+    loadStockRequest()
 });
 
-const pinBranch = ref(false)
+const pinBranch = ref(true)
 </script>
 
 <template>
@@ -82,7 +76,7 @@ const pinBranch = ref(false)
       v-if="mdAndUp"
       title="Halaman Gudang"
       :breadcrumbs="[
-        { title: 'Halaman Gudang', href: '/page/inventory' }
+        { title: 'Gudang', href: '/page/inventory' }
       ]"
     >
       <template #last>
@@ -137,72 +131,79 @@ const pinBranch = ref(false)
     <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
       <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
     </v-col>
+    
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="!userStore.me?.activity?.shift_op?.start && !userStore.hasRole(['admin', 'pemilik'])">
+      <p class="text-subtitle-1 text-disabled"> Belum ada shift gudang yang dimulai! </p>
+    </v-col>
+
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12">
-          <CurrentStockRequestSummary 
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'rekapitulasi-gudang')"
-            :data="summary" 
-            :branch="selectedBranchObject"
-            :loading="lsr" 
-            class="flex-grow-1" 
-          />
-        </v-col>
-        
-        <v-col cols="12">
-          <CurrentStockRequestList
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-persediaan')"
-            :data="stockRequestlist.data" 
-            :branch="selectedBranchObject"
-            :loading="lsr" 
-            class="flex-grow-1"
-            :refresh="loadStockRequest"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
+     <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12">
+            <CurrentStockRequestSummary 
+              v-if="(!visibleComponent || visibleComponent === 'rekapitulasi-gudang')"
+              :data="stockRequestlist.data" 
+              :branch="selectedBranchObject"
+              :loading="lsr" 
+              class="flex-grow-1" 
+            />
+          </v-col>
+          
+          <v-col cols="12">
+            <CurrentStockRequestList
+              v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
+              :data="stockRequestlist.data" 
+              :branch="selectedBranchObject"
+              :loading="lsr" 
+              class="flex-grow-1"
+              :refresh="loadStockRequest"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
 
-    <!-- Kolom Kanan: Create Order + Current Order Que -->
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12">
-          <InventoryItems 
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'persediaan')"
-            :data="dataInventory"
-            :categories="categories"
-            :loading="li"
-            class="flex-grow-1"
-            :refresh="initItems"
-          />
-        </v-col>
+      <!-- Kolom Kanan: Create Order + Current Order Que -->
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12">
+            <InventoryItems 
+              v-if="(!visibleComponent || visibleComponent === 'persediaan')"
+              :data="dataInventory"
+              :categories="categories"
+              :loading="li"
+              class="flex-grow-1"
+              :refresh="initItems"
+            />
+          </v-col>
 
-        <v-col cols="12">
-          <StockMovement
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'mutasi-stok')"
-            :data="dataStockMovement.data"
-            :branches="branches"
-            :inv_item="dataInventory"
-            :categories="categories"
-            :loading="lsm"
-            class="flex-grow-1"
-            :refresh="initStockMovement"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
-    <v-col cols="12" md="4">
-      <v-row>
-        <v-col cols="12" >
-          <CurrentFundRequest
-            v-if="userStore.me?.activity?.is_active && (!visibleComponent || visibleComponent === 'permintaan-dana')"
-            :data="fundRequestList.data"
-            :loading="lfr"
-            class="flex-grow-1"
-            :refresh="loadFundRequest"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
+          <v-col cols="12">
+            <StockMovement
+              v-if="(!visibleComponent || visibleComponent === 'mutasi-stok')"
+              :data="dataStockMovement.data"
+              :branches="branches"
+              :inv_item="dataInventory"
+              :categories="categories"
+              :loading="lsm"
+              class="flex-grow-1"
+              :refresh="() => { initStockMovement(); initItems(); }"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-row>
+          <v-col cols="12" >
+            <CurrentFundRequest
+              v-if="(!visibleComponent || visibleComponent === 'permintaan-dana')"
+              :data="fundRequestList.data"
+              :loading="lfr"
+              class="flex-grow-1"
+              :refresh="loadFundRequest"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+     </template>
   </v-row>
 </template>

@@ -7,7 +7,7 @@ import type { IdName } from '@/types/common'
 import type { RestockMenuSalesPayload, MenuSale } from '@/types/menu'
 import type { ShiftKitchen, UpdateShiftKitchenPayload } from '@/types/shift'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
-import { useMenuItems } from '@/composables/useMenuItems'
+import { useMenu } from '@/composables/useMenuItems'
 import Blank from '@/components/shared/Blank.vue'
 import { useShift } from '@/composables/useShift'
 

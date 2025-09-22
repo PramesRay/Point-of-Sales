@@ -59,6 +59,7 @@ const currentDataBranch = computed(() => {
 })
 
 const currentDataMenu = computed(() => {
+  console.log('props.data_menu', props.data_menu)
   return props.data_menu
 })
 
@@ -197,9 +198,8 @@ function handleAddNew() {
               >
                 <v-divider v-if="i > 0" class="mb-4"></v-divider>
                 <v-row no-gutters class="align-center">
-                  <v-col cols="auto">
-                    <div class="d-flex justify-center">
-                      <v-btn
+                  <v-col cols="12">
+                    <v-btn
                       v-if="!data.role"
                       size="small"
                       variant="outlined"
@@ -207,9 +207,8 @@ function handleAddNew() {
                       >
                       Perlu Verifikasi
                     </v-btn>
-                  </div>
                 </v-col>
-                <v-col cols="auto" class="pr-2">
+                <v-col cols="12" class="pr-2">
                   <div class="text-subtitle-2 text-medium-emphasis" v-if="data.role">{{ data.role }}</div>
                   <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
                     {{ data.name }}

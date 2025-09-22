@@ -3,7 +3,7 @@ import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/t
 import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, UpdateMenuPayload } from '@/types/menu';
 import { ref } from 'vue';
 
-export function useMenuItems() {
+export function useMenu() {
   const loading = ref(false);
   const error = ref<Error | null>(null);
   const data = ref<Menu[]>([]);
@@ -148,6 +148,7 @@ export function useMenuItems() {
 
   return {
     load,
+    loadMenuSales,
     create,
     update,
     remove,

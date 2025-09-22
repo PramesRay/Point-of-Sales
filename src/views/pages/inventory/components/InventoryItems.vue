@@ -225,7 +225,7 @@ const currentData = computed(() => {
                       v-if="item?.quantity >= 0"
                       class="text-subtitle-1 text-medium-emphasis font-weight-bold my-1"
                     >
-                      <span class="text-subtitle-2 text-medium-emphasis">Tersisa:</span> {{ item?.quantity }}
+                      <span class="text-subtitle-2 text-medium-emphasis">Tersisa:</span> {{ item?.quantity }} {{ item?.unit }}
                     </div>
                     <div
                       v-else
@@ -236,7 +236,6 @@ const currentData = computed(() => {
                   </div>
                 </div>
 
-                <v-divider class="my-3" />
               </v-list-item>
             </v-list>
             <div v-else class="text-center text-subtitle-2 text-disabled mt-4">Data kosong</div>

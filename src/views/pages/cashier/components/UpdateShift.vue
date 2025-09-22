@@ -431,18 +431,30 @@ function openInputOverlay(isCashIn: boolean) {
               </v-expansion-panels>
             </v-list-item>
 
-            <div 
-              class="d-flex align-center justify-space-between font-weight-bold text-medium-emphasis mt-4 ms-2"
-            >
+            <div class="d-flex align-center justify-space-between text-caption text-meidum-emphasis mt-4 ms-2">
+              Total Pengeluaran
+              <span class="font-weight-medium">
+                {{ formatRupiah(currentData.total_expense) }}
+              </span>
+            </div>
+
+            <div class="d-flex align-center justify-space-between text-caption text-meidum-emphasis mt-1 ms-2">
+              Total Pendapatan Bersih
+              <span class="font-weight-medium">
+                {{ formatRupiah(currentData.net_income) }}
+              </span>
+            </div>
+            
+            <div class="d-flex align-center justify-space-between font-weight-bold text-h4 mt-2 ms-2">
               Total Diharapkan
               <span>
-                {{ formatRupiah(amountDigital) }}
+                {{ formatRupiah(currentData.net_income + currentData.initial_cash) }}
               </span>
             </div>
           </v-list>
         </ScrollContainer>
 
-        <v-row>
+        <v-row class="mt-2">
           <v-col cols="12">
             <v-textarea
               v-model="payload.notes"

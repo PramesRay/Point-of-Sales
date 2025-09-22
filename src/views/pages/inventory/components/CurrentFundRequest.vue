@@ -93,7 +93,7 @@ function openDetail(request: FundRequest) {
           <v-card class="bg-lightsecondary mt-6" @click="openDetail(latestRequest)">
             <div v-if="latestRequest" class="pa-5">
               <span class="text-subtitle-2 text-disabled">
-                {{ latestRequest.meta?.updated_at ? `${formatDate(latestRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(latestRequest.meta?.updated_at).slice(-5)}` : '' }}
+                {{ latestRequest.meta?.created_at ? `${formatDate(latestRequest.meta?.created_at).slice(0,-11)}: ${formatDate(latestRequest.meta?.created_at).slice(-5)}` : '' }}
               </span>
               <v-row no-gutters>
                 <v-col cols="7" class="pe-1">
@@ -114,7 +114,7 @@ function openDetail(request: FundRequest) {
               </v-row>
             </div>
           </v-card>
-          <div class="my-4">
+          <div class="mt-4">
             <ScrollContainer :style="{ maxHeight: mdAndUp? '30rem' : '18rem'}">
               <v-list v-if="listRequest.length > 0" class="py-0">
                 <v-list-item 
@@ -125,8 +125,9 @@ function openDetail(request: FundRequest) {
                   rounded="sm"
                   @click="openDetail(listRequest)"
                 >
+                  <v-divider v-if="i !== 0" class="my-3" />
                   <span class="text-subtitle-2 text-disabled">
-                    {{ listRequest.meta?.updated_at ? `${formatDate(listRequest.meta?.updated_at).slice(0,-11)}: ${formatDate(listRequest.meta?.updated_at).slice(-5)}` : '' }}
+                    {{ listRequest.meta?.created_at ? `${formatDate(listRequest.meta?.created_at).slice(0,-11)}: ${formatDate(listRequest.meta?.created_at).slice(-5)}` : '' }}
                   </span>
                   <v-row no-gutters>
                     <v-col cols="7" class="pe-1">
@@ -147,23 +148,13 @@ function openDetail(request: FundRequest) {
                       <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(listRequest?.amount) }}</div>
                     </v-col>
                   </v-row>
-                  <v-divider class="my-3" />
                 </v-list-item>
               </v-list>
               <!-- jika data kosong -->
-              <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
-                Data Permintaan Dana tidak ditemukan
-              </div>
             </ScrollContainer>
-
-            <!-- <div class="text-center mt-3">
-              <v-btn color="primary" variant="text" href="/fundRequests"
-                >View All
-                <template v-slot:append>
-                  <ChevronRightIcon stroke-width="1.5" width="20" />
-                </template>
-              </v-btn>
-            </div> -->
+          </div>
+          <div v-if="!listRequest.length && !latestRequest" class="text-center text-subtitle-2 text-disabled mt-4">
+            Data Permintaan Dana tidak ditemukan
           </div>
         </div>
         <div v-else class="ml-auto">

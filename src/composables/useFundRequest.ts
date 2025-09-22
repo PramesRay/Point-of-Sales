@@ -53,7 +53,7 @@ export function useFundRequests() {
     }
   }
 
-  async function update(payload: ApproveFundRequest) {
+  async function update(payload: UpdateFundRequest) {
     try {
       loading.value = true;
       await updateFundRequest(payload);

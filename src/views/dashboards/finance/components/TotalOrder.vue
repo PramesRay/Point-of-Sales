@@ -99,7 +99,7 @@ const chartOptions = computed(() => {
                 <span class="text-body-2"> Pesanan</span>
               </div>
             </h2>
-            <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan Masuk</span>
+            <span class="text-subtitle-1 text-medium-emphasis text-white">Total Pesanan Selesai</span>
           </v-col>
         <v-col cols="6">
           <v-tabs-window v-model="tab" class="z-1">

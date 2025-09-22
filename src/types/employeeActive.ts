@@ -2,7 +2,7 @@ import type { IdName } from "./common"
 
 export type EmployeeActive = {
   branch: IdName
-  active: number
+  current: number
   week: number[]
   month: number[]
 }

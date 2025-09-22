@@ -18,11 +18,8 @@ import UpdateShiftKitchen from '@/views/pages/kitchen/components/UpdateShift.vue
 import UpdateShiftWarehouse from '@/views/pages/inventory/components/UpdateShift.vue';
 
 import Blank from '@/components/shared/Blank.vue';
-import Start from '@/views/pages/shift/Start.vue';
 import { useShift } from '@/composables/useShift';
-import type { ShiftCashier, ShiftKitchen, ShiftWarehouse } from '@/types/shift';
 import UpdateProfile from '@/views/pages/user/UpdateProfile.vue';
-import { useBranchList } from '@/composables/useBranchList';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -157,7 +154,7 @@ onMounted(() => {
                   confirmMessage: 'Apakah anda yakin ingin mengakhiri shift?',
                   loading,
                   onConfirm: async () => {
-                    await endEmployee().then(() => userStore.fetchMe())
+                    await endEmployee().then(() => {userStore.fetchMe(); loadShiftbyRole()})
                   }
                 }
               })

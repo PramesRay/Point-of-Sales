@@ -11,8 +11,9 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import Blank from '@/components/shared/Blank.vue';
 import { useUserStore } from '@/stores/authUser';
+import { useAlertStore } from '@/stores/alert';
 const user = useUserStore()
-console.log('user', user)
+const alertStore = useAlertStore()
 
 const { openOverlay } = useOverlayManager()
 
@@ -94,6 +95,7 @@ function submitForm() {
 async function processSubmit() {
   try {
     await update(payload.value)
+    alertStore.showAlert('Berhasil memperbarui data akun', 'success')
     props.refresh()
     handleClose()
   } catch (error) {

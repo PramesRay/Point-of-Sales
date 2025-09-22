@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { createReservation, deleteReservation, fetchReservationData, updateReservation } from '@/services/currentReservation/reservationService'
+import { approveReservation, createReservation, deleteReservation, fetchReservationData, updateReservation } from '@/services/currentReservation/reservationService'
 import type { Reservation, CreateReservationPayload, UpdateReservationPayload, ReservationApprovalPayload } from '@/types/reservation'
 
 export function useReservation() {
@@ -46,7 +46,7 @@ async function update(payload: UpdateReservationPayload) {
 async function approve(payload: ReservationApprovalPayload) {
   try {
     loading.value = true;
-    await updateReservation(payload);
+    await approveReservation(payload);
     // await load(branchId.value);
   } catch (e: any) {
     throw e

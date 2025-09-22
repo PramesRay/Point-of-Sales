@@ -24,6 +24,7 @@ export interface Order {
   status: 'Pending' | 'Diproses' | 'Tersaji' | 'Selesai' | 'Batal' | 'Refund'
   amount: number
   payment_status: 'Pending' | 'Lunas' | 'Gagal' | 'Batal'
+  snap_token: string
   meta: MetaDetail
 }
 

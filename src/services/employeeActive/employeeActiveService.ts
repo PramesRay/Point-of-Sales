@@ -6,9 +6,9 @@ import type { EmployeeActive } from '@/types/employeeActive'
  * Fetch timesheet data from backend.
  * Fallback to dummy data if request fails.
  */
-export async function fetchEmployeeActive({ filter }: { filter?: Record<string, any> } = {}): Promise<EmployeeActive[]> {
+export async function fetchEmployeeActive({ filter }: { filter?: Record<string, any> } = {}): Promise<EmployeeActive> {
   try {
-    const url = `/employee-productivity`;
+    const url = `/employees-activity`;
     const query = new URLSearchParams();
     if (filter) {
       for (const [key, value] of Object.entries(filter)) {
@@ -17,8 +17,8 @@ export async function fetchEmployeeActive({ filter }: { filter?: Record<string, 
         }
       }
     }
-    const res = await api.get<EmployeeActive[]>(`${url}?${query.toString()}`);
-    return res.data;
+    const res = await api.get(`${url}?${query.toString()}`);
+    return res.data.data;
   } catch (error) {
     console.warn(`API error fetching employee productivity, using dummy data.`, error);
     let dummy = dummyEmployeeActive;
@@ -86,6 +86,6 @@ export async function fetchEmployeeActive({ filter }: { filter?: Record<string, 
       }
     }
 
-    return dummy;
+    return dummy[0];
   }
 }

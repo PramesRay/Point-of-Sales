@@ -58,14 +58,18 @@ const minTime = computed(() => {
     const openingTime = branch.operational.open_time.split(':').map(Number);
     const openingDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), openingTime[0], openingTime[1]);
     if (now < openingDateTime) {
-      if (now.getHours() < branch.operational.open_time.split(':').map(Number)[0] - 3) {
-        return `${branch?.operational?.open_time}`
-      } else {
-        console.log('`${branch.operational.close_time}`', `${branch.operational.close_time}`)
-        return `${now.getHours() + 2}:00`
+      const openingHour = branch.operational.open_time.split(':').map(Number)[0];
+      if (now.getHours() <= openingHour - 3) {
+        // Return opening time if user is still 3 hours or more before opening
+        return `${branch.operational.open_time}`;
       }
     }
+    else {
+      // Return 2 hours from now otherwise
+      return `${String(now.getHours() + 2).padStart(2, '0')}:00`;
+    }
   }
+  return `${branch?.operational.open_time}`;
 })
 
 // max is 2 hours before closing
@@ -74,9 +78,11 @@ const maxTime = computed(() => {
   const branch = props.branches.find(branch => branch.id === payload.value.branch_id)
   if (!branch) return ''
   const closingTime = branch.operational.close_time.split(':').map(Number);
+  // If closing time is 00:00, set maxTime to 22:00
+  if (closingTime[0] === 0 && closingTime[1] === 0) {
+    return '22:00'
+  }
   const closingDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), closingTime[0], closingTime[1]);
-  console.log('closingDateTime', closingDateTime)
-  console.log('`${closingDateTime.getHours() - 2}:00`', `${(closingDateTime.getHours()) - 2}:00`)
   return `${(closingDateTime.getHours()) - 2}:00`
 })
 

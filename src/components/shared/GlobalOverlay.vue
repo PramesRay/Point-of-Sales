@@ -67,7 +67,7 @@ function handleCloseConfirmDialog() {
             {{ confirmOptions.cancelText }}
           </v-btn>
           <v-btn
-            :loading="currentOverlay.props.loading"
+            :loading="currentOverlay?.props?.loading"
             variant="flat"
             color="error"
             @click="() => {

@@ -13,6 +13,21 @@ export interface OrderSummary {
 
 export type PeriodKey = 'today' | 'week' | 'month' | 'year'
 
+export interface Income {
+  grossSales: number
+  refunds: number
+  netIncome: number
+}
+
+export interface IncomesSummary {
+  period: {
+    start: Date
+    end: Date
+  }
+  total: Income
+  perBranch: (Income & { branch_id: string })[]
+}
+
 export interface ExpenseChartData {
   categories: string[]
   series: Array<{
@@ -22,7 +37,7 @@ export interface ExpenseChartData {
 }
 
 export interface ExpenseSummary {
-  totalExpense: Record<PeriodKey, number>
+  totalExpenses: Record<PeriodKey, number>
   chartData: Record<PeriodKey, ExpenseChartData>
 }
 
@@ -83,8 +98,8 @@ export type ApproveFundRequest = Pick<FundRequest, 'id' | 'approval_notes' | 'to
 }
 
 export interface FinanceSummary {
-  income: number
-  expense: ExpenseSummary
+  income: IncomesSummary
+  expenses: ExpenseSummary
   order: OrderSummary
   branch: IdName
 }

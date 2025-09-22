@@ -10,7 +10,7 @@ import type { ShiftKitchen, UpdateShiftKitchenPayload } from '@/types/shift'
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import { cloneDeep } from 'lodash'
-import { useMenuItems } from '@/composables/useMenuItems'
+import { useMenu } from '@/composables/useMenuItems'
 import Blank from '@/components/shared/Blank.vue'
 import { useUserStore } from '@/stores/authUser'
 

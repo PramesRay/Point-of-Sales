@@ -5,7 +5,9 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import Blank from '@/components/shared/Blank.vue';
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/inventory';
-import { useMenuItems } from '@/composables/useMenuItems';
+import { useMenu } from '@/composables/useMenuItems';
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore()
 
 const { openOverlay } = useOverlayManager()
 
@@ -21,7 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const { createCategory, updateCategory, removeCategory, loading: lm } = useMenuItems()
+const { createCategory, updateCategory, removeCategory, loading: lm } = useMenu()
 
 const payload = ref<{[K in keyof CreateCategoryPayload]: CreateCategoryPayload[K] | null}>({
   name: props.is_create ? null : props.data?.name ?? null,
@@ -83,6 +85,7 @@ async function processSubmit() {
   try {
     if (props.is_create) {
       await createCategory(payload.value as CreateCategoryPayload)
+      alertStore.showAlert('Berhasil menambahkan kategori', 'success')
       props.refresh()
     }
     else {
@@ -91,6 +94,7 @@ async function processSubmit() {
         ...payload.value as CreateCategoryPayload
       }
       await updateCategory(updatePayload)
+      alertStore.showAlert('Berhasil memperbarui kategori', 'success')
       props.refresh()
     }
     handleClose()

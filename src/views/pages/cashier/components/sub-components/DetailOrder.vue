@@ -15,8 +15,10 @@ import Blank from '@/components/shared/Blank.vue';
 import Payment from './Payment.vue'
 import RefundOrder from './RefundOrder.vue';
 import type { MenuSale } from '@/types/menu';
+import { useAlertStore } from '@/stores/alert';
 
 const userStore = useUserStore();
+const alertStore = useAlertStore();
 const { openOverlay } = useOverlayManager()
 const { updateItemStatus, updateStatus } = useCurrentOrders();
 
@@ -37,7 +39,7 @@ const currentOrder = computed(() => {
 watch(
   () => currentOrder.value,
   (newVal) => {
-    if (newVal === null) {
+    if (newVal === undefined) {
       emit('close')
     }
   }
@@ -75,6 +77,19 @@ const resetRefundItem = () => {
     items: [],
     amount_refund: 0,
   }
+}
+
+function handlePayment() {
+  return openOverlay({
+    component: Payment,
+    props: {
+      data: currentOrder.value,
+      paymentSucceded: () => {
+        props.refresh()
+        emit('close')
+      }
+    },
+  })
 }
 </script>
 
@@ -183,7 +198,7 @@ const resetRefundItem = () => {
           <!-- Add Item Button -->
           <span class="text-subtitle-2 text-medium-emphasis">
             <v-btn
-              v-if="currentOrder?.status !== 'Selesai' && currentOrder?.status !== 'Batal' && currentOrder?.payment_status === 'Pending'"
+              v-if="currentOrder?.status !== 'Selesai' && currentOrder?.status !== 'Batal' && currentOrder?.payment_status === 'Pending' && !currentOrder?.snap_token"
               append-icon="mdi-pencil"
               class="text-disabled"
               variant="plain"
@@ -244,7 +259,7 @@ const resetRefundItem = () => {
                 </div>
               </v-col>
               <v-col cols="5" class="text-right">
-                <div v-if="!(currentOrder?.status === 'Selesai' || currentOrder?.status === 'Batal' || currentOrder?.status === 'Refund')" class="text-subtitle-2 text-medium-emphasis">
+                <div class="text-subtitle-2 text-medium-emphasis">
                   <div v-if="item.status === 'Pending'">
                     <v-btn 
                       color="warning" 
@@ -305,8 +320,11 @@ const resetRefundItem = () => {
                       Siap Saji
                     </v-btn>
                   </div>
-                  <div v-else-if="item.status === 'Tersaji'" class="text-success">
-                    Selesai
+                  <div v-else :class="{
+                    'text-error': item.status === 'Batal',
+                    'text-success': item.status === 'Tersaji',
+                  }">
+                    {{ item.status }}
                   </div>
                 </div>
                 <div 
@@ -372,7 +390,7 @@ const resetRefundItem = () => {
                 class="text-h5 text-high-emphasis ml-1"
                 :class="{
                   'text-success': currentOrder?.payment_status === 'Lunas',
-                  'text-error': currentOrder?.payment_status === 'Gagal',
+                  'text-error': currentOrder?.payment_status === 'Gagal' || currentOrder?.payment_status === 'Batal',
                   'text-warning': currentOrder?.payment_status === 'Pending',
                 }"
               > Pembayaran {{ currentOrder?.payment_status }}
@@ -385,7 +403,7 @@ const resetRefundItem = () => {
         </v-row>
         
         <!-- Tombol untuk Role kasir -->
-        <div v-if="(userStore.hasRole(['admin', 'pemilik', 'kasir', 'dapur', 'kasir'])) && currentOrder?.payment_status === 'Pending'" class="d-flex justify-end align-center">
+        <div v-if="(userStore.hasRole(['admin', 'pemilik', 'kasir', 'dapur', 'kasir'])) && (currentOrder?.payment_status === 'Pending' || currentOrder?.payment_status === 'Gagal')" class="d-flex justify-end align-center">
           <div class="d-flex align-center" v-if="userStore.hasRole(['admin', 'pemilik', 'dapur', 'kasir']) && currentOrder?.status === 'Pending'">
             <v-btn 
               color="error"
@@ -420,18 +438,7 @@ const resetRefundItem = () => {
             color="success"
             :disabled="props.loading"
             :loading="props.loading"
-            @click="
-              openOverlay({
-                component: Payment,
-                props: {
-                  data: currentOrder,
-                  paymentSucceded: () => {
-                    props.refresh()
-                    emit('close')
-                  }
-                },
-              })
-            "
+            @click="handlePayment"
           >
             Pembayaran
           </v-btn>

@@ -6,7 +6,7 @@ import type { ShiftKitchen } from '@/types/shift'
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import { cloneDeep } from 'lodash'
-import { useMenuItems } from '@/composables/useMenuItems'
+import { useMenu } from '@/composables/useMenuItems'
 
 const { mdAndUp } = useDisplay()
 

@@ -1,25 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { useEmployeeActive } from '@/composables/useEmployeeActive'
 import type { EmployeeActive } from '@/types/employeeActive';
-import type { Employee } from '@/types/employee';
 import type { IdName } from '@/types/common';
 
 const props = defineProps<{
-  data: EmployeeActive[];
+  data: EmployeeActive;
   branch: IdName | undefined;
   loading: boolean;
 }>();
 
-const currentData = computed(() => {
-  if (!props.branch || props.branch.id === '') {
-    return props.data.filter((tx) => tx.branch.id === 'all')[0];
-  }
-  return props.data.filter((tx) => tx.branch.id === props.branch?.id)[0];
-})
-
 const data = computed(() => {
-  return currentData?.value
+  return props.data;
 });
 
 const tab = ref('1');
@@ -102,7 +93,7 @@ const chartOptions = computed(() => {
         <v-col cols="6">
           <h2 class="text-h1 font-weight-medium d-flex align-center gap-1">
             <div class="d-flex align-baseline">
-              <span class="mx-1"> {{ data?.active || 0 }} </span>
+              <span class="mx-1"> {{ data?.current || 0 }} </span>
               <span class="text-body-2"> Aktif </span>
             </div>
           </h2>

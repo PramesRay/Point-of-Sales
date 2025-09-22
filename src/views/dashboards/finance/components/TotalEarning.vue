@@ -4,17 +4,16 @@ import { ArchiveIcon, CopyIcon, DownloadIcon, FileExportIcon } from 'vue-tabler-
 import iconCard from '@/assets/images/icons/icon-card.svg';
 import { formatRupiah } from '@/utils/helpers/currency';
 import type { FinanceSummary } from '@/types/finance';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
-  data: FinanceSummary[];
+  data: FinanceSummary;
   loading: boolean;
 }>();
 
 const earningData = computed(() => {
-  if (!props.data?.length) return undefined;
-  return props.data
-    // .filter(tx => tx.branch.id === 'all')
-    .map(item => item.income)[0]
+  if (!props.data) return undefined;
+  return props.data.income;
 })
 </script>
 
@@ -27,9 +26,14 @@ const earningData = computed(() => {
         </v-btn>
       </div>
       <h2 class="text-h1 font-weight-medium">
-        {{ earningData ? formatRupiah(earningData) : '0' }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
+        {{ earningData ? formatRupiah(earningData.total.netIncome) : '0' }} <a href="#"><CircleArrowUpRightIcon stroke-width="1.5" width="28" class="text-white" /> </a>
       </h2>
-      <span class="text-subtitle-1 text-medium-emphasis text-white">Total Seluruh Pendapatan</span>
+      <div class="text-subtitle-1 text-medium-emphasis text-white">
+        Total Seluruh Pendapatan
+      </div>
+      <div class="text-subtitle-2 text-medium-emphasis text-disabled text-white">
+        per {{ new Date(earningData?.period.start!).toLocaleString('default', { month: 'long' }) }}
+      </div>
     </v-card-text>
   </v-card>
 </template>

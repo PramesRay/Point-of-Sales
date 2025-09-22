@@ -6,8 +6,10 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import Blank from '@/components/shared/Blank.vue';
 import type { CreateMenuPayload, Menu, UpdateMenuPayload } from '@/types/menu';
-import { useMenuItems } from '@/composables/useMenuItems';
+import { useMenu } from '@/composables/useMenuItems';
 import { formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency';
+import { useAlertStore } from '@/stores/alert';
+const alertStore = useAlertStore()
 
 const { openOverlay } = useOverlayManager()
 
@@ -24,7 +26,7 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const { data: branchData, load: loadBranch, loading: lb } = useBranchList()
-const { loadCategory: loadCategory, create, update, remove, categories, loading: lm } = useMenuItems()
+const { loadCategory: loadCategory, create, update, remove, categories, loading: lm } = useMenu()
 
 onMounted(() => {
   loadBranch()
@@ -113,6 +115,7 @@ async function processSubmit() {
   try {
     if (props.is_create) {
       await create(payload.value as CreateMenuPayload)
+      alertStore.showAlert('Berhasil menambahkan menu', 'success')
       props.refresh()
     }
     else {
@@ -126,6 +129,7 @@ async function processSubmit() {
         branch_id: payload.value.branch![0]
       }
       await update(updatePayload)
+      alertStore.showAlert('Berhasil memperbarui menu', 'success')
       props.refresh()
     }
     handleClose()

@@ -50,82 +50,82 @@ export function useCurrentOrders() {
     }
   }
 
-  async function update(payload: UpdateOrderPayload) {
+  async function update(payload: UpdateOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderData(payload);
-      // await load();
+      return await updateOrderData(payload);
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateItemStatus(payload: UpdateOrderItemStatusPayload) {
+  async function updateItemStatus(payload: UpdateOrderItemStatusPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderItemStatus(payload);
-      // await load();
+      return await updateOrderItemStatus(payload);
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updateStatus(payload: UpdateOrderStatusPayload) {
+  async function updateStatus(payload: UpdateOrderStatusPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderStatus(payload);
-      // await load();
+      return await updateOrderStatus(payload);
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function updatePayment(payload: UpdateOrderPaymentPayload) {
+  async function updatePayment(payload: UpdateOrderPaymentPayload): Promise<Order> {
     loading.value = true;
     try {
-      await updateOrderPayment(payload);
-      // await load();
+      return await updateOrderPayment(payload);
     } catch (e) {
       console.error("Gagal proses order:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function refund(payload: RefundOrderItemPayload) {
+  async function refund(payload: RefundOrderItemPayload): Promise<Order> {
     loading.value = true;
     try {
-      await refundOrderItem(payload);
-      // await load();
+      return await refundOrderItem(payload);
     } catch (e) {
       console.error("Gagal refund item:", e);
+      throw e;
     } finally {
       loading.value = false;
     }
   }
 
-  async function create(payload: CreateOrderPayload) {
+  async function create(payload: CreateOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await createOrderData(payload);
-      // await load();
+      return await createOrderData(payload);
     } catch (e) {
       console.error("Gagal membuat order:", e);
+      throw e
     } finally {
       loading.value = false;
     }
   }
 
-  async function createDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload) {
+  async function createDirectPaymentOrder(payload: CreateDirectPaymentOrderPayload): Promise<Order> {
     loading.value = true;
     try {
-      await processDirectPaymentOrder(payload);
+      return await processDirectPaymentOrder(payload);
       // await load(branchId.value);
     } catch (error) {
       console.error('Error creating direct payment order:', error);

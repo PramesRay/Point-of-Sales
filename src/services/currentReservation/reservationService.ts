@@ -180,10 +180,10 @@ export async function createReservation(payload: CreateReservationPayload): Prom
   }
 }
 
-export async function updateReservation(payload: UpdateReservationPayload | ReservationApprovalPayload): Promise<Reservation> {
+export async function updateReservation(payload: UpdateReservationPayload): Promise<Reservation> {
   try {
     const response = await api.put<Reservation>('/reservation', {...payload, type : 'updateReservation'});
-    alertStore.showAlert('Reservasi berhasil diubah!', 'info');
+    alertStore.showAlert('Reservasi berhasil diubah!', 'success');
     return response.data;
   } catch (error) {
     console.warn('API error creating reservation, using dummy data.', error);
@@ -195,7 +195,7 @@ export async function updateReservation(payload: UpdateReservationPayload | Rese
 export async function approveReservation(payload: ReservationApprovalPayload): Promise<Reservation> {
   try {
     const response = await api.put<Reservation>('/reservation', {...payload, type : 'updateReservationStatus' });
-    alertStore.showAlert('Reservasi berhasil diubah!', 'info');
+    alertStore.showAlert('Reservasi berhasil diubah!', 'success');
     return response.data;
   } catch (error) {
     console.warn('API error creating reservation, using dummy data.', error);
@@ -207,7 +207,7 @@ export async function approveReservation(payload: ReservationApprovalPayload): P
 export async function deleteReservation(id: string): Promise<void> {
   try {
     await api.delete(`/reservation/${id}`);
-    alertStore.showAlert('Reservasi berhasil dihapus!', 'info');
+    alertStore.showAlert('Reservasi berhasil dihapus!', 'success');
   } catch (error) {
     console.warn('API error deleting reservation, using dummy data.', error);
     alertStore.showAlert('Reservasi gagal dihapus!', 'error');

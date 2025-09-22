@@ -181,7 +181,7 @@ export async function createFundRequest(payload: CreateFundRequest): Promise<Fun
   }
 }
 
-export async function updateFundRequest(payload: UpdateFundRequest | ApproveFundRequest): Promise<FundRequest> {
+export async function updateFundRequest(payload: UpdateFundRequest): Promise<FundRequest> {
   try {
     const res = await api.put<FundRequest>(`/finance/fund-requests`, {...payload, type: 'updateFundRequest'});
     alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');

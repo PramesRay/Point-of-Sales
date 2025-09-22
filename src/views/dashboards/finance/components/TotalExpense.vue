@@ -6,13 +6,13 @@ import { ChevronDownIcon, ChevronUpIcon } from 'vue-tabler-icons';
 import type { IdName } from '@/types/common';
 
 const props = defineProps<{
-  data: FinanceSummary[];
+  data: FinanceSummary;
   branch: IdName | undefined | null;
   loading: boolean;
 }>();
 
-const select = ref<'Hari ini' | 'Minggu ini' | 'Bulan ini' | 'Tahun ini'>('Hari ini');
-const showChart = ref(false);
+const select = ref<'Hari ini' | 'Minggu ini' | 'Bulan ini' | 'Tahun ini'>('Minggu ini');
+const showChart = ref(true);
 
 const timeRangeMapping = {
   'Hari ini': 'today',
@@ -24,8 +24,9 @@ const timeRangeMapping = {
 const items = ['Hari ini', 'Minggu ini', 'Bulan ini', 'Tahun ini'];
 
 const branchExpenseData = computed(() => {
-  if (!props.data?.length) return undefined;
-  return props.data.map(item => item.expense)[0];
+  console.log('props.data', props.data)
+  if (!props.data) return undefined;
+  return props.data.expenses;
 });
 
 const isReady = computed(() => {
@@ -35,7 +36,7 @@ const isReady = computed(() => {
 const totalExpense = computed(() => {
   if (!isReady.value) return 0;
   const key = timeRangeMapping[select.value];
-  return branchExpenseData.value?.totalExpense?.[key] ?? 0;
+  return branchExpenseData.value?.totalExpenses?.[key] ?? 0;
 });
 
 const chartData = computed(() => {
@@ -147,27 +148,30 @@ onUnmounted(() => {
           </v-col>
         </v-row>
 
-        <div v-if="showChart">        
-          <v-expand-transition v-show="showChart">
-            <v-skeleton-loader
-              v-if="props.loading"
-              type="card"
-              height="300"
-              class="mb-4"
-            />
-            <apexchart
-              v-else-if="isReady && hasValidChartData"
-              :key="`${props.branch}-${select}`"
-              type="bar"
-              :height="chartHeight"
-              :options="chartOptions"
-              :series="lineChartSeries"
-            />
-            <div v-else class="text-center text-medium-emphasis mt-5">
-              Tidak ada data untuk periode ini.
-            </div>
-          </v-expand-transition>
-        </div>
+        <v-row v-if="showChart" justify="center" no-gutters>
+          <v-col cols="12">
+            <v-expand-transition v-show="showChart">
+              <v-progress-circular
+                v-if="props.loading"
+                height="4"
+                indeterminate
+                color="secondary"
+                class="mb-4"
+              />
+              <apexchart
+                v-else-if="isReady && hasValidChartData"
+                :key="`${props.branch}-${select}`"
+                type="bar"
+                :height="chartHeight"
+                :options="chartOptions"
+                :series="lineChartSeries"
+              />
+              <div v-else class="text-center text-medium-emphasis mt-5">
+                Tidak ada data untuk periode ini.
+              </div>
+            </v-expand-transition>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </div>

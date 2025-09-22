@@ -22,7 +22,7 @@ import type { AllIncomes } from '@/types/finance';
  * Fetch finance summary for a specific branch.
  * Falls back to dummy data if API call fails.
  */
-export async function fetchFinanceSummary({ filter }: { filter?: Record<string, any> } = {}): Promise<FinanceSummary[]> {
+export async function fetchFinanceSummary({ filter }: { filter?: Record<string, any> } = {}): Promise<FinanceSummary> {
   try {
     const url = `/finance-summary`;
     const query = new URLSearchParams();
@@ -33,8 +33,8 @@ export async function fetchFinanceSummary({ filter }: { filter?: Record<string, 
         }
       }
     }
-    const res = await api.get<FinanceSummary[]>(`${url}?${query.toString()}`);
-    return res.data;
+    const res = await api.get(`${url}?${query.toString()}`);
+    return res.data.data;
   } catch (error) {
     console.warn(`Fetch finance summary failed, using dummy data.`, error);
     let dummy = dummyFinanceSummary;
@@ -102,6 +102,6 @@ export async function fetchFinanceSummary({ filter }: { filter?: Record<string, 
     } else {
       dummy = dummy.filter(item => item.income || item.branch.id === 'all');
     }
-    return dummy;
+    return dummy[0];
   }
 }

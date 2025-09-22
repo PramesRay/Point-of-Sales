@@ -5,20 +5,30 @@ import { useSlideIndicator } from '@/composables/non-services/useSlideIndicator'
 import { TableIcon } from 'vue-tabler-icons';
 import type { FinanceSummary } from '@/types/finance';
 import { useDisplay } from 'vuetify';
+import type { IdName } from '@/types/common';
 
 const props = defineProps<{
-  data: FinanceSummary[];
+  data: FinanceSummary;
+  data_branch: IdName[];
   loading: boolean;
 }>();
 
 const incomes = computed(() => {
-  if (!props.data?.length) return [];
+  console.log('props.data', props.data);
+  if (!props.data) return [];
+  
+  return Array.isArray(props.data.income.perBranch) ? props.data.income.perBranch : [];
+});
 
-  // Ambil semua jika hanya 1 data
-  if (props.data.length === 1) return props.data;
+const branchOptions = computed(() => {
+  return props.data_branch;
+});
 
-  // Jika lebih dari 1, skip index ke-0 dan urutkan
-  return props.data.slice(1).sort((a, b) => b.income - a.income);
+const incomePerBranch = computed(() => {
+  return incomes.value.map(inc => ({
+    ...inc,
+    branchName: branchOptions.value.find(b => b.id === inc.branch_id)?.name || `Cabang - ${inc.branch_id}`
+  })).sort((a, b) => b.netIncome - a.netIncome);
 });
 
 const isIncomesReady = computed(() => incomes.value && incomes.value.length > 0);
@@ -30,91 +40,90 @@ const showArrows = computed(() => mdAndUp.value ? 'hover' : false);
 </script>
 
 <template>
-<div v-if="!props.loading" class="w-100">
-  <v-window
-    v-show="isIncomesReady"
-    v-model="currentSlide"
-    class="total-income-carousel"
-    mandatory
-    touch
-    :show-arrows="showArrows"
-  >
-    <v-window-item
-      v-for="(inc, index) in incomes"
-      :key="inc.branch.id"
-      :value="index"
-      eager
+  <div class="w-100" v-if="props.loading">
+    <v-skeleton-loader
+      type="list-item-avatar-two-line"
+      class="py-4"
+    />
+  </div>
+  <div v-else class="w-100">
+    <v-window
+      v-show="isIncomesReady"
+      v-model="currentSlide"
+      class="total-income-carousel"
+      mandatory
+      touch
+      :show-arrows="showArrows"
     >
-      <v-row
-        no-gutters
-        justify="center"
-        class="d-flex align-center justify-center"
+      <v-window-item
+        v-for="(inc, index) in incomePerBranch"
+        :key="inc.branch_id"
+        :value="index"
+        eager
       >
-        <v-col cols="12">
-          <v-card
-            :class="[
-              'overflow-hidden bubble-shape-sm mb-4',
-              index === 0 ? '' : 'bg-primary',
-            ]"
-            elevation="0"
-            rounded="md"
-          >
-            <v-card-text>
-              <div class="d-flex align-center ga-4">
-                <v-btn
-                  :color="index === 0 ? 'lightwarning' : 'darkprimary'"
-                  icon
-                  rounded="sm"
-                  variant="flat"
-                >
-                  <BuildingStoreIcon
-                    stroke-width="1.5"
-                    width="25"
-                    :class="index === 0 ? 'text-warning' : 'text-white'"
-                  />
-                </v-btn>
-                <div>
-                  <h4 class="text-h4 font-weight-medium">
-                    {{ formatRupiah(inc.income) }}
-                  </h4>
-                  <span
-                    :class="[
-                      'text-subtitle-2 text-medium-emphasis',
-                      index === 0 ? 'text-disabled' : 'text-white',
-                    ]"
+        <v-row
+          no-gutters
+          justify="center"
+          class="d-flex align-center justify-center"
+        >
+          <v-col cols="12">
+            <v-card
+              :class="[
+                'overflow-hidden bubble-shape-sm mb-4',
+                index === 0 ? '' : 'bg-primary',
+              ]"
+              elevation="0"
+              rounded="md"
+            >
+              <v-card-text>
+                <div class="d-flex align-center ga-4">
+                  <v-btn
+                    :color="index === 0 ? 'lightwarning' : 'darkprimary'"
+                    icon
+                    rounded="sm"
+                    variant="flat"
                   >
-                    Total Pendapatan {{ inc.branch.name }}
-                  </span>
+                    <BuildingStoreIcon
+                      stroke-width="1.5"
+                      width="25"
+                      :class="index === 0 ? 'text-warning' : 'text-white'"
+                    />
+                  </v-btn>
+                  <div>
+                    <h4 class="text-h4 font-weight-medium">
+                      {{ formatRupiah(inc.netIncome) }}
+                    </h4>
+                    <span
+                      :class="[
+                        'text-subtitle-2 text-medium-emphasis',
+                        index === 0 ? 'text-disabled' : 'text-white',
+                      ]"
+                    >
+                      Total Pendapatan {{ inc.branchName }}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-window-item>
-  </v-window>
-  <div class="carousel-container" >
-    <div class="slide-indicator-bar">
-      <div
-        v-for="i in visibleBars"
-        :key="i"
-        :aria-label="`Slide ${i + 1}`"
-        role="button"
-        tabindex="0"
-        :class="['bar', { active: isActiveBar(i) }]"
-        @click="jumpToSlide(i)"
-        @keypress.enter="jumpToSlide(i)"
-      />
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-window-item>
+    </v-window>
+    <div class="carousel-container" >
+      <div class="slide-indicator-bar">
+        <div
+          v-for="i in visibleBars"
+          :key="i"
+          :aria-label="`Slide ${i + 1}`"
+          role="button"
+          tabindex="0"
+          :class="['bar', { active: isActiveBar(i) }]"
+          @click="jumpToSlide(i)"
+          @keypress.enter="jumpToSlide(i)"
+        />
+      </div>
     </div>
   </div>
-</div>
-
-<div class="w-100" v-else>
-  <v-skeleton-loader
-    type="list-item-avatar-two-line"
-    class="py-4"
-  />
-</div>
 </template>
 
 <style scoped lang="scss">

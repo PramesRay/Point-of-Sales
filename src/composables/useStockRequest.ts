@@ -3,7 +3,6 @@ import { createStockRequest, updateStockRequest, fetchStockRequestList, fetchSto
 import type { ApproveStockRequestPayload, CreateStockRequestPayload, StockRequest, StockRequestSummary, UpdateStockRequestPayload } from '@/types/inventory';
 
 export function useStockRequests() {
-  const summary   = ref<StockRequestSummary[]>([]);
   const list      = ref<{ data: StockRequest[]; total: number; }>({ data: [], total: 0 });
   const loading   = ref<boolean>(false);
   const error     = ref<Error | null>(null);
@@ -26,7 +25,6 @@ export function useStockRequests() {
     loading.value = true;
     error.value   = null;
     try {
-      summary.value = await fetchStockRequestSummary();
       list.value = await fetchStockRequestList({
         page,
         limit,
@@ -86,5 +84,5 @@ export function useStockRequests() {
     }
   }
 
-  return { summary, list, loading, error, load, create, update, ready, finish };
+  return { list, loading, error, load, create, update, ready, finish };
 }

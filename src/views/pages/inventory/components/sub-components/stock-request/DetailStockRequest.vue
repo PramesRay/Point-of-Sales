@@ -28,6 +28,7 @@ const formRef = ref()
 const approvalItems = ref<{ 
   item: Pick<InventoryItem, "id" | "name" | 'quantity' | "unit">; 
   approved: boolean | null; 
+  status: string;
 }[]>(
   props.data.items.map(item => ({ 
     item: {
@@ -37,8 +38,11 @@ const approvalItems = ref<{
       unit: item.item.unit
     },
     approved: item.status === 'Pending' 
-    ? null : item.status === 'Diproses' 
-      ? true : false 
+      ? null 
+      : item.status === 'Diproses' || item.status === 'Siap' 
+        ? true 
+        : false,
+    status: item.status
   }))
 )
 
@@ -153,7 +157,7 @@ const handleFinish = () => {
     </v-btn>
     <div class="d-flex align-center">
       <h4 class="text-h4 mt-1"> Detail Permintaan Stok </h4>
-      <v-btn 
+      <!-- <v-btn 
         v-if="props.data.status === 'Pending'"
         icon
         variant="plain"
@@ -161,7 +165,7 @@ const handleFinish = () => {
         @click="handleUpdate"
       >
         <v-icon>mdi-pencil</v-icon>
-      </v-btn>
+      </v-btn> -->
     </div>
     <i class="text-subtitle-2 text-disabled"> {{ props.data?.id }} </i>
 
@@ -186,13 +190,14 @@ const handleFinish = () => {
               class="text-subtitle-2 text-medium-emphasis"
               :class="{
                 'text-warning': props.data.status === 'Pending',
-                'text-success': props.data.status === 'Diproses',
+                'text-primary': props.data.status === 'Diproses',
+                'text-success': props.data.status === 'Siap',
                 'text-error': props.data.status === 'Ditolak'
               }"
             >{{ props.data.status }}</span>
           </div>
-          <h4 v-if="props.data.meta.updated_at" class="text-h4">{{ getTimeDiff(props.data.meta.updated_at) }}</h4>
-          <i v-if="props.data.meta.created_at" class="text-subtitle-2 text-medium-emphasis">
+          <h4 v-if="props.data.meta.created_at" class="text-h4 text-right">{{ getTimeDiff(props.data.meta.updated_at) }}</h4>
+          <i class="text-subtitle-2 text-disabled">
             Dibuat {{ getTimeDiff(props.data.meta.created_at) }}
           </i>
         </v-col>
@@ -243,12 +248,13 @@ const handleFinish = () => {
                   variant="tonal"
                   class="text-subtitle-2"
                   :class="{
-                    'text-success': item.approved === true,
-                    'text-error': item.approved === false
+                    'text-success': (item.approved === true && item.status === 'Pending') || item.status === 'Siap',
+                    'text-primary': item.status === 'Diproses',
+                    'text-error': item.approved === false || item.status === 'Ditolak'
                   }"
                   :readonly="props.data.status !== 'Pending'"
                   @click="item.approved = null"
-                  >{{ item.approved ? "Diproses" : "Ditolak" }}
+                  >{{ item.status === 'Pending' ? (item.approved ? 'Disetujui' : 'Ditolak') : item.status }}
                 </v-btn>
               </div>
             </v-col>

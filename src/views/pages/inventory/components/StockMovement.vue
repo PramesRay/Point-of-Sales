@@ -33,8 +33,7 @@ const props = defineProps<{
 }>();
 
 const categories = computed(() => {
-  if (!props.categories.length) return []
-  return [{ id: 'all', name: 'Semua' }, { id: 'new', name: 'Baru' }, ...props.categories];
+  return [{ id: 'all', name: 'Semua' }, ...props.categories];
 })
 
 const branches = computed(() => {
@@ -177,7 +176,7 @@ function openAddNew() {
               </v-list-item>
             </v-list>
             <!-- jika data kosong -->
-            <div v-else class="text-center text-subtitle-2 text-disabled my-4">
+            <div v-if="!currentData.length" class="text-center text-subtitle-2 text-disabled my-4">
               Data Perpindahan Stok tidak ditemukan
             </div>
           </ScrollContainer>

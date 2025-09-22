@@ -3,7 +3,7 @@ import { fetchEmployeeActive } from '@/services/employeeActive/employeeActiveSer
 import type { EmployeeActive } from '@/types/employeeActive'
 
 export function useEmployeeActive() {
-  const data = ref<EmployeeActive[]>([]);
+  const data = ref<EmployeeActive>();
   const loading = ref<boolean>(false);
 
   async function load({ filter }: { filter?: Record<string, any> } = {}) {

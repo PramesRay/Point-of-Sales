@@ -22,12 +22,13 @@ import type { ShiftKitchen } from '@/types/shift';
 import { useShift } from '@/composables/useShift';
 import { useBranchList } from '@/composables/useBranchList';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
-import { useMenuItems } from '@/composables/useMenuItems';
+import { useMenu } from '@/composables/useMenuItems';
 
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, } = useCurrentOrders();
 const { load: loadStockRequests, list: stockRequestlist, loading: lsr } = useStockRequests();
+const { loadMenuSales, dataItemSales: menuSales, categories, loading: lm } = useMenu()
 const { loadShiftbyRole, shiftCurrentKitchen } = useShift()
 const alertStore = useAlertStore();
 
@@ -43,14 +44,10 @@ onMounted(async () => {
 
   await loadBranch()
   
-  if (userStore.hasRole(['admin', 'pemilik'])) {
-    loadCurrentOrder()
-    loadStockRequests()
-    loadShiftbyRole()
-  } else {
-    loadCurrentOrder()
-    loadStockRequests()
-  }
+  loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
+  loadCurrentOrder()
+  loadStockRequests()
+  loadShiftbyRole()
 })
 const branchOptions = computed(() => branches.value);
 const selectedBranch = ref<string | undefined>( 
@@ -78,45 +75,14 @@ const currentKitchenShift = computed(() => {
 
 watch(
   () => selectedBranch.value,
-  (newVal) => {
-    if (newVal) {
-      if (userStore.hasRole(['admin', 'pemilik'])) {
-        loadCurrentOrder({
-          filter: {
-            'branch.id': selectedBranch.value
-          },
-          sortBy: 'meta.updated_at',
-          sortDesc: true
-        })
-        loadStockRequests({
-          limit: 20,
-          sortBy: 'meta.updated_at',
-          sortDesc: true
-        })
-        loadShiftbyRole({
-          sortBy: 'meta.created_at',
-          sortDesc: true
-        })
-      } else {
-        loadCurrentOrder({
-          filter: {
-            'shift.kitchen': userStore.me?.activity?.shift_op?.id
-          },
-          sortBy: 'meta.updated_at',
-          sortDesc: true
-        })
-        loadStockRequests({
-          filter: {
-            'shift.kitchen': userStore.me?.activity?.shift_op?.id
-          },
-          sortBy: 'meta.updated_at',
-          sortDesc: true
-        })
-      }
-    }
+  () => {
+    loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
+    loadCurrentOrder()
+    loadStockRequests()
+    loadShiftbyRole()
   }
 )
-const pinBranch = ref(false)
+const pinBranch = ref(true)
 </script>
 
 <template>
@@ -175,11 +141,16 @@ const pinBranch = ref(false)
 
   <v-row>
     <!-- Text jika belum mulai shift -->
-    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.hasRole(['admin', 'pemilik']) && !userStore.me?.activity?.is_active">
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
       <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
     </v-col>
+    
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="!userStore.me?.activity?.shift_op?.start && !userStore.hasRole(['admin', 'pemilik'])">
+      <p class="text-subtitle-1 text-disabled"> Belum ada shift dapur yang dimulai! </p>
+    </v-col>
 
-    <template v-else>
+    <!-- Kolom Kiri: Current Order + Current Transaction -->
+     <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
       <!-- Kolom Kiri: Current Order + Current Transaction -->
       <v-col cols="12" md="4">
         <v-row>
@@ -196,7 +167,7 @@ const pinBranch = ref(false)
             <CurrentOrderQue
               v-if="(!visibleComponent || visibleComponent === 'pesanan')"
               :data="currentOrder.data"
-              :kitchen_shift="currentKitchenShift!"
+              :data_menu="menuSales"
               :branch="selectedBranchObject"
               :loading="lco"
   

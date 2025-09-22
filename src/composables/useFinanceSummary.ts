@@ -4,8 +4,7 @@ import { fetchFinanceSummary } from '@/services/finance/financeSummaryService';
 import type { FinanceSummary } from '@/types/finance';
 
 export function useFinanceDashboard() {
-  const summary  = ref<FinanceSummary[]>([]);
-  const allIncomes = ref<FinanceSummary[]>([]);
+  const summary  = ref<FinanceSummary>();
   const loading  = ref<boolean>(false);
   const error    = ref<Error | null>(null);
 

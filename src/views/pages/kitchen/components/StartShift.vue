@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/authUser'
 import { useShift } from '@/composables/useShift'
 
 import type { StartShiftKitchenPayload } from '@/types/shift'
-import { useMenuItems } from '@/composables/useMenuItems'
+import { useMenu } from '@/composables/useMenuItems'
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
 import { cloneDeep } from 'lodash'
 import { useBranchList } from '@/composables/useBranchList'
@@ -15,11 +15,11 @@ import { useBranchList } from '@/composables/useBranchList'
 const { mdAndUp } = useDisplay()
 const userStore = useUserStore()
 const { startKitchen, loading: loadingShift } = useShift()
-const { load, dataItemSales, categories, loading: loadingMenu } = useMenuItems()
+const { load: loadMenu, data: data_menu, categories, loading: loadingMenu } = useMenu()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 
 onMounted(() => {
-  load(userStore.me?.assigned_branch?.id)
+  loadMenu(userStore.me?.assigned_branch?.id)
   loadBranch()
 })
 
@@ -48,8 +48,8 @@ const rules = {
 const isChanged = computed(() => {
   return (
     payload.value.initial_menu?.some((item, index) => {
-      const originalItem = dataItemSales.value[index];
-      return item.quantity !== originalItem?.quantity;}) ||
+      const originalItem = data_menu.value[index];
+      return item.quantity > 0}) ||
     payload.value.branch_id !== userStore.me?.activity?.branch?.id
   )
 })
@@ -94,9 +94,10 @@ async function processSubmit() {
   }
 }
 
-watch(dataItemSales, () => {
-  if (dataItemSales.value.length > 0) {
-    payload.value.initial_menu = cloneDeep(dataItemSales.value)
+watch(data_menu, () => {
+  if (data_menu.value.length > 0) {
+    const data = cloneDeep(data_menu.value)
+    payload.value.initial_menu = data.map((item) => ({ id: item.id, quantity: 0 }))
   }
 })
 
@@ -104,7 +105,7 @@ watch(
   () => payload.value.branch_id,
   (newVal) => {
     if (newVal) {
-      load(newVal)
+      loadMenu(newVal)
     }
   }
 )
@@ -154,10 +155,10 @@ watch(
                 <div v-if="loadingMenu" class="text-center my-4">
                   <v-progress-circular indeterminate color="warning" height="1"></v-progress-circular>
                 </div>
-                <div v-else-if="!dataItemSales.length" class="text-center text-subtitle-2 text-disabled my-4">Data Menu tidak ditemukan</div>
+                <div v-else-if="!data_menu.length" class="text-center text-subtitle-2 text-disabled my-4">Data Menu tidak ditemukan</div>
                 <v-list-item
                   v-else
-                  v-for="(item, index) in dataItemSales"
+                  v-for="(item, index) in data_menu"
                   :key="index"
                   class="pa-0 ps-2"
                 >
