@@ -1,8 +1,6 @@
 import api from "../api";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/inventory";
-import type { CreateMenuPayload, Menu, MenuSale, RestockMenuSalesPayload, UpdateMenuPayload } from '@/types/menu'
-import { dummyMenuCategories } from "./dummyMenuCategories";
-import { dummyMenuSale } from "./dummyMenuSale";
+import type { CreateMenuPayload, Menu, MenuSale, UpdateMenuPayload } from '@/types/menu'
 
 export async function fetchMenus(
   branchId?: string,
@@ -30,55 +28,7 @@ export async function fetchMenus(
     }
   } catch (error) {
     console.warn('Fetch Menu Item failed, using dummy.', error)
-    let dummy = dummyMenuSale
-
-    // 1. Filter by branch
-    if (branchId) {
-      dummy = dummy.filter(item =>
-        item.branch.id === branchId
-      )
-    }
-
-    // 2. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    // 3. Optional: sort
-    if (sortBy && dummy.length > 0 && Object.prototype.hasOwnProperty.call(dummy[0], sortBy)) {
-      dummy = dummy.sort((a, b) => {
-        const valA = a[sortBy as keyof Menu]
-        const valB = b[sortBy as keyof Menu]
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB)
-        }
-
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB
-        }
-
-        return 0
-      })
-    }
-
-
-    const total = dummy.length
-
-    // 4. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 
@@ -108,55 +58,7 @@ export async function fetchMenusales(
     }
   } catch (error) {
     console.warn('Fetch Menu Item failed, using dummy.', error)
-    let dummy = dummyMenuSale
-
-    // 1. Filter by branch
-    if (branchId) {
-      dummy = dummy.filter(item =>
-        item.branch.id === branchId
-      )
-    }
-
-    // 2. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    // 3. Optional: sort
-    if (sortBy && dummy.length > 0 && Object.prototype.hasOwnProperty.call(dummy[0], sortBy)) {
-      dummy = dummy.sort((a, b) => {
-        const valA = a[sortBy as keyof Menu]
-        const valB = b[sortBy as keyof Menu]
-
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB)
-        }
-
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB
-        }
-
-        return 0
-      })
-    }
-
-
-    const total = dummy.length
-
-    // 4. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 
@@ -199,7 +101,7 @@ export async function fetchCategorMenu(id?: string): Promise<Category[]> {
     return res.data.data;
   } catch (error) {
     console.warn(`Fetch Menu Item's Category failed, using dummy.`, error);
-    return dummyMenuCategories; // Gunakan data dummy jika gagal
+    return [];
   }
 }
 

@@ -1,9 +1,7 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
-import { dummyUser } from '@/services/common/user/dummyUser';
 import type { Employee, UserRole } from '@/types/employee';
 import type { Shift } from '@/types/shift';
-import { dummyShiftEmployee } from '@/services/shift/dummyShiftEmployee';
 import { auth } from '@/plugins/firebase';
 import { router } from '@/router';
 
@@ -22,10 +20,6 @@ export const useUserStore = defineStore({
         if (!user) throw new Error('Pengguna belum login');
 
         const response = await api.get('/employee/me');
-        // if (response.data.data.role == null) {
-        //   await signOut(auth); // Logout paksa
-        //   throw new Error('Email belum dikonfirmasi oleh pemilik');
-        // }
         this.me = response.data.data;
       } catch (error: any) {
         // this.me = dummyUser
@@ -43,9 +37,6 @@ export const useUserStore = defineStore({
         this.shift = response.data;
       } catch (error: any) {
         console.error("Failed to fetch shift data:", error);
-        // using dummy data for temporary solution
-        this.shift = dummyShiftEmployee.find(shift => shift.meta.created_by.id === this.me?.id) ?? null
-        console.log('shift', this.shift)
       } finally {
         this.loading = false;
       }

@@ -46,15 +46,6 @@ const MainRoutes = {
       component: () => import('@/views/dashboards/finance/FinanceDashboard.vue')
     },
     {
-      name: 'Transaksi',
-      path: '/dashboard/bendahara/transaksi',
-      meta: {
-        requiredRoles: ['admin', 'pemilik', 'bendahara']
-      },
-      component: () => import('@/views/dashboards/finance/components/sub-component/TableTransaction.vue')
-    },
-
-    {
       name: 'Pemilik',
       path: '/dashboard/pemilik',
       meta: {

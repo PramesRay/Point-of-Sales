@@ -1,7 +1,5 @@
 import api from "@/services/api";
-import dummyEmployee from "../employee/dummyEmployee";
 import type { CreateEmployeePayload, Employee, UpdateEmployeeByEmployee, UpdateEmployeePayloadByOwner } from "@/types/employee";
-import { processDummyData } from "@/utils/helpers/dummy-fetching-processing";
 
 export async function fetchUsers({
   page,
@@ -43,16 +41,7 @@ export async function fetchUsers({
     }
   } catch (error) {
     console.warn(`Fetch users failed, using dummy.`, error);
-    const {data, total} = processDummyData(dummyEmployee, {
-      page,
-      limit,
-      search,
-      sortBy,
-      sortDesc,
-      filter,
-    });
-
-    return { data: data, total: total }
+    return { data: [], total: 0 };
   }
 }
 

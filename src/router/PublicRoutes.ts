@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth';
+import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 
 const PublicRoutes = {
   path: '/',
@@ -21,19 +22,6 @@ const PublicRoutes = {
       path: '/verify-email',
       component: () => import('@/views/authentication/verification/EmailSent.vue'),
 
-    },
-    {
-      name: 'OTP',
-      path: '/otp',
-      component: () => import('@/views/authentication/verification/OTPPage.vue'),
-      beforeEnter: (to, from, next) => {
-        const auth = useAuthStore();
-        if (auth.user) {
-          next('/');
-        } else {
-          next();
-        }
-      }
     },
     {
       name: 'Error 404',

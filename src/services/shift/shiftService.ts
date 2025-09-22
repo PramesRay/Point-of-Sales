@@ -13,12 +13,6 @@ import type {
   ShiftEmployee
 } from '@/types/shift'
 
-// Dummy fallback (opsional, bisa kamu isi nanti)
-import { dummyShiftCashier } from './dummyShiftCashier'
-import { dummyShiftKitchen } from './dummyShiftKitchen'
-import { dummyShiftEmployee } from './dummyShiftEmployee'
-import { dummyShiftWarehouse } from './dummyShiftWarehouse'
-
 /* ================================
    💼 EMPLOYEE
 ================================ */
@@ -63,7 +57,7 @@ export async function fetchCurrentShiftEmployee({
     return res.data.data
   } catch (error) {
     console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return dummyShiftEmployee[0];
+    return {} as Shift
   }
 }
 
@@ -110,91 +104,7 @@ export async function fetchShiftEmployee({
     }
   } catch (error) {
     console.warn(`Fetch shift employee data failed, using dummy.`, error);
-    let dummy = dummyShiftEmployee;
-
-    // 1. Filter by branch
-    if (branchId) {
-      dummy = dummy.filter(item => item.branch?.id === branchId)
-    }
-    
-    // 2. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    // 3. Optional: filter
-    if (filter) {
-      console.log('filter in service', filter)
-      for (const [key, value] of Object.entries(filter)) {
-        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-          console.log('key', key, 'value', value);
-
-          // Menangani nested key (contoh: 'branch.id')
-          const keys = key.split('.'); // Pisahkan key berdasarkan '.'
-          console.log('keys', keys);
-
-          dummy = dummy.filter(item => {
-            // Iterasi melalui nested keys (misalnya 'branch.id')
-            let itemValue: any = item;
-            for (const k of keys) {
-              console.log('k', k);
-              itemValue = itemValue[k];
-              console.log('itemValue', itemValue);
-              if (itemValue == null) 
-                return false; // Jika properti tidak ada, return false
-            }
-            return itemValue === value;
-          });
-        }
-      }
-    }
-
-    
-    // 4. Optional: sort
-    if (sortBy && dummy.length > 0) {
-      console.log('Sorting by', sortBy);
-  
-      // Pisahkan key jika ada nested key (misalnya branch.name)
-      const keys = sortBy.split('.'); // Pisahkan menjadi array berdasarkan titik (.)
-      
-      dummy = dummy.sort((a, b) => {
-        let valA: any = a;
-        let valB: any = b;
-
-        // Akses nilai berdasarkan keys
-        keys.forEach(key => {
-          valA = valA[key];
-          valB = valB[key];
-        });
-        
-        // Sorting berdasarkan tipe data (string atau number)
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        }
-        
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB;
-        }
-        
-        return 0; // Jika tipe data tidak cocok, jangan lakukan sorting
-      });
-    }
-    
-    // 5. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    const total = dummy.length
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 
@@ -261,7 +171,7 @@ export async function fetchCurrentShiftWarehouse({
     return res.data.data
   } catch (error) {
     console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return dummyShiftWarehouse[0];
+    return {} as ShiftWarehouse;
   }
 }
 
@@ -305,86 +215,7 @@ export async function fetchShiftWarehouse({
     }
   } catch (error) {
     console.warn(`Fetch shift warehouse data failed, using dummy.`, error);
-    let dummy = dummyShiftWarehouse;
-    
-    // 2. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    // 3. Optional: filter
-    if (filter) {
-      console.log('filter in service', filter)
-      for (const [key, value] of Object.entries(filter)) {
-        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-          console.log('key', key, 'value', value);
-
-          // Menangani nested key (contoh: 'branch.id')
-          const keys = key.split('.'); // Pisahkan key berdasarkan '.'
-          console.log('keys', keys);
-
-          dummy = dummy.filter(item => {
-            // Iterasi melalui nested keys (misalnya 'branch.id')
-            let itemValue: any = item;
-            for (const k of keys) {
-              console.log('k', k);
-              itemValue = itemValue[k];
-              console.log('itemValue', itemValue);
-              if (itemValue == null) 
-                return false; // Jika properti tidak ada, return false
-            }
-            return itemValue === value;
-          });
-        }
-      }
-    }
-
-    
-    // 4. Optional: sort
-    if (sortBy && dummy.length > 0) {
-      console.log('Sorting by', sortBy);
-  
-      // Pisahkan key jika ada nested key (misalnya branch.name)
-      const keys = sortBy.split('.'); // Pisahkan menjadi array berdasarkan titik (.)
-      
-      dummy = dummy.sort((a, b) => {
-        let valA: any = a;
-        let valB: any = b;
-
-        // Akses nilai berdasarkan keys
-        keys.forEach(key => {
-          valA = valA[key];
-          valB = valB[key];
-        });
-        
-        // Sorting berdasarkan tipe data (string atau number)
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        }
-        
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB;
-        }
-        
-        return 0; // Jika tipe data tidak cocok, jangan lakukan sorting
-      });
-    }
-    
-    // 5. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    const total = dummy.length
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 
@@ -461,7 +292,7 @@ export async function fetchCurrentShiftCashier({
     return res.data.data
   } catch (error) {
     console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return dummyShiftCashier[0];
+    return {} as ShiftCashier;
   }
 }
 
@@ -508,90 +339,7 @@ export async function fetchShiftCashier({
     }
   } catch (error) {
     console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    let dummy = dummyShiftCashier;
-
-    // 1. Filter by branch
-    if (branchId) {
-      dummy = dummy.filter(item => item.branch?.id === branchId)
-    }
-    
-    // 2. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    // 3. Optional: filter
-    if (filter) {
-      console.log('filter in service', filter)
-      for (const [key, value] of Object.entries(filter)) {
-        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-          console.log('key', key, 'value', value);
-
-          // Menangani nested key (contoh: 'branch.id')
-          const keys = key.split('.'); // Pisahkan key berdasarkan '.'
-          console.log('keys', keys);
-
-          dummy = dummy.filter(item => {
-            // Iterasi melalui nested keys (misalnya 'branch.id')
-            let itemValue: any = item;
-            for (const k of keys) {
-              console.log('k', k);
-              itemValue = itemValue[k];
-              console.log('itemValue', itemValue);
-              if (itemValue == null) 
-                return false; // Jika properti tidak ada, return false
-            }
-            return itemValue === value;
-          });
-        }
-      }
-    }
-    
-    // 4. Optional: sort
-    if (sortBy && dummy.length > 0) {
-      console.log('Sorting by', sortBy);
-  
-      // Pisahkan key jika ada nested key (misalnya branch.name)
-      const keys = sortBy.split('.'); // Pisahkan menjadi array berdasarkan titik (.)
-      
-      dummy = dummy.sort((a, b) => {
-        let valA: any = a;
-        let valB: any = b;
-
-        // Akses nilai berdasarkan keys
-        keys.forEach(key => {
-          valA = valA[key];
-          valB = valB[key];
-        });
-        
-        // Sorting berdasarkan tipe data (string atau number)
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        }
-        
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB;
-        }
-        
-        return 0; // Jika tipe data tidak cocok, jangan lakukan sorting
-      });
-    }
-    
-    // 5. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    const total = dummy.length
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 
@@ -668,7 +416,7 @@ export async function fetchCurrentShiftKitchen({
     return res.data.data
   } catch (error) {
     console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return dummyShiftKitchen[0];
+    return {} as ShiftKitchen;
   }
 }
 
@@ -715,91 +463,7 @@ export async function fetchShiftKitchen({
     }
   } catch (error) {
     console.warn(`Fetch shift kitchen failed, using dummy.`, error);
-    let dummy = dummyShiftKitchen;
-
-    // 1. Filter by branch
-    if (branchId) {
-      dummy = dummy.filter(item => item.branch?.id === branchId)
-    }
-    
-    // 2. Optional: pagination
-    if (typeof page === 'number' && typeof limit === 'number') {
-      const start = (page - 1) * limit
-      dummy = dummy.slice(start, start + limit)
-    }
-
-    // 3. Optional: filter
-    if (filter) {
-      console.log('filter in service', filter)
-      for (const [key, value] of Object.entries(filter)) {
-        if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-          console.log('key', key, 'value', value);
-
-          // Menangani nested key (contoh: 'branch.id')
-          const keys = key.split('.'); // Pisahkan key berdasarkan '.'
-          console.log('keys', keys);
-
-          dummy = dummy.filter(item => {
-            // Iterasi melalui nested keys (misalnya 'branch.id')
-            let itemValue: any = item;
-            for (const k of keys) {
-              console.log('k', k);
-              itemValue = itemValue[k];
-              console.log('itemValue', itemValue);
-              if (itemValue == null) 
-                return false; // Jika properti tidak ada, return false
-            }
-            return itemValue === value;
-          });
-        }
-      }
-    }
-
-    
-    // 4. Optional: sort
-    if (sortBy && dummy.length > 0) {
-      console.log('Sorting by', sortBy);
-  
-      // Pisahkan key jika ada nested key (misalnya branch.name)
-      const keys = sortBy.split('.'); // Pisahkan menjadi array berdasarkan titik (.)
-      
-      dummy = dummy.sort((a, b) => {
-        let valA: any = a;
-        let valB: any = b;
-
-        // Akses nilai berdasarkan keys
-        keys.forEach(key => {
-          valA = valA[key];
-          valB = valB[key];
-        });
-        
-        // Sorting berdasarkan tipe data (string atau number)
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return sortDesc ? valB.localeCompare(valA) : valA.localeCompare(valB);
-        }
-        
-        if (typeof valA === 'number' && typeof valB === 'number') {
-          return sortDesc ? valB - valA : valA - valB;
-        }
-        
-        return 0; // Jika tipe data tidak cocok, jangan lakukan sorting
-      });
-    }
-    
-    // 5. Search global by string match semua field yang bisa di-string-kan
-    if (search) {
-      const keyword = search.toLowerCase()
-      dummy = dummy.filter(item =>
-        Object.values(item).some(val => {
-          if (val == null) return false
-          if (typeof val === 'object') return JSON.stringify(val).toLowerCase().includes(keyword)
-          return String(val).toLowerCase().includes(keyword)
-        })
-      )
-    }
-
-    const total = dummy.length
-    return { data: dummy, total }
+    return { data: [], total: 0 }
   }
 }
 

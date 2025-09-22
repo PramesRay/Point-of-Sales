@@ -1,5 +1,4 @@
 import api from '../api';
-import dummyTotalOrder from './dummyTotalOrder';
 import type { TotalOrder } from '@/types/order'
 
 export async function fetchTotalOrder(branch_id?: string): Promise<TotalOrder> {
@@ -12,11 +11,10 @@ export async function fetchTotalOrder(branch_id?: string): Promise<TotalOrder> {
     return response.data.data;
   } catch (error) {
     console.warn(`API error fetching total order for "${branch_id}", using dummy data.`, error);
-    const fallback = dummyTotalOrder[branch_id || 0];
-    if (!fallback) {
-      throw new Error(`No dummy data available for restaurant "${branch_id}"`);
-    }
-    console.log('Using fallback data:', fallback); // Debugging
-    return fallback;
+    return { 
+      current: 0, 
+      week: [], 
+      month: []
+    };
   }
 }

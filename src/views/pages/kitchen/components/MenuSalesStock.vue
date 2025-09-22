@@ -15,6 +15,7 @@ import { formatRupiahInput } from '@/utils/helpers/currency';
 import { formatDate } from '@/utils/helpers/format-date';
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
+import DetailCategory from '../../inventory/components/sub-components/inventory-item/DetailCategory.vue';
 
 const { openOverlay } = useOverlayManager()
 const { loadCategory, categories: ctg, loading: li } = useInventoryItems();
@@ -153,7 +154,6 @@ function processInventoryItem() {
   
   if (action.value === 'delete') {
     console.log('Menghapus item:', selectedItem.value)
-    emit('delete-item', payload.value.id as string)
   
   } else if (action.value === 'create') {
     console.log('Membuat item baru:', payload)
@@ -165,11 +165,9 @@ function processInventoryItem() {
       threshold: payload.value.threshold ?? 0,
       category_id: payload.value.category_id ?? '',
     }
-    emit('create-item', createPayload as CreateInventoryItemPayload)
   
   } else if (action.value === 'update') {
     console.log('Mengubah item:', payload.value)
-    emit('update-item', payload.value as UpdateInventoryItemPayload)
   }
   
   confirmCancel()
