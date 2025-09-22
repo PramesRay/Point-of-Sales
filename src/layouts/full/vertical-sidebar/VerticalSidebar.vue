@@ -43,10 +43,11 @@ const customizer = useCustomizerStore();
     class="leftSidebar"
     :rail="customizer.mini_sidebar"
     expand-on-hover
+    style="height: 100vh; overflow: hidden;"
   >
     <!---Logo part -->
 
-    <div class="">
+    <div class="mt-6">
       <!-- <Logo /> -->
       <v-img
         class="mx-auto"
@@ -59,7 +60,7 @@ const customizer = useCustomizerStore();
     <!-- ---------------------------------------------- -->
     <!---Navigation -->
     <!-- ---------------------------------------------- -->
-    <perfect-scrollbar class="scrollnavbar">
+    <perfect-scrollbar class="scrollnavbar" style="max-height: calc(100vh - 140px);">
       <v-list class="pa-4">
         <!---Menu Loop -->
         <template v-for="(item, i) in sidebarMenu" :key="i">
