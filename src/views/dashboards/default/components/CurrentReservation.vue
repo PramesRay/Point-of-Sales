@@ -94,8 +94,8 @@ function openDetail(data: Reservation) {
             <div class="d-inline-flex align-center justify-space-between w-100">
               <div>
                 <span class="text-subtitle-2 text-medium-emphasis">{{ formatDate(latestReservation?.time).slice(0, -12) || '-'}}: {{ formatDate(latestReservation?.time).slice(-6) || '-'}}</span>
-                <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ latestReservation?.customer.name }}</h6>
-                <span class="text-subtitle-2 text-medium-emphasis">{{ latestReservation?.customer.phone }}</span>
+                <h6 class="text-secondary text-h4 font-weight-bold" style="max-width: 150px; overflow: hidden;">{{ latestReservation?.customer?.name }}</h6>
+                <span class="text-subtitle-2 text-medium-emphasis">{{ latestReservation?.customer?.phone }}</span>
               </div>
               <div>
                 <div class="d-flex justify-end">  

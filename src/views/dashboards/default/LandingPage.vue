@@ -24,6 +24,7 @@ import ProfileDD from '@/layouts/full/vertical-header/ProfileDD.vue';
 import type { UpdateUser, User } from '@/types/user';
 import { useReservation } from '@/composables/useReservation';
 import { useBranchList } from '@/composables/useBranchList';
+import type { IdName } from '@/types/common';
 
 function getUserFromLocalStorage() {
   const user = localStorage.getItem('user-nurchs') ? JSON.parse(localStorage.getItem('user-nurchs') as string) : null
@@ -45,13 +46,12 @@ const visibleComponent = computed(() => {
 const isChanged = ref(false);
 const loadParams = {filter: {'created_by': userData?.fk_user_id}}
 
-onMounted(() => {
+onMounted(async() => {
   if (!userData) { 
     alertStore.showAlert('Ups, isi data diri dulu ya!', 'warning')
     openOverlay({
       component: ProfileDD,
       props: {
-        is_create: true,
         confirmBeforeClose: true,
         isChanged,
         onIsChangedUpdate: (val: boolean) => {
@@ -59,8 +59,10 @@ onMounted(() => {
         },
         refresh: () => {
           const userData = getUserFromLocalStorage();
+          const loadParams = {filter: {'created_by': userData?.fk_user_id}}
+
           loadCurrentOrder(loadParams);
-          loadItemSales(userData?.branch?.id);
+          userData?.branch ? loadItemSales(userData?.branch.id) : null;
           loadCategory()
           loadReservation(loadParams);
         }
@@ -68,17 +70,20 @@ onMounted(() => {
     });
     return
   } else {
-    loadBranch();
+    await loadBranch();
     loadCategory()
     loadCurrentOrder(loadParams);
-    loadItemSales(userData?.branch?.id);
+    userData?.branch ? loadItemSales(userData?.branch.id) : null;
     loadReservation(loadParams);
   }
 })
 
 watch(() => userStore.me, () => {
+    const userData = getUserFromLocalStorage();
+    const loadParams = {filter: {'created_by': userData?.fk_user_id}}
+
     loadCurrentOrder(loadParams);
-    loadItemSales(userStore.me?.branch.id);
+    userData?.branch ? loadItemSales(userData?.branch.id) : null;
     loadReservation(loadParams);
   }
 )
@@ -86,58 +91,77 @@ watch(() => userStore.me, () => {
 const branchId = computed(() => route.query.branch_id as string | undefined);
 const table = computed(() => route.query.table as string | undefined);
 
-// Save branchId and table to localStorage 'user' if present in query
-if (branchId.value || table.value) {
-  const payload: UpdateUser = { 
-    ...userData, 
-    branch_id: branchId.value ? branchId.value : userData.branch?.id || '',
-    table: table.value ? table.value : userData.table || '' 
-  };
-  userStore.updateMe(payload);
-}
+watch(
+  () => branchData.value,
+  (branches) => {
+    if ((branchId.value || table.value) && branches && branches.length > 0) {
+      const branch = branches.find((b: any) => b?.id?.toString() === branchId.value);
+
+      if(!branch?.operational.is_active) return alertStore.showAlert('Cabang ini sedang tidak aktif!', 'warning')
+
+      const payload: UpdateUser = { 
+        ...userData, 
+        branch: branch ? { 
+          id: branch.id,
+          name: branch.name
+         } : userData?.branch || null,
+        table: table.value || userData?.table || null
+      };
+      localStorage.setItem('user-nurchs', JSON.stringify(payload));
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <v-row>
-    <v-col cols="12" md="6" v-if="(!visibleComponent || visibleComponent === 'pesanan')">
-      <v-row>
-        <v-col cols="12">
-          <CreateOrder 
-            :data_menu="menuSales"
-            :data_category="categories"
-            :refresh="() => loadCurrentOrder(loadParams)"
-            class="flex-grow-1" 
-          />
-        </v-col>
-        <v-col cols="12">
-          <CurrentOrderQue
-            :data="currentOrder.data"
-            :data_menu="menuSales"
-            :data_category="categories"
-            :branch="userData?.branch"
-            :loading="lco || lm"
-          
-            :refresh="() => loadCurrentOrder(loadParams)"
-            class="flex-grow-1" 
-          />
-        </v-col>
-      </v-row>
+    <v-col cols="12" class="d-flex justify-center mt-2" v-if="!userData">
+      <p class="text-subtitle-1 text-disabled text-center"> Ups, isi data diri dulu ya pada modul profile di kanan atas halaman ini!  </p>
     </v-col>
 
-    <!-- Kolom Kanan: Create Order + Current Order Que -->
-    <v-col cols="12" md="6">
-      <v-row>
-        <v-col cols="12" v-if="(!visibleComponent || visibleComponent === 'reservasi')">
-          <CurrentReservation
-            :data="reservationData" 
-            :branch="userData?.branch"
-            :branch_option="branchData"
-            :loading="lr"
-            :refresh="() => loadReservation(loadParams)"
-            class="flex-grow-1"
-          />
-        </v-col>
-      </v-row>
-    </v-col>
+    <template v-else-if="userData.branch">
+      <v-col cols="12" md="6" v-if="(!visibleComponent || visibleComponent === 'pesanan')">
+        <v-row>
+          <v-col cols="12">
+            <CreateOrder 
+              :data_menu="menuSales"
+              :data_category="categories"
+              :data_branches="branchData"
+              :refresh="() => loadCurrentOrder(loadParams)"
+              class="flex-grow-1" 
+            />
+          </v-col>
+          <v-col cols="12">
+            <CurrentOrderQue
+              :data="currentOrder.data"
+              :data_menu="menuSales"
+              :data_category="categories"
+              :branch="userData?.branch"
+              :loading="lco || lm"
+            
+              :refresh="() => loadCurrentOrder(loadParams)"
+              class="flex-grow-1" 
+            />
+          </v-col>
+        </v-row>
+      </v-col>
+    </template>
+  
+      <!-- Kolom Kanan: Create Order + Current Order Que -->
+      <v-col cols="12" md="6">
+        <v-row>
+          <v-col cols="12" v-if="(!visibleComponent || visibleComponent === 'reservasi')">
+            <CurrentReservation
+              :data="reservationData" 
+              :branch="userData?.branch"
+              :branch_option="branchData"
+              :loading="lr"
+              :refresh="() => loadReservation(loadParams)"
+              class="flex-grow-1"
+            />
+          </v-col>
+        </v-row>
+      </v-col>
   </v-row>
 </template>

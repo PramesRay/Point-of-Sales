@@ -73,6 +73,8 @@ watch(() => cashInput.value, (val) => {
 })
 
 function openDetailOrder(order: Order) {
+  if (data_menus.value.length === 0) return ;
+
   openOverlay({
     component: DetailOrder,
     props: {
@@ -134,18 +136,7 @@ function openDetailOrder(order: Order) {
 
         <div v-if="!props.loading">
           <v-card class="bg-lightsecondary mt-5"
-            @click="
-              openOverlay({
-                component: DetailOrder,
-                props: {
-                  get data_order() { return latestOrderQue },
-                  data_menu: data_menu,
-                  categories: data_categories,
-                  loading: props.loading,
-                  refresh: () => props.refresh()
-                },
-              })
-            "
+            @click="openDetailOrder(latestOrderQue)"
           >
             <div v-if="latestOrderQue" class="pa-5">
               <span>
@@ -195,17 +186,7 @@ function openDetailOrder(order: Order) {
                   :value="item"
                   color="secondary"
                   rounded="sm"
-                  @click="
-                  openOverlay({
-                    component: DetailOrder,
-                    props: {
-                      get data_order() { return item },
-                      data_menu: data_menu,
-                      categories: data_categories,
-                      loading: props.loading,
-                      refresh: () => props.refresh()
-                    },
-                  })"
+                  @click="openDetailOrder(item)"
                 >
                   <span class="text-subtitle-2 text-medium-emphasis">
                     {{ item?.is_take_away ? 'Bawa Pulang' : 'Makan Di Tempat' }} 

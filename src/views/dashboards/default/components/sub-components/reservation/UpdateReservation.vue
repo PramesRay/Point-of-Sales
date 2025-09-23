@@ -105,17 +105,17 @@ const isChanged = computed(() => {
   if (props.is_create) {
     return (
       payload.value.branch_id !== null ||
-      payload.value.customer.name !== '' ||
-      payload.value.customer.phone !== '' ||
+      payload.value.customer?.name !== '' ||
+      payload.value.customer?.phone !== '' ||
       payload.value.time !== null ||
       payload.value.notes !== '' ||
       payload.value.people !== null
     )
   } else {
     return (
-      payload.value.branch_id !== userStore.me?.branch.id ||
-      payload.value.customer.name !== userStore.me.name ||
-      payload.value.customer.phone !== userStore.me.phone ||
+      payload.value.branch_id !== userStore.me?.branch?.id ||
+      payload.value.customer?.name !== userStore.me?.name ||
+      payload.value.customer?.phone !== userStore.me?.phone ||
       payload.value.time !== props.data?.time ||
       payload.value.notes !== props.data?.notes ||
       payload.value.people !== props.data?.people
@@ -225,7 +225,7 @@ function handleSubmit() {
   })
 }
 
-watch(() => payload.value.customer.phone, (val) => {
+watch(() => payload.value.customer?.phone, (val) => {
   if (val === null) return;
   // Remove non-digit characters
   let digits = String(val).replace(/\D/g, '');
@@ -266,7 +266,7 @@ watch(() => payload.value.customer.phone, (val) => {
           <v-text-field
             v-if="payload.customer"
             v-model="payload.customer.name"
-            disabled
+            readonly
             label="Nama"
             variant="underlined"
             prepend-icon="mdi-account-group"
@@ -277,7 +277,7 @@ watch(() => payload.value.customer.phone, (val) => {
           <v-text-field
             v-if="payload.customer"
             v-model="payload.customer.phone"
-            disabled
+            readonly
             label="Nomor Telepon"
             variant="underlined"
             prepend-icon="mdi-phone"

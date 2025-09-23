@@ -6,8 +6,8 @@ export interface User {
   fk_user_id: string;
   name: string;
   phone: string;
-  branch: IdName;
-  table: string;
+  branch: IdName | null;
+  table: string | null;
 }
 
 export type CreateUser = {

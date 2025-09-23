@@ -2,7 +2,9 @@
 import Blank from '@/components/shared/Blank.vue';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import { useBranchList } from '@/composables/useBranchList';
+import { useAlertStore } from '@/stores/alert';
 import { useUserStore } from '@/stores/authUser';
+import type { Branch } from '@/types/branch';
 import type { User } from '@/types/user';
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRoute } from 'vue-router';
@@ -13,12 +15,12 @@ const { openOverlay } = useOverlayManager()
 
 const {data: branchData, load: loadBranch, loading: lb} = useBranchList()
 const userStore = useUserStore()
+const alertStore = useAlertStore()
 const route = useRoute()
 
-onMounted(() => {
-  loadBranch()
+onMounted(async () => {
+  await loadBranch()
 })
-
 
 const props = defineProps<{
   user?: User
@@ -27,6 +29,8 @@ const props = defineProps<{
   onIsChangedUpdate?: (val: boolean) => void
   refresh: () => void
 }>()
+
+const activeBranches = computed(() => branchData.value.filter((branch: Branch) => branch.operational.is_active))
 
 const emit = defineEmits(['close'])
 
@@ -68,7 +72,6 @@ const isChanged = computed(() => {
   );
 })
 
-
 watchEffect(() => {
   const val = isChanged.value
   if (typeof props.onIsChangedUpdate === 'function') {
@@ -79,7 +82,7 @@ watchEffect(() => {
 function clearPayload() {
   payload.value = {
     id: props.user?.id || '',
-    branch_id: props.user?.branch.id || null,
+    branch_id: props.user?.branch?.id || null,
     table: props.user?.table || null,
     name: props.user?.name || null,
     phone: props.user?.phone || null
@@ -106,17 +109,18 @@ async function processSubmit() {
         name: payload.value.name!,
         phone: payload.value.phone!
       });
-      const branch = branchData.value.find((branch: any) => branch.id === payload.value.branch_id)
+      const branch = branchData.value.find((branch: any) => branch.id === payload.value?.branch_id) || null
       const user: User = {
         id: response.data.id,
         fk_user_id: response.data.fk_user_id,
         name: payload.value.name!,
         phone: payload.value.phone!,
-        branch: {
+        branch: branch 
+        ? {
           id: branch?.id!,
           name: branch?.name!
-        },
-        table: payload.value.table!
+        } : null,
+        table: payload.value.table || null
       }
       userStore.setMe(user);
       if (typeof props.onIsChangedUpdate === 'function') {
@@ -136,6 +140,7 @@ async function processSubmit() {
       name: payload.value.name!,
       phone: payload.value.phone!
     });
+
     const branch = branchData.value.find((branch: any) => branch.id === payload.value.branch_id)
     const user: User = {
       id: response.data.id,
@@ -153,10 +158,13 @@ async function processSubmit() {
     if (typeof props.onIsChangedUpdate === 'function') {
       props.onIsChangedUpdate(false);
     }
+
+    alertStore.showAlert("Profil berhasil diubah", "success")
     props.refresh();
     emit('close');
   } catch (error) {
     console.error("Failed to update user:", error);
+    alertStore.showAlert(`Profil gagal diubah. ${error}`, "error")
   }
 }
 
@@ -177,6 +185,8 @@ function submitForm() {
     });
   })
 }
+
+const onlyReservation = ref<Boolean>(false)
 </script>
 
 <template>
@@ -187,6 +197,7 @@ function submitForm() {
   >
     <v-card-text>
       <v-btn
+        v-if="props.user"
         icon
         variant="plain"
         style="position: absolute; top: 8px; right: 12px;"
@@ -202,28 +213,43 @@ function submitForm() {
 
       <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="submitForm">
         <v-row>
-          <v-col cols="12" md="7">
+          <v-col 
+            class="text-right text-subtitle-1 text-medium-emphasis"
+            :class="onlyReservation ? 'text-success' : 'text-primary'"
+            @click="onlyReservation = !onlyReservation"
+          >
+            {{ onlyReservation ? 'Ingin membuat pesanan?' : 'Hanya ingin reservasi?'}}
+          </v-col>
+          <v-col 
+            v-if="!onlyReservation"
+            cols="12" 
+            md="7"
+          >
             <v-select
               v-model="payload.branch_id"
-              :items="branchData"
-              :disabled="lb || (!!route.query.branch_id && route.query.branch_id !== '') || (!!route.query.table && route.query.table !== '')"
+              :items="activeBranches"
+              :disabled="lb"
               prepend-icon="mdi-home"
               item-title="name"
               item-value="id"
-              label="Cabang"
+              label="Cabang Aktif"
               variant="underlined"
               :loading="lb"
               :rules="[...rules.required]"
             />
           </v-col>
 
-          <v-col cols="12" md="5">
+          <v-col 
+            v-if="!onlyReservation"
+            cols="12" 
+            md="5"
+          >
             <v-text-field
               v-model="payload.table"
               label="Meja"
               variant="underlined"
               prepend-icon="mdi-select-place"
-              :disabled="lb || (!!route.query.branch_id && route.query.branch_id !== '') || (!!route.query.table && route.query.table !== '')"
+              :disabled="lb || !payload.branch_id"
               :rules="[...rules.required]"
             />
           </v-col>
@@ -250,7 +276,7 @@ function submitForm() {
           </v-col>
 
           <v-col cols="12" class="text-right">
-            <v-btn class="mr-2" variant="plain" @click="emit('close')">
+            <v-btn v-if="props.user" class="mr-2" variant="plain" @click="emit('close')">
               Batal
             </v-btn>
             <v-btn
