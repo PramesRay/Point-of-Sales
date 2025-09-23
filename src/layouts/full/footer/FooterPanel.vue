@@ -4,16 +4,8 @@ import { shallowRef } from 'vue';
 const footerLink = shallowRef([
   {
     title: 'Home',
-    url: 'https://berrydashboard.io/vue/free'
+    url: 'https://nurchs.up.railway.app'
   },
-  {
-    title: 'Documentation',
-    url: 'https://codedthemes.gitbook.io/berry-vuetify/'
-  },
-  {
-    title: 'Support',
-    url: 'https://codedthemes.support-hub.io/'
-  }
 ]);
 </script>
 <template>
@@ -21,8 +13,8 @@ const footerLink = shallowRef([
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
         <p class="text-body-1 mb-0 text-sm-left text-center">
-          Berry ♥ crafted by Team
-          <a href="https://themeforest.net/user/codedthemes" class="text-darkText text-decoration-none" target="_blank">Codedthemes</a>
+          © 2024, Made with ❤️ by Prames Ray Lapian
+          <a href="https://nurchs.up.railway.app" class="text-darkText text-decoration-none" target="_blank">Nasi Uduk Remaja Cikini Haji Sawid</a>
         </p>
       </v-col>
       <v-col class="text-sm-right text-center" cols="12" sm="6">

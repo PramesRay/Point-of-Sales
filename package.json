@@ -1,17 +1,13 @@
 {
-  "name": "berry-free-vuetify-vuejs-admin-template",
-  "version": "1.3.0",
+  "name": "nasi-uduk-remaja-cikini-haji-sawid",
+  "version": "1.0.0",
   "private": true,
-  "author": "CodedThemes",
+  "author": "Prames Ray Lapian",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "build-stage": "vue-tsc --noEmit && vite build --base=/vue/free/stage/",
-    "build-prod": "vue-tsc --noEmit && vite build --base=/vue/free/",
-    "preview": "vite preview --port 5050",
-    "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-pattern .gitignore"
+    "start": "serve -s dist -l tcp://0.0.0.0:$VITE_PORT"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",

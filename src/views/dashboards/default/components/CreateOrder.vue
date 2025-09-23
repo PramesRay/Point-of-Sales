@@ -3,7 +3,6 @@ import type { Category } from '@/types/inventory';
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 import UpdateOrder from './sub-components/order/UpdateOrder.vue';
-import type { ShiftKitchen } from '@/types/shift';
 import { computed } from 'vue';
 import type { Menu } from '@/types/menu';
 

@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
-import dummyUser from '@/services/common/user/dummyUser';
 
 import type { CreateUser, UpdateUser, User } from '@/types/user';
 
@@ -25,7 +24,7 @@ export const useUserStore = defineStore({
         return res.data;
       } catch (error: any) {
         console.error("Failed to fetch user data:", error);
-        return dummyUser;
+        return null;
       } finally {
         this.loading = false;
       }

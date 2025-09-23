@@ -1,8 +1,6 @@
 import api from "../api";
-import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/inventory";
+import type { Category } from "@/types/inventory";
 import type { Menu } from '@/types/menu'
-import { dummyMenuCategories } from "./dummyMenuCategories";
-import { dummyMenuSale } from "./dummyMenuSale";
 
 export async function fetchMenuSales(branchId?: string): Promise<Menu[]> {
   try {
@@ -16,8 +14,7 @@ export async function fetchMenuSales(branchId?: string): Promise<Menu[]> {
     return res.data.data
   } catch (error) {
     console.warn('Fetch Menu Item failed, using dummy.', error)
-
-    return dummyMenuSale
+    return []
   }
 }
 
@@ -27,6 +24,6 @@ export async function fetchCategorMenu(): Promise<Category[]> {
     return res.data.data;
   } catch (error) {
     console.warn(`Fetch Menu Item's Category failed, using dummy.`, error);
-    return dummyMenuCategories; // Gunakan data dummy jika gagal
+    return []
   }
 }

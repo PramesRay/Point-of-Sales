@@ -1,6 +1,4 @@
-import type { IdName } from "./common"
-import type { Meta, MetaDetail } from "./meta"
-import type { ShiftCashier, ShiftKitchen } from "./shift"
+import type { Meta } from "./meta"
 
 export interface Branch {
   id: string

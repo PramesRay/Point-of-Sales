@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { cloneDeep } from 'lodash';
+import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify';
 const { mdAndUp } = useDisplay()
 
 import { getTimeDiff } from "@/utils/helpers/time";
 
-import type { Order, OrderItem } from '@/types/order';
+import type { Order } from '@/types/order';
 import type { IdName } from '@/types/common';
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
 import DetailOrder from './sub-components/order/DetailOrder.vue';
 
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
-import type { ShiftKitchen } from '@/types/shift';
 import type { Menu } from '@/types/menu';
 import type { Category } from '@/types/inventory';
 

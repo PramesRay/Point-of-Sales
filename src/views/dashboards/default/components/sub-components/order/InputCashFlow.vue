@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { UpdateShiftCashierPayload } from '@/types/shift';
 import { computed, ref, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 const { mdAndUp } = useDisplay()
 
-import { formatRupiah, formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
+import { formatRupiahInput, formatRupiahInputR } from '@/utils/helpers/currency'
 
 const emit = defineEmits(['close', 'update:isChanged'])
 
