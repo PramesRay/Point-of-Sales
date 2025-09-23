@@ -2,9 +2,13 @@ import { fileURLToPath, URL } from 'url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
+import dotenv from 'dotenv';
+dotenv.config();
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    port: parseInt(process.env.VITE_PORT || '5173')
+  },
   plugins: [
     vue({
       template: {
