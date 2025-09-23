@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "start": "serve -s dist -l tcp://0.0.0.0:$PORT"
+    "start": "serve -s dist -l tcp://0.0.0.0:$VITE_PORT"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
