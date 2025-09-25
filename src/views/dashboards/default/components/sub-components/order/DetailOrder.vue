@@ -252,7 +252,7 @@ function handlePayment() {
           </v-col>
           <v-btn
               class="mt-2"
-              v-if="!(currentOrder?.status === 'Selesai' || currentOrder?.status === 'Batal' || currentOrder?.status === 'Refund' || currentOrder?.payment_status === 'Lunas')"
+              v-if="!(currentOrder?.status === 'Selesai' || currentOrder?.status === 'Batal' || currentOrder?.status === 'Refund' || currentOrder?.payment_status === 'Lunas' || currentOrder?.payment_status === 'Gagal' || currentOrder?.payment_status === 'Batal')"
               color="success"
               :disabled="props.loading"
               :loading="props.loading"
