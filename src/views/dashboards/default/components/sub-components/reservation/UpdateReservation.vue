@@ -335,7 +335,7 @@ watch(() => payload.value.customer?.phone, (val) => {
               <v-date-picker
                 v-model="dateModel"
                 @update:model-value="onDatePicked"
-                :min="props.is_create ? new Date().toLocaleDateString() : null"
+                :min="new Date().toLocaleDateString()"
                 no-title
                 scrollable
               />
@@ -394,11 +394,11 @@ watch(() => payload.value.customer?.phone, (val) => {
       <div>
         <div 
           class="d-flex align-center justify-end mt-1"
-          :class="is_create ? 'justify-end' : 'justify-space-between'"
+          :class="props.is_create ? 'justify-end' : 'justify-space-between'"
         >
           <!-- delete button -->
-          <v-btn
-            v-if="!is_create && props.data?.status === 'Pending' && userStore.me?.fk_user_id === props.data.meta.created_by.id"
+          <!-- <v-btn
+            v-if="!props.is_create && props.data?.status === 'Pending' && userStore.me?.id == props.data.customer.id"
             variant="plain"
             class="mr-1 text-error"
             density="compact"
@@ -418,7 +418,7 @@ watch(() => payload.value.customer?.phone, (val) => {
             "
           >
             Hapus
-          </v-btn>
+          </v-btn> -->
 
           <span>
             <v-btn

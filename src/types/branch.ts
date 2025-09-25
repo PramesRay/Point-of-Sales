@@ -4,7 +4,9 @@ export interface Branch {
   id: string
   name: string
   operational: {
-    is_active: boolean
+    activity: {
+      is_active: boolean
+    }
     open_time: string
     close_time: string
   }

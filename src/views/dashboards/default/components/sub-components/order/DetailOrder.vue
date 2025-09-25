@@ -180,29 +180,6 @@ function handlePayment() {
         <!-- Daftar Item -->
         <div class="d-flex align-center justify-space-between mt-4 mb-2">
           <h4 class="text-subtitle-1">Daftar Item:</h4>
-          <!-- Add Item Button -->
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <v-btn
-              v-if="currentOrder?.status !== 'Selesai' && currentOrder?.status !== 'Batal' && currentOrder?.payment_status === 'Pending'"
-              append-icon="mdi-pencil"
-              class="text-disabled"
-              variant="plain"
-              size="small"
-              @click="
-                openOverlay({
-                  component: UpdateOrder,
-                  props: {
-                    data_order: currentOrder,
-                    data_menu: props.data_menu,
-                    categories: props.categories,
-                    refresh: () => props.refresh()
-                  },
-                })
-              "
-            >
-              Ubah Item
-            </v-btn>
-          </span>
         </div>
         <perfect-scrollbar class="scrollable" style="max-height: 50vh; overflow-y: scroll; overflow-x: hidden;">
           <v-list-item

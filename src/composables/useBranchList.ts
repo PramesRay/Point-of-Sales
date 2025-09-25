@@ -13,6 +13,7 @@ export function useBranchList() {
     error.value   = null;
     try {
       data.value = await fetchBranches();
+      console.log('Branches loaded:', data.value);
     } catch (e: any) {
       error.value = e;
     } finally {

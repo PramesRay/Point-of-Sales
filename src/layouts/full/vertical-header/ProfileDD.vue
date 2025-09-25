@@ -30,7 +30,7 @@ const props = defineProps<{
   refresh: () => void
 }>()
 
-const activeBranches = computed(() => branchData.value.filter((branch: Branch) => branch.operational.is_active))
+const activeBranches = computed(() => branchData?.value.filter((branch: Branch) => branch?.operational?.activity.is_active === true))
 
 const emit = defineEmits(['close'])
 
@@ -126,7 +126,6 @@ async function processSubmit() {
       if (typeof props.onIsChangedUpdate === 'function') {
         props.onIsChangedUpdate(false);
       }
-      props.refresh();
       emit('close');
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -160,7 +159,7 @@ async function processSubmit() {
     }
 
     alertStore.showAlert("Profil berhasil diubah", "success")
-    props.refresh();
+    
     emit('close');
   } catch (error) {
     console.error("Failed to update user:", error);
@@ -214,6 +213,7 @@ const onlyReservation = ref<Boolean>(false)
       <v-form ref="formRef" v-model="isFormValid" lazy-validation @submit.prevent="submitForm">
         <v-row>
           <v-col 
+            cols="12"
             class="text-right text-subtitle-1 text-medium-emphasis"
             :class="onlyReservation ? 'text-success' : 'text-primary'"
             @click="onlyReservation = !onlyReservation"

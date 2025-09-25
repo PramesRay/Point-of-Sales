@@ -25,6 +25,7 @@ import type { UpdateUser, User } from '@/types/user';
 import { useReservation } from '@/composables/useReservation';
 import { useBranchList } from '@/composables/useBranchList';
 import type { IdName } from '@/types/common';
+import type { Branch } from '@/types/branch';
 
 function getUserFromLocalStorage() {
   const user = localStorage.getItem('user-nurchs') ? JSON.parse(localStorage.getItem('user-nurchs') as string) : null
@@ -32,7 +33,7 @@ function getUserFromLocalStorage() {
 }
 
 // Data Loading
-const userData = getUserFromLocalStorage();
+const userData = ref<User | null>(getUserFromLocalStorage());
 const { openOverlay } = useOverlayManager();
 const { load: loadBranch, data: branchData } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
@@ -44,10 +45,10 @@ const visibleComponent = computed(() => {
 })
 
 const isChanged = ref(false);
-const loadParams = {filter: {'created_by': userData?.fk_user_id}}
+const loadParams = {filter: {'created_by': userData?.value?.fk_user_id}}
 
 onMounted(async() => {
-  if (!userData) { 
+  if (!userData.value) { 
     alertStore.showAlert('Ups, isi data diri dulu ya!', 'warning')
     openOverlay({
       component: ProfileDD,
@@ -56,16 +57,10 @@ onMounted(async() => {
         isChanged,
         onIsChangedUpdate: (val: boolean) => {
           isChanged.value = val;
-        },
-        refresh: () => {
-          const userData = getUserFromLocalStorage();
-          const loadParams = {filter: {'created_by': userData?.fk_user_id}}
-
-          loadCurrentOrder(loadParams);
-          userData?.branch ? loadItemSales(userData?.branch.id) : null;
-          loadCategory()
-          loadReservation(loadParams);
         }
+        // refresh: () => {
+        //   location.reload();
+        // }
       }
     });
     return
@@ -73,39 +68,45 @@ onMounted(async() => {
     await loadBranch();
     loadCategory()
     loadCurrentOrder(loadParams);
-    userData?.branch ? loadItemSales(userData?.branch.id) : null;
+    userData?.value?.branch ? loadItemSales(userData?.value?.branch.id) : null;
     loadReservation(loadParams);
   }
 })
 
 watch(() => userStore.me, () => {
-    const userData = getUserFromLocalStorage();
-    const loadParams = {filter: {'created_by': userData?.fk_user_id}}
+    userData.value = userStore.me as User;
+    const loadParams = {filter: {'created_by': userData?.value?.fk_user_id}}
 
     loadCurrentOrder(loadParams);
-    userData?.branch ? loadItemSales(userData?.branch.id) : null;
+    userData?.value?.branch ? loadItemSales(userData?.value?.branch.id) : null;
     loadReservation(loadParams);
   }
 )
 
 const branchId = computed(() => route.query.branch_id as string | undefined);
 const table = computed(() => route.query.table as string | undefined);
+const branches = computed(() => branchData?.value || []);
 
 watch(
-  () => branchData.value,
-  (branches) => {
-    if ((branchId.value || table.value) && branches && branches.length > 0) {
-      const branch = branches.find((b: any) => b?.id?.toString() === branchId.value);
+  () => branches.value,
+  () => {
+    if ((branchId.value || table.value) && branches.value && branches.value.length > 0) {
+      const branch = branches.value.find((b: Branch) => b.id === branchId.value);
+      console.log('branches.value', branches.value)
+      console.log('branch', branch)
 
-      if(!branch?.operational.is_active) return alertStore.showAlert('Cabang ini sedang tidak aktif!', 'warning')
+      if(branch && branch?.operational.activity.is_active === false) return alertStore.showAlert('Cabang ini sedang tidak aktif!', 'warning')
 
-      const payload: UpdateUser = { 
-        ...userData, 
+      const payload: User = { 
+        id: userData?.value?.id ?? '',
+        fk_user_id: userData?.value?.fk_user_id ?? '',
+        name: userData?.value?.name ?? '',
+        phone: userData?.value?.phone ?? '',
         branch: branch ? { 
           id: branch.id,
           name: branch.name
-         } : userData?.branch || null,
-        table: table.value || userData?.table || null
+         } : userData?.value?.branch || null,
+        table: table.value || userData?.value?.table || null
       };
       localStorage.setItem('user-nurchs', JSON.stringify(payload));
     }
@@ -117,7 +118,7 @@ watch(
 <template>
   <v-row>
     <v-col cols="12" class="d-flex justify-center mt-2" v-if="!userData">
-      <p class="text-subtitle-1 text-disabled text-center"> Ups, isi data diri dulu ya pada modul profile di kanan atas halaman ini!  </p>
+      <p class="text-subtitle-1 text-disabled text-center"> Ups, isi data diri dulu ya pada modul profile di kanan atas halaman ini! </p>
     </v-col>
 
     <template v-else-if="userData.branch">

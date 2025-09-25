@@ -23,6 +23,10 @@ const props = defineProps<{
 
 const isChanged = ref(false)
 
+const currentDataBranches = computed(() => {
+  return props.branch_option
+})
+
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
     return props.data;
@@ -35,7 +39,7 @@ function openAddNew() {
     component: UpdateReservation,
     props: {
       is_create: true,
-      branches: props.branch_option,
+      branches: currentDataBranches.value,
 
       isChanged,
       confirmBeforeClose: true,
@@ -49,7 +53,7 @@ function openDetail(data: Reservation) {
     component: DetailReservation,
     props: {
       data: data,
-      branches: props.branch_option,
+      branches: currentDataBranches.value,
 
       isChanged,
       confirmBeforeClose: true,

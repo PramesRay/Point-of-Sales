@@ -25,26 +25,27 @@ const data_menus = computed(() => props.data_menu)
 const data_categories = computed(() => props.data_category)
 const data_branches = computed(() => props.data_branches)
 
-function getUserFromLocalStorage() {
-  const user = localStorage.getItem('user-nurchs') ? JSON.parse(localStorage.getItem('user-nurchs') as string) : null
-  return user
-}
+const branchActive = computed<boolean>(() => {
+  const targetId = userStore.me?.branch?.id;
+  if (targetId == null) return false;
 
-// Data Loading
-const userData = getUserFromLocalStorage();
-console.log(userData)
+  const b = data_branches.value.find(
+    br => String(br.id) === String(targetId)
+  );
 
-const branchActive = data_branches.value.find(branch => branch.id === userData?.branch?.id)?.operational.is_active
+  // Sesuaikan path is_active dengan struktur milikmu
+  return b?.operational?.activity?.is_active === true;
+});
 const isChanged = ref(false);
 
 function handleOpenCreateOrder() {
-  if (userData.branch === null || userData.table === null) {
+  if (userStore.me?.branch === null || userStore.me?.table === null) {
     alertStore.showAlert("Silahkan pilih cabang terlebih dahulu yaa", "warning")
 
     openOverlay({
       component: ProfileDD,
       props: {
-        user: userData,
+        user: userStore.me,
         confirmBeforeClose: true,
         isChanged,
         onIsChangedUpdate: (val: boolean) => {
@@ -56,7 +57,7 @@ function handleOpenCreateOrder() {
     return
   }
 
-  if(!branchActive) {
+  if(!branchActive.value) {
     alertStore.showAlert("Cabang ini sedang tidak aktif", "warning")
     return
   }
