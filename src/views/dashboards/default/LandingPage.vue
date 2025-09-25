@@ -73,10 +73,10 @@ onMounted(async() => {
   }
 })
 
-watch(() => userStore.me, () => {
+watch(() => userStore.me, async () => {
     userData.value = userStore.me as User;
     const loadParams = {filter: {'created_by': userData?.value?.fk_user_id}}
-
+    await loadBranch();
     loadCurrentOrder(loadParams);
     userData?.value?.branch ? loadItemSales(userData?.value?.branch.id) : null;
     loadReservation(loadParams);
