@@ -72,7 +72,7 @@ export interface FundRequest {
     status: 'Disetujui' | 'Ditolak' | 'Pending';
     quantity: number
   }[]
-  status: 'Disetujui'| 'Beberapa Disetujui' | 'Ditolak' | 'Pending';
+  status: 'Disetujui'| 'Beberapa Disetujui' | 'Ditolak' | 'Pending' | 'Selesai';
   amount: number,
   total_approved: number | null,
   approval_notes: string

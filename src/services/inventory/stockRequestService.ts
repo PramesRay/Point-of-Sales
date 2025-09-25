@@ -24,7 +24,7 @@ export async function fetchStockRequestSummary({
   
       return res.data
   } catch {
-    console.warn('Fetch all stock-requests failed, using dummy');
+    console.warn('Fetch all stock-request failed, using dummy');
     return [];
   }
 }
@@ -75,7 +75,7 @@ export async function fetchStockRequestList({
 
 export async function createStockRequest(payload: CreateStockRequestPayload): Promise<StockRequest> {
   try {
-    const res = await api.post(`/inventory/stock-requests`, payload);
+    const res = await api.post(`/inventory/stock-request`, payload);
     alertStore.showAlert('Permintaan Stok berhasil dibuat!', 'success');
     return res.data.data;
   } catch (error) {
@@ -87,7 +87,7 @@ export async function createStockRequest(payload: CreateStockRequestPayload): Pr
 
 export async function updateStockRequest(payload: UpdateStockRequestPayload | ApproveStockRequestPayload): Promise<StockRequest> {
   try {
-    const res = await api.put(`/inventory/stock-requests`, payload);
+    const res = await api.put(`/inventory/stock-request`, payload);
     alertStore.showAlert('Permintaan Stok berhasil diubah!', 'success');
     return res.data.data;
   } catch (error) {
@@ -99,7 +99,7 @@ export async function updateStockRequest(payload: UpdateStockRequestPayload | Ap
 
 export async function readyStockRequest(id: string): Promise<StockRequest> {
   try {
-    const res = await api.put(`/inventory/stock-requests/${id}/ready`);
+    const res = await api.put(`/inventory/stock-request/${id}/ready`);
     alertStore.showAlert('Permintaan Stok telah siap!', 'success');
     return res.data.data;
   } catch (error) {
@@ -109,7 +109,7 @@ export async function readyStockRequest(id: string): Promise<StockRequest> {
 
 export async function finishStockRequest(id: string): Promise<StockRequest> {
   try {
-    const res = await api.put(`/inventory/stock-requests/${id}/end`);
+    const res = await api.put(`/inventory/stock-request/${id}/end`);
     alertStore.showAlert('Permintaan Stok berhasil dikonfirmasi!', 'success');
     return res.data.data;
   } catch (error) {

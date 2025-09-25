@@ -12,9 +12,10 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 import UpdateFundRequest from './sub-components/fund-request/UpdateFundRequest.vue';
 import DetailFundRequest from './sub-components/fund-request/DetailFundRequest.vue';
 import ScrollContainer from '@/components/shared/ScrollContainer.vue';
+import { useUserStore } from '@/stores/authUser';
 
 const { openOverlay } = useOverlayManager()
-
+const userStore = useUserStore()
 
 const props = defineProps<{
   data: FundRequest[];
@@ -80,7 +81,7 @@ function openDetail(request: FundRequest) {
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
             <v-btn
-              v-if="!loading"
+              v-if="!loading && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
               color="primary"
               @click="openAddRequest"
             >
@@ -104,9 +105,9 @@ function openDetail(request: FundRequest) {
                   <span
                     :class="{
                       'text-subtitle-2 text-medium-emphasis text-warning': latestRequest?.status === 'Pending',
-                      'text-subtitle-2 text-medium-emphasis text-success': latestRequest?.status === 'Disetujui',
+                      'text-subtitle-2 text-medium-emphasis text-success': latestRequest?.status === 'Disetujui' || latestRequest?.status === 'Beberapa Disetujui',
                       'text-subtitle-2 text-medium-emphasis text-error': latestRequest?.status === 'Ditolak',
-                      'text-subtitle-2 text-medium-emphasis text-primary': latestRequest?.status === 'Beberapa Disetujui',
+                      'text-subtitle-2 text-medium-emphasis text-primary': latestRequest?.status === 'Selesai',
                     }"
                   >{{ latestRequest?.status }}</span>
                   <h5 class="text-h5 text-medium-emphasis font-weight-bold">{{ formatRupiah(latestRequest?.amount) }}</h5>
@@ -140,9 +141,9 @@ function openDetail(request: FundRequest) {
                       <span
                         :class="{
                           'text-subtitle-2 text-medium-emphasis text-warning': listRequest?.status === 'Pending',
-                          'text-subtitle-2 text-medium-emphasis text-success': listRequest?.status === 'Disetujui',
-                          'text-subtitle-2 text-medium-emphasis text-error': listRequest?.status === 'Ditolak',
-                          'text-subtitle-2 text-medium-emphasis text-primary': listRequest?.status === 'Beberapa Disetujui',
+                      'text-subtitle-2 text-medium-emphasis text-success': listRequest?.status === 'Disetujui' || listRequest?.status === 'Beberapa Disetujui',
+                      'text-subtitle-2 text-medium-emphasis text-error': listRequest?.status === 'Ditolak',
+                      'text-subtitle-2 text-medium-emphasis text-primary': listRequest?.status === 'Selesai',
                         }"
                       >{{ listRequest?.status }}</span>
                       <div class="text-subtitle-1 text-medium-emphasis font-weight-bold">{{ formatRupiah(listRequest?.amount) }}</div>

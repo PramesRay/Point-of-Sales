@@ -318,7 +318,7 @@ onMounted(() => {
                 data: userStore.me,
                 confirmBeforeClose: true,
                 isChanged,
-                refresh: userStore.fetchMe()
+                refresh: () => userStore.fetchMe()
               },
             })
           "

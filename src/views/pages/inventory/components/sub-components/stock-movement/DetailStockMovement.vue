@@ -5,9 +5,7 @@ const { mdAndUp } = useDisplay()
 
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager';
 
-import Blank from '@/components/shared/Blank.vue';
-import { useInventoryItems } from '@/composables/useInventoryItems';
-import type { CreateInventoryItemPayload, CreateStockMovementPayload, InventoryItem, StockMovement, UpdateInventoryItemPayload, UpdateStockMovementPayload } from '@/types/inventory';
+import type { CreateStockMovementPayload, InventoryItem, StockMovement, UpdateStockMovementPayload } from '@/types/inventory';
 import type { IdName } from '@/types/common';
 import { formatDate } from '@/utils/helpers/format-date';
 import { useStockMovements } from '@/composables/useStockMovement';
@@ -88,7 +86,7 @@ function allowedMinutes(minute: number) {
 }
 
 
-const isFromBranch = ref(false)
+const isFromBranch = ref(props.data?.branch ? true : false)
 
 const formatedDateTime = computed(() => {
   if (!payload.value.time) return ''
@@ -201,7 +199,7 @@ function submitForm() {
 async function processSubmit() {
   try {
     const createPayload: CreateStockMovementPayload = {
-      branch_id: isFromBranch.value ? null : payload.value.branch_id!,
+      branch_id: isFromBranch.value ? payload.value.branch_id! : null,
       item: {
         id: payload.value.item.id!,
         quantity: payload.value.item.quantity!
@@ -232,17 +230,17 @@ async function processSubmit() {
   }
 }
 
-async function processDelete() {
-  try {
-    await remove(props.data!.id)
-    props.refresh()
-    handleClose()
-  } catch (error) {
-    props.refresh()
-    console.log(error)
-    handleClose()
-  }
-}
+// async function processDelete() {
+//   try {
+//     await remove(props.data!.id)
+//     props.refresh()
+//     handleClose()
+//   } catch (error) {
+//     props.refresh()
+//     console.log(error)
+//     handleClose()
+//   }
+// }
 
 function handleClose() {
   if (typeof props.onIsChangedUpdate === 'function') {
@@ -284,12 +282,13 @@ function handleClose() {
               label="Tanggal"
               prepend-inner-icon="mdi-calendar"
               readonly
-              :active="dateMenu"
-              :focused="dateMenu"
+              :active="is_create ? dateMenu : false"
+              :focused="is_create ? dateMenu : false"
               variant="underlined"
               :rules="rules.required"
             />
               <v-dialog
+                :disabled="!is_create"
                 v-model="dateMenu"
                 :close-on-content-click="false"
                 activator="parent"
@@ -314,12 +313,13 @@ function handleClose() {
               label="Waktu"
               prepend-inner-icon="mdi-clock-outline"
               readonly
-              :active="timeMenu"
-              :focused="timeMenu"
+              :active="is_create ? timeMenu : false"
+              :focused="is_create ? timeMenu : false"
               variant="underlined"
               :rules="rules.required"
             >
               <v-dialog
+                :disabled="!is_create"
                 v-model="timeMenu"
                 activator="parent"
                 :close-on-content-click="false"
@@ -341,23 +341,25 @@ function handleClose() {
           </v-col>
         </v-row>
         <v-row no-gutters class="justify-space-between" align="center">
-          <v-col :cols="payload.status === 'Masuk' ? '6' : '12'" class="pe-2">
+          <v-col :cols="payload.status === 'Masuk' ? '7' : '12'" class="pe-2">
             <v-select
               variant="underlined"
               v-model="payload.status"
               :items="['Masuk', 'Keluar', 'Pengurangan']"
               :rules="rules.required"
               label="Tipe"
+              :readonly="!is_create"
               prepend-inner-icon="mdi-format-vertical-align-center"
             />
           </v-col>
-          <v-col cols="6" class="ps-2">
+          <v-col cols="5" class="ps-2">
             <v-btn
               v-if="payload.status === 'Masuk'"
               class="text-capitalize"
               :color="isFromBranch ? 'primary' : 'success'"
               variant="tonal"
               block
+              :readonly="!is_create"
               :loading="loading"
               @click="isFromBranch = !isFromBranch"
             >
@@ -372,6 +374,7 @@ function handleClose() {
               label="Cabang"
               :items="props.branches"
               :rules="rules.required"
+              :readonly="!is_create"
               item-title="name"
               item-value="id"
               prepend-inner-icon="mdi-home"
@@ -384,11 +387,12 @@ function handleClose() {
             variant="underlined"
             v-model="payload.description"
             :rules="rules.desc && rules.required"
+            :readonly="!is_create"
             label="Deskripsi"
             rows="2"
             prepend-inner-icon="mdi-text-long"
             clear-icon="mdi-close"
-            clearable
+            :clearable="is_create"
             counter
           />
         </div>
@@ -399,6 +403,7 @@ function handleClose() {
               variant="underlined"
               v-model="payload.item.id"
               :items="props.inv_item"
+              :readonly="!is_create"
               item-title="name"
               item-value="id"
               label="Nama Barang"
@@ -415,20 +420,20 @@ function handleClose() {
               variant="plain"
               :min="0"
               :rules="[...rules.qty, ...rules.item_required, ...rules.status_required]"
+              :readonly="!is_create"
             ></v-number-input>
           </v-col>
         </v-row>
       </PerfectScrollbar>
 
-      <v-divider class="my-3" />
       
-      <div>
+      <div v-if="is_create">
+        <v-divider class="my-3" />
         <div 
-          class="d-flex align-center justify-end mt-1"
-          :class="is_create ? 'justify-end' : 'justify-space-between'"
+          class="d-flex align-center justify-end mt-1 justify-end"
         >
           <!-- delete button -->
-          <v-btn
+          <!-- <v-btn
             v-if="!is_create"
             variant="plain"
             class="mr-1 text-error"
@@ -449,7 +454,7 @@ function handleClose() {
             "
           >
             Hapus
-          </v-btn>
+          </v-btn> -->
 
           <span>
             <v-btn

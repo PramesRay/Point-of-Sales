@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useDisplay } from 'vuetify';
-const { mdAndUp } = useDisplay()
-import { getAuth } from 'firebase/auth';
 
 import type { Employee, UpdateEmployeeByEmployee } from '@/types/employee';
 
@@ -12,39 +10,11 @@ import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
 
 import Blank from '@/components/shared/Blank.vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert';
 
 const { openOverlay } = useOverlayManager()
 const alertStore = useAlertStore()
 const authStore = useAuthStore()
-
-// async function handleEmailActionFromQuery() {
-
-//   const mode = route.query.mode as string | undefined;       // 'verifyAndChangeEmail' atau 'verifyEmail'
-//   const oobCode = route.query.oobCode as string | undefined;
-
-//   if (!oobCode) return;
-
-//   const isEmailChange = mode === 'verifyAndChangeEmail' || mode === 'verifyEmail';
-//   if (!isEmailChange) return;
-
-//   // Terapkan aksi dari link
-//   await applyActionCode(auth, oobCode);
-
-//   // Freshen token SEKALI di SINI (bukan di onIdTokenChanged)
-//   await auth.currentUser?.reload(); 
-//   await auth.currentUser?.getIdToken(true);
-
-//   // Bersihkan query supaya tidak re-run
-//   router.replace({ query: { ...route.query, mode: undefined, oobCode: undefined } });
-
-//   // optional: notifikasi sukses
-//   alertStore.showAlert('Email kamu berhasil diverifikasi.', 'success');
-// }
-
-// watch(() => route.query, handleEmailActionFromQuery)
-
 
 const props = defineProps<{
   data: Employee;
@@ -74,8 +44,6 @@ const formRef = ref()
 const isFormValid = ref(false)
 const snackbar = ref(false);
 const isProcessing = ref(false);
-const countdown = ref(0);
-let countdownInterval: number | null = null;
 
 const isChangeName = ref<boolean>(false)
 const isChangeEmail = ref<boolean>(false)
@@ -160,8 +128,6 @@ async function processSubmit() {
     handleClose()
   } catch (error: any) {
     console.log(error)
-    // props.refresh()
-    // handleClose()
     alertStore.showAlert(error, 'error');
   } finally {
     isProcessing.value = false
@@ -175,47 +141,6 @@ function handleClose() {
   }
   emit('close')
 }
-
-// onMounted(() => {
-//   if (localStorage.getItem('countdown')) {
-//     const start = Number(localStorage.getItem('countdown')!);
-//     const elapsed = Math.floor((Date.now() - start) / 1000);
-//     countdown.value = Math.max(0, 60 - elapsed);
-//   } else {
-//     countdown.value = 60;
-//   }
-//   startCountdown(countdown.value);
-// });
-
-// onUnmounted(() => {
-//   if (localStorage.getItem('countdown')) {
-//     const start = Number(localStorage.getItem('countdown')!);
-//     const elapsed = Math.floor((Date.now() - start) / 1000);
-//     if (elapsed > 60) {
-//       localStorage.removeItem('countdown');
-//     }
-//   }
-// })
-
-// function startCountdown(seconds: number) {
-//   countdown.value = seconds;
-//   if (!localStorage.getItem('countdown')) {
-//     localStorage.setItem('countdown', String(Date.now()));
-//   } else {
-//     const start = Number(localStorage.getItem('countdown')!);
-//     const elapsed = Math.floor((Date.now() - start) / 1000);
-//     if (elapsed > 60) {
-//       localStorage.setItem('countdown', String(Date.now()));
-//     }
-//   }
-//   countdownInterval = window.setInterval(() => {
-//     if (countdown.value > 0) {
-//       countdown.value--;
-//     } else {
-//       clearInterval(countdownInterval!);
-//     }
-//   }, 1000);
-// }
 
 async function handleVerification() {
   await authStore.changeEmail(payload.value.email, oldPassword.value).then(() => {
@@ -264,18 +189,16 @@ async function handleVerification() {
             <v-icon class="text-disabled me-1">mdi-home</v-icon>
             <div>
               <div class="text-h6 text-disabled">Cabang:</div>
-              <div class="ms-4 mt-2">
+              <div class="mt-2">
                 <v-progress-circular
                   v-if="lb"
                   indeterminate
                   color="primary"
                   class="mb-2"
                 ></v-progress-circular>
-                <ol v-else class="text-subtitle-1 text-disabled">
-                  <li v-for="id in props.data.assigned_branch" class="mb-1">
-                    {{ branchData.find(b => b.id === id)?.name }}
-                  </li>
-                </ol>
+                <div v-else class="text-subtitle-1 text-disabled">
+                    {{ props.data.assigned_branch.name }}
+                </div>
               </div>
             </div>
           </div>

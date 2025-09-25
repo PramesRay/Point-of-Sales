@@ -45,6 +45,7 @@ export const useAuthStore = defineStore({
 
       await new Promise<void>((resolve) => {
         this._unsubscribeAuth = onIdTokenChanged(auth, async (u) => {
+          console.log('[auth] onIdTokenChanged → user:', !!u, 'uid:', u?.uid)
           if (this._handlingToken) return;
           this._handlingToken = true;
           try {
@@ -116,14 +117,17 @@ export const useAuthStore = defineStore({
       this.loading = true;
       try {
         const result = await signInWithEmailAndPassword(auth, payload.email, payload.password);
-        const response = await api.get('/employee/me');
 
         if (!result.user.emailVerified) {
           // await signOut(auth); // Logout paksa
           localStorage.setItem('email', payload.email);
           router.push('/verify-email');
           throw new Error('Email belum diverifikasi');
-        } else if (response.data.data.role == null) {
+        }  
+        
+        const response = await api.get('/employee/me');
+
+        if (response.data.data.role == null) {
           // await signOut(auth); // Logout paksa
           throw new Error('Email belum dikonfirmasi oleh pemilik');
         }
@@ -156,7 +160,7 @@ export const useAuthStore = defineStore({
         } else if (error.code === 'auth/too-many-requests') {
           throw new Error('Terlalu banyak permintaan. Silakan coba lagi dalam beberapa saat.');
         } else if (error.code === 'auth/invalid-credential') {
-          throw new Error('Credensial tidak valid.');
+          throw new Error('Kredensial tidak valid.');
         } else if (error.message) {
           throw new Error(error.message);
         } else {
@@ -234,7 +238,7 @@ export const useAuthStore = defineStore({
   
       try {
         await updateProfile(user, { displayName: name });
-        await api.put(`/employee/me`, { name });
+        await api.put(`/employee-me`, { name });
       } catch (error) {
         console.error('Gagal memperbarui profil pengguna:', error);
         throw error;

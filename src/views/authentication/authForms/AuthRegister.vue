@@ -67,6 +67,7 @@ async function handleSubmit() {
       router.push('/verify-email?mode=verify');
     }
   } catch (err: any) {
+    useAlertStore().showAlert(err.message ?? 'Terjadi kesalahan tak terduga', 'error');
     throw new Error(err);
   } finally {
     isSubmitting.value = false;

@@ -23,7 +23,7 @@ export async function fetchFundRequests({
   filter?: Record<string, any>
 } = {}): Promise<{data: FundRequest[]; total: number}> {
   try {
-    const url = `/fund-request`;
+    const url = `/finance/fund-requests`;
     const query = new URLSearchParams();
     
     if (search) query.append('search', search)
@@ -53,7 +53,7 @@ export async function fetchFundRequests({
 
 export async function createFundRequest(payload: CreateFundRequest): Promise<FundRequest> {
   try {
-    const res = await api.post<FundRequest>(`/finance/fund-requests`, payload);
+    const res = await api.post<FundRequest>(`/finance/fund-request`, payload);
     alertStore.showAlert('Permintaan Dana berhasil dibuat!', 'success');
     return res.data;
   } catch (error) {
@@ -65,7 +65,7 @@ export async function createFundRequest(payload: CreateFundRequest): Promise<Fun
 
 export async function updateFundRequest(payload: UpdateFundRequest): Promise<FundRequest> {
   try {
-    const res = await api.put<FundRequest>(`/finance/fund-requests`, {...payload, type: 'updateFundRequest'});
+    const res = await api.put<FundRequest>(`/finance/fund-request`, {...payload, type: 'updateFundRequest'});
     alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');
     return res.data;
   } catch (error) {
@@ -77,7 +77,7 @@ export async function updateFundRequest(payload: UpdateFundRequest): Promise<Fun
 
 export async function approveFundRequest(payload: ApproveFundRequest): Promise<FundRequest> {
   try {
-    const res = await api.put<FundRequest>(`/finance/fund-requests`, {...payload, type: 'approveFundRequest'});
+    const res = await api.put<FundRequest>(`/finance/fund-request`, {...payload, type: 'approveFundRequest'});
     alertStore.showAlert(`Permintaan Dana ${payload.id} berhasil diubah!`, 'success');
     return res.data;
   } catch (error) {
@@ -87,9 +87,19 @@ export async function approveFundRequest(payload: ApproveFundRequest): Promise<F
   }
 }
 
+export async function finishFundRequest(id: string): Promise<FundRequest> {
+  try {
+    const res = await api.put(`/finance/fund-request/${id}/end`);
+    alertStore.showAlert('Permintaan Stok berhasil dikonfirmasi!', 'success');
+    return res.data.data;
+  } catch (error) {
+    throw error
+  }  
+}
+
 export async function deleteFundRequest(id: string): Promise<void> {
   try {
-    await api.delete(`/finance/fund-requests/${id}`);
+    await api.delete(`/finance/fund-request/${id}`);
     alertStore.showAlert(`Permintaan Dana ${id} berhasil dihapus!`, 'success');
   } catch (error) {
     alertStore.showAlert(`Permintaan Dana ${id} gagal dihapus!`, 'error');

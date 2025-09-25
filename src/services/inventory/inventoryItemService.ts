@@ -61,7 +61,7 @@ export async function fetchStockMovements({
 
 export async function createStockMovement(payload: CreateStockMovementPayload): Promise<StockMovement> {
   try {
-    const res = await api.post(`/inventory/stock-movements`, payload);
+    const res = await api.post(`/inventory/stock-movement`, payload);
     alertStore.showAlert('Stock Movement berhasil dibuat!', 'success');
     return res.data.data;
   } catch (error) {
@@ -73,7 +73,7 @@ export async function createStockMovement(payload: CreateStockMovementPayload): 
 
 export async function updateStockMovement(payload: UpdateStockMovementPayload): Promise<StockMovement> {
   try {
-    const res = await api.put(`/inventory/stock-movements`, payload);
+    const res = await api.put(`/inventory/stock-movement`, payload);
     alertStore.showAlert('Stock Movement berhasil diubah!', 'success');
     return res.data.data;
   } catch (error) {
@@ -85,7 +85,7 @@ export async function updateStockMovement(payload: UpdateStockMovementPayload): 
 
 export async function deleteStockMovement(id: string): Promise<void> {
   try {
-    await api.delete(`/inventory/stock-movements/${id}`);
+    await api.delete(`/inventory/stock-movement/${id}`);
     alertStore.showAlert('Stock Movement berhasil dihapus!', 'success');
   } catch (error) {
     alertStore.showAlert('Stock Movement gagal dihapus!', 'error');
@@ -96,7 +96,7 @@ export async function deleteStockMovement(id: string): Promise<void> {
 
 export async function createItem(payload: CreateInventoryItemPayload): Promise<InventoryItem> {
   try {
-    const res = await api.post(`/inventory/items`, payload);
+    const res = await api.post(`/inventory/item`, payload);
     alertStore.showAlert('Item berhasil dibuat!', 'success');
     return res.data.data;
   } catch (error) {
@@ -108,7 +108,7 @@ export async function createItem(payload: CreateInventoryItemPayload): Promise<I
 
 export async function updateItem(payload: UpdateInventoryItemPayload): Promise<InventoryItem> {
   try {
-    const res = await api.put(`/inventory/items`, payload);
+    const res = await api.put(`/inventory/item`, payload);
     alertStore.showAlert('Item berhasil diubah!', 'success');
     return res.data.data;
   } catch (error) {
@@ -120,7 +120,7 @@ export async function updateItem(payload: UpdateInventoryItemPayload): Promise<I
 
 export async function deleteItem(id: string): Promise<void> {
   try {
-    await api.delete(`/inventory/items/${id}`);
+    await api.delete(`/inventory/item/${id}`);
     alertStore.showAlert('Item berhasil dihapus!', 'success');
   } catch (error) {
     alertStore.showAlert('Item gagal dihapus!', 'error');

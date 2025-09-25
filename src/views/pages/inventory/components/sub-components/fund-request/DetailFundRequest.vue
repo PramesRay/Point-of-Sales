@@ -8,11 +8,10 @@ import type { InventoryItem } from '@/types/inventory';
 import { formatRupiah } from '@/utils/helpers/currency';
 import { useFundRequests } from '@/composables/useFundRequest';
 import { useUserStore } from '@/stores/authUser';
-import UpdateFundRequest from './UpdateFundRequest.vue';
 import { useAlertStore } from '@/stores/alert';
 
 const { openOverlay } = useOverlayManager()
-const { loading: lfr, approve } = useFundRequests();
+const { loading: lfr, approve, finish } = useFundRequests();
 const userStore = useUserStore()
 const alertStore = useAlertStore()
 
@@ -100,22 +99,39 @@ const handleSubmit = () => {
   })
 }
 
-const handleUpdate = () => {
-  console.log(userStore.me?.activity?.shift_op?.id, props.data.shift_warehouse_id)
-  if (Number(userStore.me?.id) !== Number(props.data.meta.created_by.id)) {
-    alertStore.showAlert('Data permintaan hanya dapat diubah oleh yang membuat', 'warning')
-  } else if (userStore.me?.activity?.shift_op?.id !== props.data.shift_warehouse_id) {
-    alertStore.showAlert('Data permintaan sudah tidak dapat diubah', 'warning')
-  } else {
-    openOverlay({
-      component: UpdateFundRequest,
-      props: {
-        data: props.data,
-        refresh: props.refresh
+const handleFinish = () => {
+  openOverlay({
+    component: Blank,
+    props: {
+      confirmToContinue: true,
+      confirmMessage: 'Apakah anda yakin ingin menyelesaikan permintaan ini?',
+      onConfirm: async () => {
+        finish(props.data.id).then(() => {
+          alertStore.showAlert('Permintaan dana berhasil diselesaikan', 'success')
+          props.refresh()
+          emit('close')
+        })
       }
-    })
-  }
+    }
+  })
 }
+
+// const handleUpdate = () => {
+//   console.log(userStore.me?.activity?.shift_op?.id, props.data.shift_warehouse_id)
+//   if (Number(userStore.me?.id) !== Number(props.data.meta.created_by.id)) {
+//     alertStore.showAlert('Data permintaan hanya dapat diubah oleh yang membuat', 'warning')
+//   } else if (userStore.me?.activity?.shift_op?.id !== props.data.shift_warehouse_id) {
+//     alertStore.showAlert('Data permintaan sudah tidak dapat diubah', 'warning')
+//   } else {
+//     openOverlay({
+//       component: UpdateFundRequest,
+//       props: {
+//         data: props.data,
+//         refresh: props.refresh
+//       }
+//     })
+//   }
+// }
 </script>
 
 <template>
@@ -274,6 +290,16 @@ const handleUpdate = () => {
           </v-btn>
         </div>
       </div>
+
+      <v-btn 
+        v-if="props.data.status === 'Disetujui' || props.data.status === 'Beberapa Disetujui' && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
+        class="mt-2"
+        block
+        color="success" 
+        @click="handleFinish"
+      >
+        Konfirmasi Penerimaan
+      </v-btn>
     </v-form>
   </v-card>
 </template>

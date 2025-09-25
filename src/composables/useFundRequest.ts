@@ -1,6 +1,5 @@
 import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
-import { fetchFundRequests, createFundRequest, updateFundRequest, deleteFundRequest, approveFundRequest } from '@/services/finance/fundRequestService';
+import { fetchFundRequests, createFundRequest, updateFundRequest, deleteFundRequest, approveFundRequest, finishFundRequest } from '@/services/finance/fundRequestService';
 import type { ApproveFundRequest, CreateFundRequest, FundRequest, UpdateFundRequest } from '@/types/finance';
 
 export function useFundRequests() {
@@ -89,6 +88,17 @@ export function useFundRequests() {
     }
   }
 
+  async function finish(id: string) {
+      try {
+        loading.value = true;
+        await finishFundRequest(id);
+      } catch (e: any) {
+        error.value = e;
+      } finally {
+        loading.value = false;
+      }
+    }
+
   return { 
     load, 
     data, 
@@ -97,6 +107,7 @@ export function useFundRequests() {
     create,
     update,
     approve,
-    remove
+    remove,
+    finish
   };
 }

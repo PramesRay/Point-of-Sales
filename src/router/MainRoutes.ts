@@ -1,26 +1,28 @@
+import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/authUser';
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
 
 const MainRoutes = {
-  path: '/main',
-  meta: {
-    requiresAuth: true
-  },
+  path: '/',
+  meta: { requiresAuth: true },
   redirect: '/main/dashboard/default',
   component: () => import('@/layouts/full/FullLayout.vue'),
   children: [
     {
       name: 'LandingPage',
-      path: '/',
-      component: () => import('@/views/dashboards/default/LandingPage.vue'), //sementara seperti ini, perlu diganti agar yang di render page sesuai role mereka.
+      path: '', // << relative ke '/main'
+      component: () => import('@/views/dashboards/default/LandingPage.vue'),
       beforeEnter: async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-        const userStore = useUserStore();
-        if (!userStore.me) await userStore.fetchMe();
+        const authStore = useAuthStore()
+        const userStore = useUserStore()
 
-        if (!userStore.me) {
-          // Redirect ke login jika pengguna tidak ditemukan
-          console.log('Pengguna tidak ditemukan, arahkan ke halaman login.');
-          return next('/login');
+        // hanya fetch saat sudah authenticated
+        if (authStore.isAuthenticated && !userStore.me) {
+          await userStore.fetchMe().catch(() => {})
+        }
+
+        if (!authStore.isAuthenticated) {
+          return next('/login')
         } else {
           // Berdasarkan role, arahkan pengguna ke halaman yang sesuai
           if (userStore.hasRole(['admin', 'pemilik'])) {

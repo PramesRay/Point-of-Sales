@@ -4,6 +4,7 @@ import PublicRoutes from './PublicRoutes';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/authUser';
 import { useAlertStore } from '@/stores/alert';
+import { watch } from 'vue';
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,33 +18,47 @@ export const router = createRouter({
   ]
 });
 
-router.beforeEach((to, from, next) => {
-  const publicPages = ['/login', '/register', '/starter'];
-  const isPublicPage = publicPages.includes(to.path);
+router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
   const userStore = useUserStore();
   const alertStore = useAlertStore();
+  
+  const publicPages = ['/login', '/register', '/starter'];
+  const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
+
+  if (auth.loading) {
+    // tunggu selesai sekali
+    await new Promise<void>(resolve => {
+      const stop = watch(() => auth.loading, v => { if (!v) { stop(); resolve(); } }, { immediate: true });
+    });
+  }
 
   const user = auth.user || null;
   const userRole = userStore.me?.role;
   
+  if (authRequired && !auth.isAuthenticated) {
+    auth.returnUrl = to.fullPath
+    return next('/login')
+  }
+        
   // Logout jika email belum diverifikasi
-  if (userStore.me && user?.emailVerified == false) {
-    console.log('Email belum diverifikasi');
-    auth.logout()
-    alertStore.showAlert('Email Anda belum diverifikasi', 'error');
-  } else if (userStore.me && userStore.me.role == null) {
-    console.log('Email belum dikonfirmasi oleh pemilik');
-    auth.logout()
-    alertStore.showAlert('Email Anda belum dikonfirmasi oleh pemilik', 'error');
-  } else if (userStore.me && (to.path === '/login' || to.path === '/register')) {
-    return next('/');
+  if(userStore.me) {
+    if (user?.emailVerified == false) {
+      console.log('Email belum diverifikasi');
+      // auth.logout()
+      alertStore.showAlert('Email Anda belum diverifikasi', 'error');
+    } else if (userStore.me.role == null) {
+      console.log('Email belum dikonfirmasi oleh pemilik');
+      // auth.logout()
+      alertStore.showAlert('Email Anda belum dikonfirmasi oleh pemilik', 'error');
+    }
+    
+    if ((to.path === '/login' || to.path === '/register')) {
+      return next('/');
+    }
   }
 
-  if (userStore.me && (to.path === '/login' || to.path === '/register')) {
-    return next('/');
-  }
 
   // Redirect jika butuh auth tapi belum login
   if (authRequired && !user) {
@@ -56,8 +71,7 @@ router.beforeEach((to, from, next) => {
   console.log('allowedRoles', allowedRoles);
   if ((allowedRoles && userRole && !allowedRoles.includes(userRole))) {
     alertStore.showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
-    // Arahkan pengguna ke halaman yang sesuai dengan perannya
-    return next('/'); // Default halaman jika role tidak ditemukan
+    return next('/');
   }
 
   // Lanjutkan

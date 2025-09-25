@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { browserLocalPersistence, getAuth, GoogleAuthProvider, indexedDBLocalPersistence, setPersistence } from 'firebase/auth'
 
 const isDev = import.meta.env.VITE_NODE_ENV === 'dev';
 
@@ -18,5 +18,13 @@ if (isDev) console.log('[ FIREBASE ] : Running in development mode');
 const firebaseApp = initializeApp(firebaseConfig)
 const auth = getAuth(firebaseApp)
 const googleProvider = new GoogleAuthProvider();
+
+(async () => {
+  try {
+    await setPersistence(auth, indexedDBLocalPersistence)
+  } catch {
+    await setPersistence(auth, browserLocalPersistence)
+  }
+})()
 
 export { firebaseApp, auth, googleProvider }

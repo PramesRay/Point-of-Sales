@@ -20,15 +20,19 @@ app.use(createPinia());
 app.use(VueTablerIcons);
 app.use(print);
 app.use(VueApexCharts);
-
-const authStore = useAuthStore()
-const userStore = useUserStore()
-
-onMounted(async () => {
-  await authStore.initialize()
-  await userStore.fetchMe()
-})
-
 app.use(router);
+app.use(vuetify);
 
-app.use(vuetify).mount('#app');
+
+(async () => {
+  const authStore = useAuthStore();
+  const userStore = useUserStore();
+
+  await authStore.initialize().catch(() => console.error('Failed to initialize auth store'));
+  if (authStore.isAuthenticated) await userStore.fetchMe().then(() => {
+    console.log('[user] fetchMe →', userStore.me);
+  }).catch(() => console.error('Failed to fetch user profile'));
+
+  await router.isReady();
+  app.mount('#app');
+})()
