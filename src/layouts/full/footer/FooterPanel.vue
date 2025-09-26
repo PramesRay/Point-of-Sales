@@ -13,8 +13,8 @@ const footerLink = shallowRef([
     <v-row justify="center" align="center" no-gutters>
       <v-col cols="12" sm="6">
         <p class="text-body-1 mb-0 text-sm-left text-center">
-          © 2024, Made with ❤️ by Prames Ray Lapian
-          <a href="https://nurchs.up.railway.app" class="text-darkText text-decoration-none" target="_blank">Nasi Uduk Remaja Cikini Haji Sawid</a>
+          <a href="https://nurchs.up.railway.app" class="text-darkText font-weight-bold text-decoration-none" target="_blank"> Nasi Uduk Remaja Cikini Haji Sawid | © 2025,</a>
+          <br>Made with ❤️ by Prames Ray Lapian</br>
         </p>
       </v-col>
       <v-col class="text-sm-right text-center" cols="12" sm="6">
