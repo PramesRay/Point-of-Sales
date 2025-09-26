@@ -34,46 +34,40 @@ router.beforeEach(async (to, from, next) => {
     });
   }
 
-  const user = auth.user || null;
-  const userRole = userStore.me?.role;
-  
+  // 2) Jika butuh auth tapi belum login → ke login
   if (authRequired && !auth.isAuthenticated) {
-    auth.returnUrl = to.fullPath
-    return next('/login')
-  }
-        
-  // Logout jika email belum diverifikasi
-  if(userStore.me) {
-    if (user?.emailVerified == false) {
-      console.log('Email belum diverifikasi');
-      // auth.logout()
-      alertStore.showAlert('Email Anda belum diverifikasi', 'error');
-    } else if (userStore.me.role == null) {
-      console.log('Email belum dikonfirmasi oleh pemilik');
-      // auth.logout()
-      alertStore.showAlert('Email Anda belum dikonfirmasi oleh pemilik', 'error');
-    }
-    
-    if ((to.path === '/login' || to.path === '/register')) {
-      return next('/');
-    }
-  }
-
-
-  // Redirect jika butuh auth tapi belum login
-  if (authRequired && !user) {
     auth.returnUrl = to.fullPath;
     return next('/login');
   }
-  
-  // Cek role-based access
-  const allowedRoles = to.meta.requiredRoles as string[] | undefined;
-  console.log('allowedRoles', allowedRoles);
-  if ((allowedRoles && userRole && !allowedRoles.includes(userRole))) {
-    alertStore.showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
-    return next('/');
+
+  // 3) Sudah login tapi profil belum ada → fetch sekali & TUNGGU
+  if (auth.isAuthenticated && !userStore.me) {
+    try { await userStore.fetchMe(); } catch { /* biarin null */ }
   }
 
-  // Lanjutkan
+  // 4) Validasi email & konfirmasi (TANPA logout)
+  if (auth.isAuthenticated && userStore.me) {
+    if (auth.user?.emailVerified === false) {
+      alertStore.showAlert('Email Anda belum diverifikasi', 'error');
+      return next('/verify-email'); // arahkan, jangan signOut
+    }
+    if (userStore.me.role == null) {
+      alertStore.showAlert('Email Anda belum dikonfirmasi oleh pemilik', 'error');
+      return next('/starter'); // arahkan, jangan signOut
+    }
+    if (to.path === '/login' || to.path === '/register') {
+      return next('/'); // sudah login
+    }
+  }
+
+  // 5) Role-based access (SESUDAH me terisi)
+  const allowedRoles = to.meta.requiredRoles as string[] | undefined;
+  // console.log('allowedRoles', allowedRoles, 'userRole', userStore.me?.role);
+
+  if (allowedRoles && userStore.me?.role && !allowedRoles.includes(userStore.me.role)) {
+    alertStore.showAlert('Anda tidak memiliki akses untuk halaman ini.', 'error');
+    return next('/'); // fallback aman
+  }
+
   return next();
 });

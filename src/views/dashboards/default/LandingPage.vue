@@ -16,6 +16,8 @@ const selectedComponent = computed(() => {
   // Ganti dengan logika peran pengguna yang sesuai
   if (userStore.me && userStore.hasRole(['admin', 'pemilik'])) {
     return defineAsyncComponent(() => import('@/views/dashboards/owner/OwnerDashboard.vue'));
+  } else if (userStore.me && userStore.hasRole('bendahara')) {
+    return defineAsyncComponent(() => import('@/views/dashboards/finance/FinanceDashboard.vue'));
   } else if (userStore.me && userStore.hasRole('kasir')) {
     return defineAsyncComponent(() => import('@/views/pages/cashier/CashierPage.vue'));
   } else if (userStore.me && userStore.hasRole('gudang')) {
