@@ -29,12 +29,13 @@ const { load: loadStockRequest, list: stockRequestlist, loading: lsr } = useStoc
 const { init: initItems, data: dataInventory, categories, loading: li } = useInventoryItems();
 const { init: initStockMovement, data: dataStockMovement, loading: lsm } = useStockMovements();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
+const { loadCurrentShiftWarehouse, shiftCurrentWarehouse } = useShift()
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined
 })
 
-onMounted(() => {
+onMounted(async() => {
   if (!userStore.me?.activity?.is_active) { 
     alertStore.showAlert('Anda belum memulai shift!', 'warning');
     return
@@ -46,13 +47,18 @@ onMounted(() => {
   loadFundRequest();
   initStockMovement();
   loadStockRequest();
+  await loadCurrentShiftWarehouse()
 });
 
 // Branch Selection
 import { computed, onMounted, ref, watch } from 'vue';
 import { useStockMovements } from '@/composables/useStockMovement';
 import { useFundRequests } from '@/composables/useFundRequest';
+import { useShift } from '@/composables/useShift';
 
+const currentWarehouseShift = computed(() => {
+  return shiftCurrentWarehouse?.value
+})
 const branchOptions = computed(() => branches.value);
 const selectedBranch = ref<string | undefined>(undefined)
 const selectedBranchObject = computed(() => {
@@ -62,11 +68,11 @@ const selectedBranchObject = computed(() => {
 })
 
 // watcher perubahan selectedBranch yang memicu fetching stock request
-watch(
-  () => selectedBranch.value,
-  () => {
-    loadStockRequest()
-});
+// watch(
+//   () => selectedBranch.value,
+//   () => {
+//     loadStockRequest()
+// });
 
 const pinBranch = ref(true)
 </script>
@@ -132,7 +138,7 @@ const pinBranch = ref(true)
       <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
     </v-col>
     
-    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="!userStore.me?.activity?.shift_op?.start && !userStore.hasRole(['admin', 'pemilik'])">
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="currentWarehouseShift?.end">
       <p class="text-subtitle-1 text-disabled"> Belum ada shift gudang yang dimulai! </p>
     </v-col>
 

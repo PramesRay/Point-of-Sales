@@ -30,7 +30,6 @@ app.use(vuetify);
 
   await authStore.initialize().catch(() => console.error('Failed to initialize auth store'));
   if (authStore.isAuthenticated) await userStore.fetchMe().then(() => {
-    console.log('[user] fetchMe →', userStore.me);
   }).catch(() => console.error('Failed to fetch user profile'));
 
   await router.isReady();

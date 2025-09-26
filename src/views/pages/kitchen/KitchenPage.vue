@@ -29,7 +29,7 @@ const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, } = useCurrentOrders();
 const { load: loadStockRequests, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { loadMenuSales, dataItemSales: menuSales, categories, loading: lm } = useMenu()
-const { loadShiftbyRole, shiftCurrentKitchen } = useShift()
+const { loadShiftbyRole, loadCurrentShiftWarehouse, shiftCurrentKitchen, shiftCurrentWarehouse } = useShift()
 const alertStore = useAlertStore();
 
 const visibleComponent = computed(() => {
@@ -44,10 +44,11 @@ onMounted(async () => {
 
   await loadBranch()
   
-  loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
+  selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
   loadCurrentOrder()
   loadStockRequests()
-  loadShiftbyRole()
+  loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+  loadCurrentShiftWarehouse()
 })
 const branchOptions = computed(() => branches.value);
 const selectedBranch = ref<string | undefined>( 
@@ -66,20 +67,25 @@ const selectedBranchObject = computed(() => {
 const currentKitchenShift = computed(() => {
   if (!userStore.hasRole(['admin', 'pemilik'])) return userStore.me?.activity?.shift_op as ShiftKitchen
 
-  if (!selectedBranch.value) {
+  if (!selectedBranch.value || shiftCurrentKitchen.value?.branch?.id === selectedBranch.value) {
     return shiftCurrentKitchen.value as ShiftKitchen
-  } else if (shiftCurrentKitchen.value?.branch?.id === selectedBranch.value) return shiftCurrentKitchen.value as ShiftKitchen
+  }
   
   return null
+})
+
+const currentWarehouseShift = computed(() => {
+  return shiftCurrentWarehouse?.value
 })
 
 watch(
   () => selectedBranch.value,
   () => {
-    loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
+    selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
     loadCurrentOrder()
     loadStockRequests()
-    loadShiftbyRole()
+    loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+    loadCurrentShiftWarehouse()
   }
 )
 const pinBranch = ref(true)
@@ -142,11 +148,11 @@ const pinBranch = ref(true)
   <v-row>
     <!-- Text jika belum mulai shift -->
     <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
-      <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
+      <p class="text-subtitle-1 text-disabled"> Anda belum memulai sif! </p>
     </v-col>
     
-    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="!userStore.me?.activity?.shift_op?.start && !userStore.hasRole(['admin', 'pemilik'])">
-      <p class="text-subtitle-1 text-disabled"> Belum ada shift dapur yang dimulai! </p>
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="currentKitchenShift?.end || currentWarehouseShift?.end">
+      <p class="text-subtitle-1 text-disabled"> Sif dapur atau sif gudang belum dimulai! </p>
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->

@@ -32,7 +32,7 @@ const { data: reservationData, loading: lr, load: loadReservation } = useReserva
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadMenu, loadCategory, data: menuData, categories: menuCategories, loading: lm } = useMenu();
-const { loadShiftbyRole, loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
+const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 
 const visibleComponent = computed(() => {
   return route.query['show-only'] as string | undefined

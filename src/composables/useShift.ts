@@ -119,9 +119,6 @@ export function useShift() {
         shiftCurrentCashier.value = cashier
         shiftCurrentKitchen.value = kitchen
         shiftCurrentWarehouse.value = warehouse
-        console.log('shiftCurrentCashier.value', shiftCurrentCashier.value)
-        console.log('shiftCurrentKitchen.value', shiftCurrentKitchen.value)
-        console.log('shiftCurrentWarehouse.value', shiftCurrentWarehouse.value)
       }
     } catch (err) {
       throw err
@@ -249,6 +246,18 @@ export function useShift() {
       loading.value = false
     }
   }
+
+  async function loadCurrentShiftWarehouse({ filter }: { filter?: Record<string, any> } = {}) {
+    try {
+      loading.value = true
+      shiftCurrentWarehouse.value = await fetchCurrentShiftWarehouse({filter})
+      return shiftCurrentWarehouse.value
+    } catch (err) {
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
   
   async function startWarehouse() {
     try {
@@ -339,6 +348,18 @@ export function useShift() {
       loading.value = false
     }
   }
+
+  async function loadCurrentShiftCashier({ filter }: { filter?: Record<string, any> } = {}) {
+    try {
+      loading.value = true
+      shiftCurrentCashier.value = await fetchCurrentShiftCashier({filter})
+      return shiftCurrentCashier.value
+    } catch (err) {
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
   
   async function startCashier(payload: StartShiftCashierPayload) {
     try {
@@ -408,8 +429,19 @@ export function useShift() {
         filter
       })
       shiftKitchen.value = { data, total }
-      console.log('hasil fetch shift kitchen', { data, total })
       return { data, total }
+    } catch (err) {
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadCurrentShiftKitchen({ filter }: { filter?: Record<string, any> } = {}) {
+    try {
+      loading.value = true
+      shiftCurrentKitchen.value = await fetchCurrentShiftKitchen({filter})
+      return shiftCurrentKitchen.value
     } catch (err) {
       throw err
     } finally {
@@ -466,6 +498,7 @@ export function useShift() {
 
     shiftCurrentWarehouse,
     shiftWarehouse,
+    loadCurrentShiftWarehouse,
     loadWarehouse,
     startWarehouse,
     updateWarehouse,
@@ -479,6 +512,7 @@ export function useShift() {
 
     shiftCurrentCashier,
     shiftCashier,
+    loadCurrentShiftCashier,
     loadCashier,
     startCashier,
     updateCashier,
@@ -486,6 +520,7 @@ export function useShift() {
 
     shiftCurrentKitchen,
     shiftKitchen,
+    loadCurrentShiftKitchen,
     loadKitchen,
     startKitchen,
     updateKitchen,

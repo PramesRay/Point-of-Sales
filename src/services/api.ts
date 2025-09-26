@@ -11,8 +11,6 @@ let refreshPromise: Promise<string | null> | null = null;
 export async function getIdTokenSoft(): Promise<string | null> {
   try {
     const res = await auth.currentUser?.getIdToken() ?? null; // no force
-    console.log('token', res)
-    console.log('auth.currentUser', auth.currentUser)
     return res
   } catch {
     return null;

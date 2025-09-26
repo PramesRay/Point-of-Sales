@@ -97,12 +97,12 @@ function openDetail(request: StockRequest) {
             >
               <div v-if="latestRequest" class="pa-5">
                 <span class="text-subtitle-2 text-disabled">
-                  <span class="text-medium-emphasis" v-if="!props.branch">{{ latestRequest?.branch.name }}: </span>{{ latestRequest?.items.length }} item
+                  <span class="text-medium-emphasis" v-if="!props.branch">{{ latestRequest?.branch?.name }}: </span>{{ latestRequest?.items.length }} item
                 </span>
                 <div class="d-inline-flex align-center justify-space-between w-100">
                   <div>
                     <h6 class="text-secondary text-h4 font-weight-bold">
-                      {{ latestRequest?.meta.created_by.name }}
+                      {{ latestRequest?.meta.created_by?.name }}
                     </h6>
                     <span class="text-subtitle-2 text-disabled">
                       Lihat Detail
@@ -130,12 +130,12 @@ function openDetail(request: StockRequest) {
                   <v-list-item v-for="(listRequest, i) in listRequest" :key="i" :value="listRequest" color="secondary" rounded="sm" @click="openDetail(listRequest)">
                     <v-divider v-if="i !== 0" class="my-3" />
                     <span class="text-subtitle-2 text-disabled">
-                      <span class="text-medium-emphasis" v-if="!props.branch">{{ listRequest.branch.name }}: </span>{{ listRequest.items.length }} item
+                      <span class="text-medium-emphasis" v-if="!props.branch">{{ listRequest.branch?.name }}: </span>{{ listRequest.items.length }} item
                     </span>
                     <div class="d-inline-flex align-center justify-space-between w-100">
                       <div>
                         <h6 class="text-h4 text-medium-emphasis font-weight-bold" style="max-width: 150px; overflow: hidden;">
-                          {{ listRequest?.meta.created_by.name }}
+                          {{ listRequest?.meta.created_by?.name }}
                         </h6>
                         <span class="text-subtitle-2 text-disabled">
                           Lihat Detail

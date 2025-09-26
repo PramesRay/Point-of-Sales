@@ -20,14 +20,13 @@ import CurrentOrderQue from '../kitchen/components/CurrentOrderQue.vue';
 import { useBranchList } from '@/composables/useBranchList';
 import { useCurrentOrders } from '@/composables/useCurrentOrder';
 import { useMenu } from '@/composables/useMenuItems';
-import type { ShiftKitchen } from '@/types/shift';
 import { useShift } from '@/composables/useShift';
 
 // Data Loading
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco } = useCurrentOrders();
 const { loadMenuSales: loadMenuSales, dataItemSales: menuSales, categories, loading: lm } = useMenu();
-const { loadShiftbyRole, shiftCurrentKitchen } = useShift()
+const { loadCurrentShiftCashier, loadCurrentShiftKitchen, shiftCurrentKitchen, shiftCurrentCashier } = useShift()
 
 
 const visibleComponent = computed(() => {
@@ -43,8 +42,9 @@ onMounted(async () => {
   await loadBranch()
 
   loadCurrentOrder()
-  loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
-  loadShiftbyRole()
+  selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
+  await loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+  await loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
 })
 
 const branchOptions = computed(() => branches.value);
@@ -63,12 +63,22 @@ const selectedBranchObject = computed(() => {
 
 watch(
   () => selectedBranch.value,
-  () => {
-    loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id)
+  async () => {
+    selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
     loadCurrentOrder()
-    loadShiftbyRole()
+    await loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+    await loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
   }
 )
+
+const currentKitchenShift = computed(() => {
+  console.log('shiftCurrentKitchen?.value', shiftCurrentKitchen?.value)
+  return shiftCurrentKitchen?.value
+})
+const currentCashierShift = computed(() => {
+  console.log('shiftCurrentCashier?.value', shiftCurrentCashier?.value)
+  return shiftCurrentCashier?.value
+})
 
 const pinBranch = ref(true)
 </script>
@@ -130,15 +140,15 @@ const pinBranch = ref(true)
   <v-row>
     <!-- Text jika belum mulai shift -->
     <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-if="!userStore.me?.activity?.is_active">
-      <p class="text-subtitle-1 text-disabled"> Anda belum memulai shift! </p>
+      <p class="text-subtitle-1 text-disabled"> Anda belum memulai sif! </p>
     </v-col>
 
-    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="!userStore.me?.activity?.shift_op?.start && !userStore.hasRole(['admin', 'pemilik'])">
-      <p class="text-subtitle-1 text-disabled"> Belum ada shift kasir yang dimulai! </p>
+    <v-col cols="12" class="d-flex justify-center mt-2 mb-0 py-0" v-else-if="currentCashierShift?.end || currentKitchenShift?.end">
+      <p class="text-subtitle-1 text-disabled"> Sif kasir atau sif dapur belum dimulai! </p>
     </v-col>
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
-     <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
+     <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || (userStore.me?.activity?.shift_op?.start)">
        <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-pesanan'">
          <v-row>
            <v-col cols="12">
