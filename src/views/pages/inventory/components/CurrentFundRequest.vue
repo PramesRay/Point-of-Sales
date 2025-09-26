@@ -81,7 +81,7 @@ function openDetail(request: FundRequest) {
           </v-col>
           <v-col cols="4" class="mt-auto text-right">
             <v-btn
-              v-if="!loading && userStore.hasRole(['admin', 'pemilik', 'dapur'])"
+              v-if="!loading && userStore.hasRole(['admin', 'pemilik', 'gudang'])"
               color="primary"
               @click="openAddRequest"
             >
