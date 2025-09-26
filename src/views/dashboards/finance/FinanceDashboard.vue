@@ -28,7 +28,7 @@ import { useTotalOrder } from '@/composables/useTotalOrder';
 // Data Loading
 const { load: loadUser, data: userData, loading: lu } = useUser()
 const { load: loadBranch, data: branches, loading: lb } = useBranchList();
-const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, loadShiftbyRole, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
+const { loadCashier, loadEmployee, loadKitchen, loadWarehouse, shiftCashier, shiftEmployee, shiftKitchen, shiftWarehouse, loading: ls } = useShift()
 const { load: loadSummary, summary, loading: lf } = useFinanceDashboard();
 const { load: loadTotalOrder, data: totalOrderData, loading: lo } = useTotalOrder();
 const { load: loadFundRequest, data: fundRequestList, loading: lfr } = useFundRequests();
@@ -41,7 +41,10 @@ const visibleComponent = computed(() => {
 onMounted(async () => {
   await loadBranch();
   loadUser()
-  loadShiftbyRole()
+  loadCashier() 
+  loadEmployee() 
+  loadKitchen() 
+  loadWarehouse()
   loadSummary();
   loadTotalOrder();
   loadFundRequest();
@@ -59,6 +62,10 @@ watch(selectedBranch, () => {
   loadSummary({ filter: { 'branch_id': selectedBranch.value } })
   loadTotalOrder(selectedBranch.value)
   loadFundRequest({ filter: { 'branch_id': selectedBranch.value } })
+  loadUser()
+  loadCashier() 
+  loadEmployee() 
+  loadKitchen() 
 });
 
 const pinBranch = ref(false)
