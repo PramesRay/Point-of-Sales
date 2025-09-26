@@ -228,7 +228,7 @@ const pinBranch = ref(true)
         </v-col>
         <v-col cols="12" v-if="!mdAndUp && (!visibleComponent || visibleComponent === 'manajemen')">
           <Management 
-            :branch="selectedBranchObject ?? branchOptions[0]"
+            :branch="selectedBranchObject"
             :data_user="userData"
             :data_branch="branches"
             :data_menu="menuData"
@@ -239,7 +239,7 @@ const pinBranch = ref(true)
             :refresh_menu="() => loadMenu(selectedBranch ?? branchOptions[0].id)"
             :refresh_branch="loadBranch"
             :refresh_user="loadUser"
-            :refresh_category="() => loadCategory(selectedBranch ?? branchOptions[0].id)"
+            :refresh_category="loadCategory"
             class="flex-grow-1"
           />
         </v-col>
