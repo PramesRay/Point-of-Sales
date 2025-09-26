@@ -146,7 +146,7 @@ function openDetail(data: Reservation) {
                 </div>
               </v-list-item>
             </v-list>
-            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+            <div v-if="!listReservation.length && !latestReservation" class="text-center text-subtitle-2 text-disabled mt-4">
               Tidak ada data reservasi
             </div>
           </ScrollContainer>

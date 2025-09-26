@@ -44,11 +44,13 @@ const payload = ref<UpdateEmployeePayloadByOwner>({
 const roleItem = user.hasRole('admin') ? [
   { title: 'Admin', value: 'admin' },
   { title: 'Pemilik', value: 'pemilik' },
+  { title: 'Bendahara', value: 'bendahara' },
   { title: 'Dapur', value: 'dapur' },
   { title: 'Gudang', value: 'gudang' },
   { title: 'Kasir', value: 'kasir' },
 ] : [
   { title: 'Pemilik', value: 'pemilik' },
+  { title: 'Bendahara', value: 'bendahara' },
   { title: 'Dapur', value: 'dapur' },
   { title: 'Gudang', value: 'gudang' },
   { title: 'Kasir', value: 'kasir' },
