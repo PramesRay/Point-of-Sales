@@ -18,7 +18,16 @@ console.log('RegisterPage');
                     <!---Left Part Logo -->
                     <v-row>
                       <v-col cols="12" class="text-center">
-                        <Logo />
+                        <div>
+                          <!-- <Logo /> -->
+                          <v-img
+                            class="mx-auto"
+                            src="/temp_logo.png"
+                            max-width="100"
+                            max-height="100"
+                            cover
+                          />
+                        </div>
                         <h2 class="text-secondary text-h2 mt-8">Daftar Akun</h2>
                         <h4 class="text-disabled text-h4 mt-3">Silahkan Isi Form Dibawah</h4>
                       </v-col>
