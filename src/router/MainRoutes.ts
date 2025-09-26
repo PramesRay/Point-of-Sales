@@ -27,6 +27,8 @@ const MainRoutes = {
           // Berdasarkan role, arahkan pengguna ke halaman yang sesuai
           if (userStore.hasRole(['admin', 'pemilik'])) {
             next({name:'Pemilik'});
+          } else if (userStore.hasRole('bendahara')) {
+            next({name:'Bendahara'});
           } else if (userStore.hasRole('kasir')) {
             next({name:'Kasir'});
           } else if (userStore.hasRole('gudang')) {
