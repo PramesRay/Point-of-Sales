@@ -45,7 +45,7 @@ onMounted(async () => {
   await loadBranch()
   
   selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-  loadCurrentOrder()
+  loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
   loadStockRequests()
   loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
   loadCurrentShiftWarehouse()
@@ -82,7 +82,7 @@ watch(
   () => selectedBranch.value,
   () => {
     selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-    loadCurrentOrder()
+    loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
     loadStockRequests()
     loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
     loadCurrentShiftWarehouse()
@@ -177,7 +177,7 @@ const pinBranch = ref(true)
               :branch="selectedBranchObject"
               :loading="lco"
   
-              :refresh="loadCurrentOrder"
+              :refresh="() => loadCurrentOrder({ filter: { branch_id: selectedBranch ?? branchOptions[0]?.id } })"
               class="flex-grow-1" 
             />
           </v-col>

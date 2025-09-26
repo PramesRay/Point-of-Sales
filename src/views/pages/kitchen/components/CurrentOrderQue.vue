@@ -44,11 +44,12 @@ const filteredDataByBranch = computed(() => {
     return props.data;
   }
   return props.data.filter(
-    (tx) => tx?.branch?.id === props.branch?.id
+    (tx) => tx?.branch?.id == props.branch?.id
   );
 });
 
 const filteredData = computed(() => {
+  console.log('filteredDataByBranch.value', filteredDataByBranch.value)
   let data = filteredDataByBranch.value
   data = filteredDataByBranch.value.filter((tx) => {
     const isActiveMatch = isActive.value

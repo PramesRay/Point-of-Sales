@@ -197,7 +197,7 @@ function handlePayment() {
           <h4 class="text-subtitle-1">Daftar Item:</h4>
           <!-- Add Item Button -->
           <span class="text-subtitle-2 text-medium-emphasis">
-            <v-btn
+            <!-- <v-btn
               v-if="currentOrder?.status !== 'Selesai' && currentOrder?.status !== 'Batal' && currentOrder?.payment_status === 'Pending' && !currentOrder?.snap_token"
               append-icon="mdi-pencil"
               class="text-disabled"
@@ -216,7 +216,7 @@ function handlePayment() {
               "
             >
               Ubah Item
-            </v-btn>
+            </v-btn> -->
             <v-btn
               v-if="refund_item?.items && refund_item.items.length > 0"
               color="error"

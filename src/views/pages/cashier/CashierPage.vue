@@ -41,10 +41,10 @@ onMounted(async () => {
 
   await loadBranch()
 
-  loadCurrentOrder()
+  loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
   selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-  await loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
-  await loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+  loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
+  loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
 })
 
 const branchOptions = computed(() => branches.value);
@@ -64,21 +64,16 @@ const selectedBranchObject = computed(() => {
 watch(
   () => selectedBranch.value,
   async () => {
+
     selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-    loadCurrentOrder()
+    loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
     await loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
     await loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
   }
 )
 
-const currentKitchenShift = computed(() => {
-  console.log('shiftCurrentKitchen?.value', shiftCurrentKitchen?.value)
-  return shiftCurrentKitchen?.value
-})
-const currentCashierShift = computed(() => {
-  console.log('shiftCurrentCashier?.value', shiftCurrentCashier?.value)
-  return shiftCurrentCashier?.value
-})
+const currentKitchenShift = computed(() => shiftCurrentKitchen?.value)
+const currentCashierShift = computed(() => shiftCurrentCashier?.value)
 
 const pinBranch = ref(true)
 </script>
@@ -161,11 +156,15 @@ const pinBranch = ref(true)
            </v-col>
            <v-col cols="12">
              <CreateOrder 
+                v-if="selectedBranch"
                :data_menu="menuSales"
                :categories="categories"
-               :refresh="loadCurrentOrder"
+               :refresh="() => loadCurrentOrder({ filter: { branch_id: selectedBranch ?? branchOptions[0]?.id }})"
                class="flex-grow-1" 
              />
+             <div v-else class="d-flex justify-center text-center text-subtitle-2 text-medium-emphasis font-weight-medium">
+              Pilih cabang terlebih dahulu untuk membuat pesanan
+             </div>
            </v-col>
          </v-row>
        </v-col>
@@ -180,7 +179,7 @@ const pinBranch = ref(true)
                :branch="selectedBranchObject"
                :loading="lco"
    
-               :refresh="loadCurrentOrder"
+               :refresh="() => loadCurrentOrder({ filter: { branch_id: selectedBranch ?? branchOptions[0]?.id }})"
                class="flex-grow-1" 
              />
            </v-col>

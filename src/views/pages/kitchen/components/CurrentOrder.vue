@@ -9,12 +9,16 @@ const props = defineProps<{
   loading: boolean;
 }>();
 
-// Computed untuk filter transaksi berdasarkan branch
-const filteredData = computed(() => {
-  return props.data.filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');
+const filteredDataByBranch = computed(() => {
+  if (!props.branch || props.branch.id === 'all') {
+    return props.data.filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');;
+  }
+  return props.data.filter(
+    (tx) => tx?.branch?.id === props.branch?.id
+  ).filter(tx => tx.status === 'Diproses' || tx.status === 'Pending' || tx.status === 'Tersaji');
 });
 
-const currentOrder = computed(() => filteredData.value.length || 0);
+const currentOrder = computed(() => filteredDataByBranch.value.length || 0);
 </script>
 
 <template>
