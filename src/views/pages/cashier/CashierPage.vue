@@ -139,7 +139,7 @@ const pinBranch = ref(true)
 
     <!-- Kolom Kiri: Current Order + Current Transaction -->
      <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
-       <v-col cols="12" md="6" v-if="(mdAndUp) && (!visibleComponent || visibleComponent === 'rekapitulasi-pesanan')">
+       <v-col cols="12" md="6" v-if="!visibleComponent || visibleComponent === 'rekapitulasi-pesanan'">
          <v-row>
            <v-col cols="12">
              <CurrentOrder 
