@@ -45,7 +45,9 @@ const visibleComponent = computed(() => {
 })
 
 const isChanged = ref(false);
-const loadParams = {filter: {'created_by': userData?.value?.fk_user_id}}
+const loadParams = ref<{filter: {'created_by': string}}>({
+  filter: { created_by: userData?.value?.fk_user_id || '' }
+})
 
 onMounted(async() => {
   if (!userData.value) { 
@@ -67,19 +69,19 @@ onMounted(async() => {
   } else {
     await loadBranch();
     loadCategory()
-    loadCurrentOrder(loadParams);
+    loadCurrentOrder(loadParams.value);
     userData?.value?.branch ? loadItemSales(userData?.value?.branch.id) : null;
-    loadReservation(loadParams);
+    loadReservation(loadParams.value);
   }
 })
 
 watch(() => userStore.me, async () => {
     userData.value = userStore.me as User;
-    const loadParams = {filter: {'created_by': userData?.value?.fk_user_id}}
+    loadParams.value = {filter: {'created_by': userData?.value?.fk_user_id}}
     await loadBranch();
-    loadCurrentOrder(loadParams);
+    loadCurrentOrder(loadParams.value);
     userData?.value?.branch ? loadItemSales(userData?.value?.branch.id) : null;
-    loadReservation(loadParams);
+    loadReservation(loadParams.value);
   }
 )
 
