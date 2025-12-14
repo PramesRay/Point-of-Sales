@@ -3,10 +3,6 @@ import type { CreateDirectPaymentOrderPayload, CreateOrderPayload, Order, Refund
 import { useAlertStore } from '@/stores/alert';
 const alertStore = useAlertStore();
 
-/**
- * Fetch Current Order data from backend.
- * Fallback to dummy data if request fails.
- */
 export async function fetchCurrentOrder({
     page,
     limit,

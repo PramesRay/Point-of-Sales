@@ -52,15 +52,6 @@ export const useAuthStore = defineStore({
             if (u) {
               this.user = u;
               this.isAuthenticated = true;
-
-              // // sinkron profil (tanpa menyentuh Firebase user)
-              // const newProfile = { email: u.email, name: u.displayName };
-              // const last = localStorage.getItem('lastSyncedProfile');
-              // const prev = last ? JSON.parse(last) : null;
-              // if (!prev || prev.email !== newProfile.email || prev.name !== newProfile.name) {
-              //   // await api.patch('/user/me', newProfile);
-              //   localStorage.setItem('lastSyncedProfile', JSON.stringify(newProfile));
-              // }
             } else {
               this.user = null;
               this.isAuthenticated = false;
@@ -295,62 +286,6 @@ export const useAuthStore = defineStore({
         this.loading = false
       }
     },
-    // async verifyOTP(otp: string) {
-    //   try {
-    //     const userCredential = await this.confirmationResult?.confirm(otp)
-    //     const firebaseUid = userCredential?.user.uid
-
-    //     if (!firebaseUid) {
-    //       throw new Error('Verifikasi OTP gagal');
-    //     }
-
-    //     const res = await api.post('/auth/verify', {
-    //       firebase_uid: firebaseUid,
-    //       phone: this.tempUser.phone,
-    //     })
-        
-    //     // Hapus data sementara setelah berhasil
-    //     localStorage.removeItem('tempUser');
-
-    //     // Simpan data pengguna di localStorage (Auto Login User)
-    //     this.user = res.data.user;
-    //     this.isAuthenticated = true;
-    //     localStorage.setItem('user', JSON.stringify(res.data));
-        
-    //     return res.data;
-    //   } catch (err: any) {
-    //     // Sementara (HAPUS SETELAH BACKEND TERSEDIA!!!)
-    //     localStorage.removeItem('tempUser');
-    //     console.log('Error! Bypassing OTP verification for now.');
-    //     const mockUser = {
-    //       id: 'mock-user-id',
-    //       username: 'mock-user',
-    //       token: 'mock-token',
-    //     }
-    //     this.user = mockUser
-    //     this.isAuthenticated = true;
-    //     localStorage.setItem('user', JSON.stringify(mockUser));
-    //     router.push('/');
-
-    //     throw err.response?.data?.message || err || 'Verifikasi OTP gagal';
-    //   }
-    // },
-    // // resend otp
-    // async resendOTP() {
-    //   const recaptcha = new RecaptchaVerifier(firebaseAuth, 'recaptcha-container', {
-    //       size: 'invisible',
-    //       callback: () => {
-    //         console.log('recaptcha solved')
-    //       }
-    //     })
-    //   try {
-    //     this.confirmationResult = await signInWithPhoneNumber(firebaseAuth, `+62${this.tempUser.phone}`, recaptcha)
-    //   } catch (err: any) {
-    //     console.warn('Bypassing Firebase OTP due to error:', err)
-    //     // Simulasi berhasil kirim OTP meskipun error
-    //     this.confirmationResult = { confirm: async () => ({ user: { uid: 'bypass-uid' } }) } as any
-    //   }
-    // },
     async logout() {
       this.loading = true
       try {

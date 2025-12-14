@@ -41,10 +41,10 @@ onMounted(async () => {
 
   await loadBranch()
 
-  loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
-  selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-  loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
-  loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
+  loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
+  selectedBranch.value ? loadMenuSales(selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id) : null
+  loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
+  loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
 })
 
 const branchOptions = computed(() => branches.value);
@@ -65,10 +65,10 @@ watch(
   () => selectedBranch.value,
   async () => {
 
-    selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-    loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id }})
-    await loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
-    await loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+    selectedBranch.value ? loadMenuSales(selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id) : null
+    loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
+    loadCurrentShiftCashier({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id } })
+    loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id } })
   }
 )
 

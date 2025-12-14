@@ -259,7 +259,7 @@ function handlePayment() {
                 </div>
               </v-col>
               <v-col cols="5" class="text-right">
-                <div class="text-subtitle-2 text-medium-emphasis">
+                <div v-if="userStore.hasRole(['admin', 'pemilik', 'dapur'])" class="text-subtitle-2 text-medium-emphasis">
                   <div v-if="item.status === 'Pending'">
                     <v-btn 
                       color="warning" 

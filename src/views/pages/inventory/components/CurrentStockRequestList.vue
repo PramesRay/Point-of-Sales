@@ -45,7 +45,7 @@ function openAddRequest() {
     component: UpdateStockRequest,
     props: {
       is_create: true,
-      branch: props.branch,
+      branch: props.branch?.id,
       confirmBeforeClose: true,
       isChanged,
       refresh: props.refresh

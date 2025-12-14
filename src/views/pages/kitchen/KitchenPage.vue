@@ -29,7 +29,7 @@ const { load: loadBranch, data: branches, loading: lb } = useBranchList();
 const { load: loadCurrentOrder, data: currentOrder, loading: lco, } = useCurrentOrders();
 const { load: loadStockRequests, list: stockRequestlist, loading: lsr } = useStockRequests();
 const { loadMenuSales, dataItemSales: menuSales, categories, loading: lm } = useMenu()
-const { loadShiftbyRole, loadCurrentShiftWarehouse, shiftCurrentKitchen, shiftCurrentWarehouse } = useShift()
+const { loadCurrentShiftKitchen, loadCurrentShiftWarehouse, shiftCurrentKitchen, shiftCurrentWarehouse } = useShift()
 const alertStore = useAlertStore();
 
 const visibleComponent = computed(() => {
@@ -45,9 +45,9 @@ onMounted(async () => {
   await loadBranch()
   
   selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-  loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
-  loadStockRequests()
-  loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+  selectedBranch.value ? loadCurrentOrder({ filter: { branch_id: selectedBranch.value } }) : loadCurrentOrder()
+  selectedBranch.value ? loadStockRequests({ filter: { branch_id: selectedBranch.value } }) : loadStockRequests()
+  loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
   loadCurrentShiftWarehouse()
 })
 const branchOptions = computed(() => branches.value);
@@ -79,12 +79,12 @@ const currentWarehouseShift = computed(() => {
 })
 
 watch(
-  () => selectedBranch.value,
+  () => (selectedBranch.value, userStore.me),
   () => {
     selectedBranch.value ? loadMenuSales(selectedBranch.value ?? branchOptions.value[0]?.id) : null
-    loadCurrentOrder({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
-    loadStockRequests()
-    loadShiftbyRole({ filter: { branch_id: selectedBranch.value ?? branchOptions.value[0]?.id } })
+    selectedBranch.value ? loadCurrentOrder({ filter: { branch_id: selectedBranch.value } }) : loadCurrentOrder()
+    selectedBranch.value ? loadStockRequests({ filter: { branch_id: selectedBranch.value } }) : loadStockRequests()
+    loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch.value ?? userStore.me?.activity.branch?.id ?? branchOptions.value[0]?.id }})
     loadCurrentShiftWarehouse()
   }
 )
@@ -155,9 +155,9 @@ const pinBranch = ref(true)
       <p class="text-subtitle-1 text-disabled"> Sif dapur atau sif gudang belum dimulai! </p>
     </v-col>
 
-    <!-- Kolom Kiri: Current Order + Current Transaction -->
-     <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
-      <!-- Kolom Kiri: Current Order + Current Transaction -->
+    <!-- Kolom Kiri: Current Order -->
+    <template v-else-if="userStore.hasRole(['admin', 'pemilik']) || userStore.me?.activity?.shift_op?.start">
+      <!-- Kolom Kiri: Current Order -->
       <v-col cols="12" md="4">
         <v-row>
           <v-col cols="12">
@@ -170,15 +170,13 @@ const pinBranch = ref(true)
             />
           </v-col>
           <v-col cols="12">
-            <CurrentOrderQue
-              v-if="(!visibleComponent || visibleComponent === 'pesanan')"
-              :data="currentOrder.data"
-              :data_menu="menuSales"
+            <MenuQuantityManagement 
+              v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
+              :data="currentKitchenShift!" 
               :branch="selectedBranchObject"
-              :loading="lco"
-  
-              :refresh="() => loadCurrentOrder({ filter: { branch_id: selectedBranch ?? branchOptions[0]?.id } })"
+              :loading="lsr" 
               class="flex-grow-1" 
+              :refresh="() => loadCurrentShiftKitchen({ filter: { branch_id: selectedBranch ?? userStore.me?.activity.branch?.id ?? branchOptions[0]?.id }})"
             />
           </v-col>
         </v-row>
@@ -188,13 +186,15 @@ const pinBranch = ref(true)
       <v-col cols="12" md="4">
         <v-row>
           <v-col cols="12">
-            <CurrentStockRequestList 
-              v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
-              :data="stockRequestlist.data" 
+            <CurrentOrderQue
+              v-if="(!visibleComponent || visibleComponent === 'pesanan')"
+              :data="currentOrder.data"
+              :data_menu="menuSales"
               :branch="selectedBranchObject"
-              :loading="lsr" 
+              :loading="lco"
+  
+              :refresh="() => selectedBranch ? loadCurrentOrder({ filter: { branch_id: selectedBranch } }) : loadCurrentOrder()"
               class="flex-grow-1" 
-              :refresh="loadStockRequests"
             />
           </v-col>
         </v-row>
@@ -203,18 +203,13 @@ const pinBranch = ref(true)
       <v-col cols="12" md="4">
         <v-row>
           <v-col cols="12">
-            <MenuQuantityManagement 
+            <CurrentStockRequestList 
               v-if="(!visibleComponent || visibleComponent === 'permintaan-persediaan')"
-              :data="currentKitchenShift!" 
+              :data="stockRequestlist.data" 
               :branch="selectedBranchObject"
               :loading="lsr" 
               class="flex-grow-1" 
-              :refresh="() => userStore.hasRole(['admin', 'pemilik']) 
-              ? loadShiftbyRole({
-                  sortBy: 'meta.created_at',
-                  sortDesc: true
-                }) 
-              : userStore.fetchShift()"
+              :refresh="() => selectedBranch ? loadStockRequests({ filter: { branch_id: selectedBranch } }) : loadStockRequests()"
             />
           </v-col>
         </v-row>

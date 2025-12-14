@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, reactive, watch, onMounted, watchEffect } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import ScrollContainer from '@/components/shared/ScrollContainer.vue'
-import type { StockRequest } from '@/types/inventory'
 import type { IdName } from '@/types/common'
-import type { RestockMenuSalesPayload, MenuSale } from '@/types/menu'
 import type { ShiftKitchen, UpdateShiftKitchenPayload } from '@/types/shift'
 import { useOverlayManager } from '@/composables/non-services/useOverlayManager'
-import { useMenu } from '@/composables/useMenuItems'
 import Blank from '@/components/shared/Blank.vue'
 import { useShift } from '@/composables/useShift'
 
@@ -125,7 +122,7 @@ function toggleQtyField(item: any) {
         </v-row>
 
         <div v-if="!props.loading">
-          <div class="my-4">
+          <div>
             <ScrollContainer :style="{ maxHeight: mdAndUp ? '35rem' : '18rem' }" v-if="!currentShiftKichen?.end">
               <v-list v-if="currentData.length > 0" class="">
                 <v-list-item
@@ -135,6 +132,7 @@ function toggleQtyField(item: any) {
                   color="secondary"
                   rounded="sm"
                 >
+                  <v-divider v-if="i !== 0" class="my-3" />
                   <v-row no-gutters align="center">
                     <v-col cols="5">
                       <span v-if="item.final <= item.threshold" class="text-subtitle-2 text-medium-emphasis text-warning">Perlu Restock</span>
@@ -198,17 +196,14 @@ function toggleQtyField(item: any) {
                         </div>
                       </div>
                     </v-col>
-
-
                   </v-row>
-                  <v-divider class="my-3" />
                 </v-list-item>
               </v-list>
-              <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+              <div v-else class="text-center text-subtitle-2 text-disabled my-4">
                 Data Menu tidak ditemukan
               </div>
             </ScrollContainer>
-            <div v-else class="text-center text-subtitle-2 text-disabled mt-4">
+            <div v-else class="text-center text-subtitle-2 text-disabled my-4">
               Tidak ada shift aktif
             </div>
           </div>

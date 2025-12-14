@@ -186,6 +186,7 @@ function handleSubmit() {
           item-title="name"
           item-value="id"
           label="Cabang"
+          :return-object="false"
         ></v-select>
       </div>
       <div class="d-flex justify-space-between align-baseline">
