@@ -1,116 +1,170 @@
-# Berry Free Vue Material Admin Template [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Get%20Berry%20React%20-%20The%20most%20beautiful%20Material%20designed%20Admin%20Dashboard%20Template%20&url=https://berrydashboard.io&via=codedthemes&hashtags=reactjs,webdev,developers,javascript)
+# Point-of-Sales (Frontend) — Restaurant POS Dashboard
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Price](https://img.shields.io/badge/price-FREE-0098f7.svg)](https://github.com/codedthemes/berry-free-vue-admin-template/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![GitHub Repo](https://img.shields.io/badge/repo-Point--of--Sales-blue?style=for-the-badge)](https://github.com/PramesRay/Point-of-Sales)
 
-Berry is a free Material admin dashboard template built with Vue. It is meant to provide the best possible User Experience with highly customizable feature-rich pages. It is a complete Dashboard Template that has easy and intuitive responsive design whether it is viewed on retina screens or laptops.
+Frontend application for the multi-branch Restaurant Point-of-Sales (POS) and Operational Management System used for the thesis project “Nasi Uduk Remaja Cikini Haji Sawid”.  
+Repository includes `src/`, `public/`, `package.json` and typical Vite + Vue project files.
 
-:star: :star: :star: Do not forget to star (Top right of this page) it if you like the theme :star: :star: :star:
 
-![IMG_8566.jpg](https://berrydashboard.io/imp-images/berry-github-free-vue-repo.jpg)
 
-[Pro version](https://berrydashboard.io/vue) of Berry vue template contains features like TypeScript, Apps, Authentication Methods (i.e. JWT), Advance Components, Form Plugins, Layouts, Widgets, and many more.
+## Demo / Preview
+- [Preview Internal App](https://internalposnurchs.up.railway.app/)
+- [Preview Customer App](https://nurchs.up.railway.app/)
 
-| [Berry Free](https://berrydashboard.io/vue/free/) | [Berry](https://codedthemes.com/item/berry-vue-admin-dashboard/)     |
-| ------------------------------------------------- | :------------------------------------------------------------------- |
-| **9** Demo pages                                  | **45+** demo pages                                                   |
-| -                                                 | ✓ Multi-language                                                     |
-| -                                                 | ✓ Dark/Light Mode 🌓                                                 |
-| -                                                 | ✓ TypeScript version                                                 |
-| -                                                 | ✓ Design files (Figma)                                               |
-| -                                                 | ✓ 6+ color Options                                                   |
-| -                                                 | ✓ RTL                                                                |
-| -                                                 | ✓ JWT authentications                                                |
-| -                                                 | ✓ [More components](https://berrydashboard.io/vue/dashboard/default) |
+## Tech Stack
 
-## Why Berry?
+### Main
+* [![Vue.js](https://img.shields.io/badge/vue.js-35495E?style=for-the-badge&logo=vue.js&logoColor=4FC08D)](https://vuejs.org/)
+* [![Vuetify](https://img.shields.io/badge/vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)](https://vuetifyjs.com/)
+* [![Vite](https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+* [![TypeScript](https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-Berry offers everything you need to create dashboards. We have included the following high-end features in our initial release:
+### State & HTTP
+* [![Pinia](https://img.shields.io/badge/pinia-4A78B0?style=for-the-badge&logo=pinia&logoColor=white)](https://pinia.vuejs.org/)
+* [![Axios](https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/)
 
-- Modern aesthetics UI design
-- Vuetify components
-- Fully Responsive, all modern browser supported
-- Easy to use code structure
-- Flexible & High-Performance code
-- Easy Documentation Guide
+### Auth & Payments
+* [![Firebase](https://img.shields.io/badge/firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+* [![Midtrans](https://img.shields.io/badge/midtrans-00AEEF?style=for-the-badge&logoColor=white)](https://midtrans.com/)
 
-## Free Berry Vue version
+### Utilities & Charts
+* [![Day.js](https://img.shields.io/badge/day.js-FF5F5F?style=for-the-badge&logo=javascript&logoColor=white)](https://day.js.org/)
+* [![Lodash](https://img.shields.io/badge/lodash-3492FF?style=for-the-badge&logo=lodash&logoColor=white)](https://lodash.com/)
+* [![ApexCharts](https://img.shields.io/badge/apexcharts-5E2EC7?style=for-the-badge&logo=apexcharts&logoColor=white)](https://apexcharts.com/)
 
-- [Preview](https://berrydashboard.io/vue/free/)
-- [Download from Github](https://github.com/codedthemes/berry-free-vue-admin-template)
+### Dev tooling
+* [![ESLint](https://img.shields.io/badge/eslint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)](https://eslint.org/)
+* [![Prettier](https://img.shields.io/badge/prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=white)](https://prettier.io/)
+* [![Docker](https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-## Berry Pro version
 
-- [Preview](https://berrydashboard.io/vue)
-- [Purchase from Store](https://codedthemes.com/item/berry-vue-admin-dashboard/)
 
 ## Table of contents
 
-- [Getting Started](#getting-started)
-- [Documentation](#documentation)
-- [Technology Stack](#technology-stack)
-- [Author](#author)
-- [Issues?](#issues)
+- [Getting Started](#getting-started)  
+- [Environment Variables](#environment-variables)  
+- [Project Structure](#project-structure)  
+- [Author](#author)  
 - [License](#license)
-- [More Products](#more-free-react-material-admin-templates)
-- [Follow us](#follow-us)
+
+
 
 ## Getting Started
 
-Clone from Github
+**Clone repository**
 
+```bash
+git clone https://github.com/PramesRay/Point-of-Sales.git
+cd Point-of-Sales
 ```
-git clone https://github.com/codedthemes/berry-free-vue-admin-template.git
+
+**Install dependencies**
+```bash
+npm install
+# or
+yarn install
 ```
 
-## Documentation
+**Run in development**
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-[Berry documentation](https://codedthemes.gitbook.io/berry/) helps you with installation, deployment, and troubleshooting.
+**Build for production**
+```bash
+npm run build
+# or
+yarn build
+```
 
-## Technology Stack
+## Environment Variables
+Create a `.env` (or `.env.local`) file in project root with at least:
+```env
+# ===============================
+# Application Configuration
+# ===============================
+VITE_NODE_ENV=development
+VITE_PORT=5173
 
-- [Vuetify 3](https://vuetifyjs.com/)
-- Vite
-- Vue3
+# ===============================
+# API Configuration
+# ===============================
+VITE_API_URL=https://api.your-domain.com
+
+# ===============================
+# Firebase Configuration (Production)
+# ===============================
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+
+# ===============================
+# Firebase Configuration (Development)
+# ===============================
+VITE_FIREBASE_API_KEY_DEV=your_firebase_api_key_dev
+VITE_FIREBASE_AUTH_DOMAIN_DEV=your_project_dev.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID_DEV=your_firebase_project_id_dev
+VITE_FIREBASE_STORAGE_BUCKET_DEV=your_project_dev.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID_DEV=your_messaging_sender_id_dev
+VITE_FIREBASE_APP_ID_DEV=your_firebase_app_id_dev
+
+# ===============================
+# Payment Gateway (Midtrans)
+# ===============================
+VITE_MIDTRANS_CLIENT_KEY_DEV=your_midtrans_client_key_dev
+```
+
+## Project Structure
+```sh
+Point-of-Sales/
+├── public/                # Static assets (icons, favicon)
+├── src/
+│   ├── assets/            # Static assets (images, icons)
+│   ├── components/        # Reusable UI components
+│   ├── composables/       # Vue composables (logic reuse)
+│   ├── layouts/           # Application layouts
+│   ├── plugins/           # Plugin initialization (Vuetify, etc.)
+│   ├── router/            # Vue Router configuration
+│   ├── scss/              # Global SCSS styles
+│   ├── services/          # API service layer (Axios, fetch wrapper)
+│   ├── stores/            # State management (Pinia stores)
+│   ├── theme/             # Theme configuration (Vuetify / Berry)
+│   ├── types/             # Global TypeScript types & interfaces
+│   ├── utils/             # Utility/helper functions
+│   ├── views/             # Page-level components (routes)
+│   ├── App.vue            # Root Vue component
+│   ├── main.ts            # Application entry point
+│   └── config.ts          # Global application configuration
+├── index.html
+├── package.json
+└── README.md
+```
+
+## Key Features (Frontend)
+
+- Role-based dashboards (Owner, Finance, Cashier, Kitchen, Warehouse)
+- QR-code ordering flow for customers (public facing)
+- Real-time like UX with frequent polling or reactive UI updates
+- Inventory & stock request forms and approval flows
+- Shift management UI (start / end / status)
+- Reservation calendar and management UI
+- Fund request forms & status tracking
+- Charts & KPI widgets using ApexCharts
+- Global overlay manager for modals and forms
+- Centralized alert/toast system (Pinia store)
 
 ## Author
 
-Berry is developed by Team [CodedThemes](https://codedthemes.com).
+### Prames Ray Lapian
+Informatics Engineering Universitas Padjadjaran
 
-## Issues
-
-To report a bug, please submit an [issue](https://github.com/codedthemes/berry-free-vue-admin-template/issues) on Github. We will respond as soon as possible to resolve the issue.
 
 ## License
-
-- Licensed cover under [MIT](https://github.com/codedthemes/datta-able-bootstrap-dashboard/blob/master/LICENSE)
-
-## Berry Free - Other Technologies
-
-- [React](https://codedthemes.com/item/berry-mui-free-react-admin-template/)
-- [Bootstrap](https://codedthemes.com/item/berry-bootstrap-free-admin-template/)
-- [Angular](https://codedthemes.com/item/berry-angular-free-admin-template/)
-
-## Berry Pro - Other Technologies
-
-- [React](https://codedthemes.com/item/berry-material-react-admin-template/)
-- [Bootstrap](https://codedthemes.com/item/berry-bootstrap-5-admin-template/)
-- [Angular](https://codedthemes.com/item/berry-angular-admin-dashboard-template/)
-- [.Net](https://codedthemes.com/item/berry-dotnet-bootstrap-dashboard-template/)
-- [CodeIgnitor](https://codedthemes.com/item/berry-codeigniter-admin-template/)
-- [Django](https://codedthemes.com/item/berry-django-react-admin-template/)
-- [NodeJS](https://codedthemes.com/item/berry-react-node-js-admin-template/)
-
-## More Premium Vue Material Admin Templates
-
-- [Mantis](https://codedthemes.com/item/mantis-vue-admin-template/)
-- [Able Pro](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwiDpKWU6c-EAxWb1DgGHZrqBlwQFnoECBUQAQ&url=https%3A%2F%2Fthemeforest.net%2Fitem%2Fable-pro-vuejs-admin-dashboard-template%2F50804253&usg=AOvVaw1wWW-BC8ltIxIs-Rb1Mu8C&opi=89978449)
-
-## Follow us
-
-- [Website](https://berrydashboard.io)
-- [Blog](https://blog.berrydashboard.io)
-- [CodedThemes](https://codedthemes.com)
-- [Dribbble](https://dribbble.com/codedthemes)
-- [Facebook](https://www.facebook.com/codedthemes)
-- [Twitter](https://twitter.com/codedthemes)
+This project is licensed under the MIT License.
+See the LICENSE file for details.
