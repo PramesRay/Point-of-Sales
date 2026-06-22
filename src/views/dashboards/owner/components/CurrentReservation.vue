@@ -27,7 +27,7 @@ const isChanged = ref(false)
 
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
-  console.log('props.data', props.data)
+  // console.log('props.data', props.data)
   if (!props.branch || props.branch.id === 'all') {
     return props.data;
   }

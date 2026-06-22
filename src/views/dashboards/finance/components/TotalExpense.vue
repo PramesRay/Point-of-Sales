@@ -24,7 +24,7 @@ const timeRangeMapping = {
 const items = ['Hari ini', 'Minggu ini', 'Bulan ini', 'Tahun ini'];
 
 const branchExpenseData = computed(() => {
-  console.log('props.data', props.data)
+  // console.log('props.data', props.data)
   if (!props.data) return undefined;
   return props.data.expenses;
 });

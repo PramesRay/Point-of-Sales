@@ -55,7 +55,7 @@ const isChanged = computed(() => {
 
 watchEffect(() => {
   const val = isChanged.value
-  console.log('[DEBUG] isChanged:', val)
+  // console.log('[DEBUG] isChanged:', val)
   if (typeof props.onIsChangedUpdate === 'function' && !loadingShift.value) {
     props.onIsChangedUpdate(!!val)
   }
@@ -89,7 +89,7 @@ async function processSubmit() {
     clearPayload()
     emit('close')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
@@ -102,7 +102,7 @@ async function handleEndShift() {
       onConfirm: async () => {
         try {
           await endKitchen(currentData?.id)
-          console.log('end shift kitchen')
+          // console.log('end shift kitchen')
           if (typeof props.onIsChangedUpdate === 'function') {
             props.onIsChangedUpdate(false)
           }
@@ -110,7 +110,7 @@ async function handleEndShift() {
           clearPayload()
           emit('close')
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
         emit('close')
       }

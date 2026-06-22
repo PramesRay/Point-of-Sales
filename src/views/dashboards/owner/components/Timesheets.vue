@@ -16,7 +16,7 @@ const props = defineProps<{
 // Data yang digunakan untuk tampilan
 const currentData = computed(() => {
   if (!props.branch || props.branch.id === 'all') {
-    console.log('props.data', props.data)
+    // console.log('props.data', props.data)
     return props.data;
   } 
 
@@ -26,8 +26,8 @@ const currentData = computed(() => {
 })
 
 const employeeData = computed(() => {
-  console.log('currentData', currentData.value)
-  console.log('current Data Flat Map', currentData.value.flatMap((tx) => tx.employee))
+  // console.log('currentData', currentData.value)
+  // console.log('current Data Flat Map', currentData.value.flatMap((tx) => tx.employee))
   return currentData.value.flatMap((tx) => tx.employee);
 });
 
@@ -69,15 +69,15 @@ const listEmployee = computed(() => sortedEmployee.value.slice(1));  // Pegawai 
 
 // watcher untuk logging currentData
 watch(currentData, () => {
-  console.log('currentData', currentData.value)
+  // console.log('currentData', currentData.value)
 })
 
 watch(employeeData, () => {
-  console.log('employeeData', employeeData.value)
+  // console.log('employeeData', employeeData.value)
 })
 
 watch(() => props.loading, () => {
-  console.log('props.loading', props.loading)
+  // console.log('props.loading', props.loading)
 })
 
 </script>

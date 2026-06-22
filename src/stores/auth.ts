@@ -45,7 +45,7 @@ export const useAuthStore = defineStore({
 
       await new Promise<void>((resolve) => {
         this._unsubscribeAuth = onIdTokenChanged(auth, async (u) => {
-          console.log('[auth] onIdTokenChanged → user:', !!u, 'uid:', u?.uid)
+          // console.log('[auth] onIdTokenChanged → user:', !!u, 'uid:', u?.uid)
           if (this._handlingToken) return;
           this._handlingToken = true;
           try {
@@ -278,7 +278,7 @@ export const useAuthStore = defineStore({
       this.loading = true;
       try {
         await confirmPasswordReset(auth, oobCode, newPassword);
-        console.log('Password berhasil diperbarui');
+        // console.log('Password berhasil diperbarui');
       } catch (error) {
         console.error('Gagal memperbarui password:', error);
         throw error;

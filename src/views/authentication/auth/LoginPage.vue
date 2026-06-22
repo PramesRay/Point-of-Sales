@@ -2,7 +2,7 @@
 import Logo from '@/layouts/full/logo/LogoDark.vue';
 import AuthLogin from '../authForms/AuthLogin.vue';
 
-console.log('LoginPage');
+// console.log('LoginPage');
 </script>
 
 <template>

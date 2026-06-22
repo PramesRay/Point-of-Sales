@@ -127,7 +127,7 @@ async function processSubmit() {
     props.refresh()
     handleClose()
   } catch (error: any) {
-    console.log(error)
+    console.error(error)
     alertStore.showAlert(error, 'error');
   } finally {
     isProcessing.value = false

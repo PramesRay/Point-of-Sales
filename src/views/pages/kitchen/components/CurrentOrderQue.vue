@@ -49,7 +49,7 @@ const filteredDataByBranch = computed(() => {
 });
 
 const filteredData = computed(() => {
-  console.log('filteredDataByBranch.value', filteredDataByBranch.value)
+  // console.log('filteredDataByBranch.value', filteredDataByBranch.value)
   let data = filteredDataByBranch.value
   data = filteredDataByBranch.value.filter((tx) => {
     const isActiveMatch = isActive.value

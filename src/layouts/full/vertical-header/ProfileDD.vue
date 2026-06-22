@@ -41,7 +41,7 @@ const hover = ref(false)
 // Fungsi untuk mendapatkan pagi siang sore malam
 function getGreeting() {
   const currentHour = new Date().getHours();
-  console.log('currentHour', currentHour);
+  // console.log('currentHour', currentHour);
   if (currentHour >= 0 && currentHour < 12) {
     return 'Pagi';
   } else if (currentHour >= 12 && currentHour < 15) {

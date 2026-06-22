@@ -15,35 +15,6 @@ export async function fetchFinanceSummary({ filter }: { filter?: Record<string, 
     const res = await api.get(`${url}?${query.toString()}`);
     return res.data.data;
   } catch (error) {
-    console.warn(`Fetch finance summary failed, using dummy data.`, error);
-    return { 
-      income: {
-        period: {
-          start: new Date(),
-          end: new Date()
-        },
-        total: {
-          grossSales: 0,
-          refunds: 0,
-          netIncome: 0
-        },
-        perBranch: []
-      },
-      expenses: {
-        totalExpenses: { today: 0, week: 0, month: 0, year: 0 },
-        chartData: {
-          today: { categories: [], series: [] },
-          week: { categories: [], series: [] },
-          month: { categories: [], series: [] },
-          year: { categories: [], series: [] },
-        }
-      },
-      order: {
-        current: 0,
-        week: [],
-        month: []
-      },
-      branch: { id: '', name: ''}
-    };
+    throw error;
   }
 }

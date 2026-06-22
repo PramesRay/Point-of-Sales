@@ -80,7 +80,7 @@ export async function createStockRequest(payload: CreateStockRequestPayload): Pr
     return res.data.data;
   } catch (error) {
     console.warn(`Create stock request failed, using dummy.`, error);
-    console.log('Payload: ', payload)
+    // console.log('Payload: ', payload)
     throw error
   }  
 }
@@ -92,7 +92,7 @@ export async function updateStockRequest(payload: UpdateStockRequestPayload | Ap
     return res.data.data;
   } catch (error) {
     console.warn(`Update stock request failed, using dummy.`, error);
-    console.log('Payload: ', payload)
+    // console.log('Payload: ', payload)
     throw error
   }  
 }

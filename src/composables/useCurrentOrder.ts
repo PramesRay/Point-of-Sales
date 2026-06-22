@@ -42,7 +42,7 @@ export function useCurrentOrders() {
         sortDesc,
         filter
       })
-      console.log('data', data.value)
+      // console.log('data', data.value)
     } catch (e: any) {
       error.value = e;
     } finally {
@@ -129,7 +129,7 @@ export function useCurrentOrders() {
       // await load(branchId.value);
     } catch (error) {
       console.error('Error creating direct payment order:', error);
-      console.log('Payload:', payload);
+      // console.log('Payload:', payload);
       throw error;
     } finally {
       loading.value = false;

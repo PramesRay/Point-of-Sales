@@ -224,7 +224,7 @@ async function processSubmit() {
     }
     handleClose()
   } catch (error) {
-    console.log(error)
+    console.error(error)
     props.refresh()
     handleClose()
   }
@@ -237,7 +237,7 @@ async function processSubmit() {
 //     handleClose()
 //   } catch (error) {
 //     props.refresh()
-//     console.log(error)
+//     console.error(error)
 //     handleClose()
 //   }
 // }

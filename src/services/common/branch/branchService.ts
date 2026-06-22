@@ -33,8 +33,7 @@ export async function fetchBranches(
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch branches in failed, using dummy.`, error);
-    return { data: [], total: 0 };
+    throw error;
   }
 }
 

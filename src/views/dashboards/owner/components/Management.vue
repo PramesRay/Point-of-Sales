@@ -59,7 +59,7 @@ const currentDataBranch = computed(() => {
 })
 
 const currentDataMenu = computed(() => {
-  console.log('props.data_menu', props.data_menu)
+  // console.log('props.data_menu', props.data_menu)
   return props.data_menu
 })
 

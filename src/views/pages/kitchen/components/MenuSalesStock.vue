@@ -113,7 +113,7 @@ function openDetail(request: InventoryItem) {
   action.value = 'update'
   showOverlay.value = true
 
-  console.log('selectedItem.value', selectedItem.value)
+  // console.log('selectedItem.value', selectedItem.value)
 }
 
 const isChanged = computed(() => {
@@ -150,13 +150,13 @@ const currentData = computed(() => {
 
 function processInventoryItem() {
   if (!payload.value) return
-  console.log('action.value', action.value)
+  // console.log('action.value', action.value)
   
   if (action.value === 'delete') {
-    console.log('Menghapus item:', selectedItem.value)
+    // console.log('Menghapus item:', selectedItem.value)
   
   } else if (action.value === 'create') {
-    console.log('Membuat item baru:', payload)
+    // console.log('Membuat item baru:', payload)
     const createPayload: CreateInventoryItemPayload = {
       name: payload.value.name ?? '',
       description: payload.value.description ?? '',
@@ -167,7 +167,7 @@ function processInventoryItem() {
     }
   
   } else if (action.value === 'update') {
-    console.log('Mengubah item:', payload.value)
+    // console.log('Mengubah item:', payload.value)
   }
   
   confirmCancel()
@@ -176,7 +176,7 @@ function processInventoryItem() {
 function submitForm() {
   formRef.value?.validate().then((res: boolean) => {
     if (!res) return
-    console.log('action.value', action.value)
+    // console.log('action.value', action.value)
     processInventoryItem()
   })
 }

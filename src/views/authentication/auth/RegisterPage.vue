@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/LogoDark.vue';
 import AuthRegister from '../authForms/AuthRegister.vue';
-console.log('RegisterPage');
+// console.log('RegisterPage');
 </script>
 
 <template>

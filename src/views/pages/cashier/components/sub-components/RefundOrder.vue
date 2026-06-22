@@ -45,7 +45,7 @@ async function processRefund() {
     props.refresh()
     emit('close')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 

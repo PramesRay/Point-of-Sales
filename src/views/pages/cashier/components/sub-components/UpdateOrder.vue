@@ -141,7 +141,7 @@ async function processOrder() {
     props.refresh()
     emit('close')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 

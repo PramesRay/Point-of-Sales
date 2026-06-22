@@ -55,7 +55,7 @@ const isChanged = computed(() => {
 })
 
 watchEffect(() => {
-  console.log('isChanged', isChanged.value)
+  // console.log('isChanged', isChanged.value)
   const val = isChanged.value
   if (typeof props.onIsChangedUpdate === 'function') {
     props.onIsChangedUpdate(!!val)
@@ -90,7 +90,7 @@ async function processSubmit() {
     clearPayload()
     emit('close')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 

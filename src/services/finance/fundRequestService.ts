@@ -46,8 +46,7 @@ export async function fetchFundRequests({
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch Fund Request data failed, using dummy.`, error);
-    return { data: [], total: 0 }; 
+    throw error;
   }
 }
 
@@ -93,6 +92,7 @@ export async function finishFundRequest(id: string): Promise<FundRequest> {
     alertStore.showAlert('Permintaan Stok berhasil dikonfirmasi!', 'success');
     return res.data.data;
   } catch (error) {
+    alertStore.showAlert('Gagal mengkonfirmasi Permintaan Stok!', 'error');
     throw error
   }  
 }

@@ -27,8 +27,7 @@ export async function fetchMenus(
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn('Fetch Menu Item failed, using dummy.', error)
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 
@@ -57,8 +56,7 @@ export async function fetchMenusales(
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn('Fetch Menu Item failed, using dummy.', error)
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 
@@ -100,8 +98,7 @@ export async function fetchCategorMenu(id?: string): Promise<Category[]> {
     const res = await api.get(`/categories?${query.toString()}`);
     return res.data.data;
   } catch (error) {
-    console.warn(`Fetch Menu Item's Category failed, using dummy.`, error);
-    return [];
+    throw error;
   }
 }
 

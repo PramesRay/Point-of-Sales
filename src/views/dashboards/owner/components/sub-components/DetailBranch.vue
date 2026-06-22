@@ -123,7 +123,7 @@ async function processSubmit() {
     handleClose()
     load()
   } catch (error) {
-    console.log(error)
+    console.error(error)
     props.refresh()
     handleClose()
     load()
@@ -137,7 +137,7 @@ async function processDelete() {
     props.refresh()
     handleClose()
   } catch (error) {
-    console.log(error)
+    console.error(error)
     handleClose()
   }
 }

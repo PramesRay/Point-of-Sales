@@ -57,7 +57,7 @@ async function processSubmit() {
     clearPayload()
     emit('close')
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 
 }

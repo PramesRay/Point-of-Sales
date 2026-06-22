@@ -10,8 +10,7 @@ export async function fetchInventoryItem(): Promise<InventoryItem[]> {
     const res = await api.get(`/inventory/items`);
     return res.data.data;
   } catch (error) {
-    console.warn(`Fetch Inventory Item failed, using dummy.`, error);
-    return [];
+    throw error;
   }  
 }
 
@@ -54,8 +53,7 @@ export async function fetchStockMovements({
       total: res.data.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch Stock Movement data failed, using dummy.`, error);
-    return { data: [], total: 0 };
+    throw error;
   }
 }
 
@@ -134,8 +132,7 @@ export async function fetchCategoryInvItem(): Promise<Category[]> {
     const res = await api.get(`/categories?type=inv`);
     return res.data.data;
   } catch (error) {
-    console.warn(`Fetch Inventory Item's Category failed, using dummy.`, error);
-    return [];
+    throw error;
   } 
 }
 

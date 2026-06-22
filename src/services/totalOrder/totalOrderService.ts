@@ -10,11 +10,6 @@ export async function fetchTotalOrder(branch_id?: string): Promise<TotalOrder> {
     const response = await api.get(`${url}?${query.toString()}`);
     return response.data.data;
   } catch (error) {
-    console.warn(`API error fetching total order for "${branch_id}", using dummy data.`, error);
-    return { 
-      current: 0, 
-      week: [], 
-      month: []
-    };
+    throw error;
   }
 }

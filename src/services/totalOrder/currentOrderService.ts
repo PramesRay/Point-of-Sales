@@ -42,8 +42,7 @@ export async function fetchCurrentOrder({
         total: res.data.meta?.total ?? res.data.data.length,
       }
     } catch (error) {
-      console.warn(`Fetch Current Order data failed, using dummy.`, error);
-      return { data: [], total: 0 }
+      throw error;
     }
 }
 

@@ -67,7 +67,7 @@ function openDetail(item: InventoryItem) {
 }
 
 const select_ctgs = computed(() => {
-  console.log('select_ctgs', props.categories)
+  // console.log('select_ctgs', props.categories)
   if (!props.categories.length) return []
   return props.categories;
 })

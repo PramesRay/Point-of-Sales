@@ -53,8 +53,8 @@ const loadData = async () => {
     items.value = data
     totalItems.value = total
 
-    console.log('Data fetched:', items.value)
-    console.log('Total items:', totalItems.value)
+    // console.log('Data fetched:', items.value)
+    // console.log('Total items:', totalItems.value)
   } finally {
     loading.value = false
   }

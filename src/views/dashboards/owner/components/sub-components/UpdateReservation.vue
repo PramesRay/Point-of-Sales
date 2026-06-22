@@ -186,7 +186,7 @@ async function processDelete() {
     props.refresh()
     handleClose()
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }
 
@@ -206,7 +206,7 @@ function handleSubmit() {
         props.refresh()
         handleClose()
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     } else {
       const updatePayload: UpdateReservationPayload = {
@@ -218,7 +218,7 @@ function handleSubmit() {
         props.refresh()
         handleClose()
       } catch (error) {
-        console.log(error)
+        console.error(error)
       } 
     }
   })

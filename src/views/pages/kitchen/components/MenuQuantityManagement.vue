@@ -83,7 +83,7 @@ function handleSubmit() {
       }
     }
   })
-  console.log('payload', payload)
+  // console.log('payload', payload)
 }
 
 function toggleQtyField(item: any) {

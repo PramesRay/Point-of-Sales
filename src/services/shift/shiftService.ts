@@ -56,8 +56,7 @@ export async function fetchCurrentShiftEmployee({
 
     return res.data.data
   } catch (error) {
-    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return {} as Shift
+    throw error;
   }
 }
 
@@ -103,8 +102,7 @@ export async function fetchShiftEmployee({
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch shift employee data failed, using dummy.`, error);
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 
@@ -170,8 +168,7 @@ export async function fetchCurrentShiftWarehouse({
 
     return res.data.data
   } catch (error) {
-    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return {} as ShiftWarehouse;
+    throw error;
   }
 }
 
@@ -214,8 +211,7 @@ export async function fetchShiftWarehouse({
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch shift warehouse data failed, using dummy.`, error);
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 
@@ -291,8 +287,7 @@ export async function fetchCurrentShiftCashier({
 
     return res.data.data
   } catch (error) {
-    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return {} as ShiftCashier;
+    throw error;
   }
 }
 
@@ -338,8 +333,7 @@ export async function fetchShiftCashier({
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 
@@ -415,8 +409,7 @@ export async function fetchCurrentShiftKitchen({
 
     return res.data.data
   } catch (error) {
-    console.warn(`Fetch shift cashier data failed, using dummy.`, error);
-    return {} as ShiftKitchen;
+    throw error;
   }
 }
 
@@ -462,8 +455,7 @@ export async function fetchShiftKitchen({
       total: res.data.meta?.total ?? res.data.data.length,
     }
   } catch (error) {
-    console.warn(`Fetch shift kitchen failed, using dummy.`, error);
-    return { data: [], total: 0 }
+    throw error;
   }
 }
 

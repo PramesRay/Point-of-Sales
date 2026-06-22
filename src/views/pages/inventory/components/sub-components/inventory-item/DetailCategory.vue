@@ -96,7 +96,7 @@ async function processSubmit() {
     handleClose()
   } catch (error) {
     props.refresh()
-    console.log(error)
+    console.error(error)
     handleClose()
   }
 }
@@ -108,7 +108,7 @@ async function processDelete() {
     handleClose()
   } catch (error) {
     props.refresh()
-    console.log(error)
+    console.error(error)
     handleClose()
   }
 }

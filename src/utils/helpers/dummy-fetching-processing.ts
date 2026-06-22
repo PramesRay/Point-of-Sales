@@ -22,16 +22,16 @@ export function processDummyData(
 
   // 3. Optional: filter
   if (options.filter) {
-    console.log('filter in service', options.filter)
+    // console.log('filter in service', options.filter)
     for (const [key, value] of Object.entries(options.filter)) {
       if (value) {  // Pastikan value valid (tidak null, undefined, atau kosong)
-        console.log('key', key);
-        console.log('value', value);
-        console.log('value type', typeof value);
+        // console.log('key', key);
+        // console.log('value', value);
+        // console.log('value type', typeof value);
 
         // Menangani nested key (contoh: 'branch.id')
         const keys = key.split('.'); // Pisahkan key berdasarkan '.'
-        console.log('keys', keys);
+        // console.log('keys', keys);
 
         data = data.filter(item => {
           let itemValue: any = item;
@@ -75,24 +75,24 @@ export function processDummyData(
 
               // Ambil tanggal saja (YYYY-MM-DD) untuk perbandingan
               const itemDate = parsedItemValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-              console.log('itemDate', itemDate);
+              // console.log('itemDate', itemDate);
 
               const filterDate = parsedValue.toISOString().split('T')[0];  // Hanya tanggal (YYYY-MM-DD)
-              console.log('filterDate', filterDate);
+              // console.log('filterDate', filterDate);
 
               return itemDate === filterDate;  // Bandingkan tanggal tanpa waktu
             } else {
-              console.log("itemValue is not a valid Date or string.");
+              // console.log("itemValue is not a valid Date or string.");
             }
           } else {
-            console.log("value is not a valid Date or string.");
+            // console.log("value is not a valid Date or string.");
           }
 
 
           // Jika bukan array, gunakan perbandingan biasa
           return itemValue === value;
         });
-        console.log('data', data);
+        // console.log('data', data);
       }
     }
   }
@@ -100,7 +100,7 @@ export function processDummyData(
   
   // 4. Optional: sort
   if (options.sortBy && data.length > 0) {
-    console.log('Sorting by', options.sortBy);
+    // console.log('Sorting by', options.sortBy);
 
     // Pisahkan key jika ada nested key (misalnya branch.name)
     const keys = options.sortBy.split('.'); // Pisahkan menjadi array berdasarkan titik (.)

@@ -14,7 +14,7 @@ const props = defineProps<{
 }>();
 
 const incomes = computed(() => {
-  console.log('props.data', props.data);
+  // console.log('props.data', props.data);
   if (!props.data) return [];
   
   return Array.isArray(props.data.income.perBranch) ? props.data.income.perBranch : [];

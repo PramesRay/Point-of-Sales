@@ -49,7 +49,7 @@ const api = axios.create({
 api.interceptors.request.use(async (config) => {
   const token = await getIdTokenSoft();
   if (token) {
-    config.headers = config.headers ?? {};
+    config.headers = config.headers ?? ({} as any);
     if (!config.headers.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -58,66 +58,50 @@ api.interceptors.request.use(async (config) => {
 });
 
 
-// Response Interceptor: Menangani Error & Auto-Logout
-// api.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const authStore = useAuthStore();
-//     const alertStore = useAlertStore();
-
-//     const originalConfig = error.config as typeof error.config & { _retry?: boolean };
-
-//     // Tidak ada response (timeout / jaringan)
-//     if (!error.response) {
-//       alertStore.showAlert('Gagal terhubung ke server.', 'error');
-//       return Promise.reject(error);
-//     }
-
-//     const status = error.response.status;
-
-//     // Hanya handle 401/403 dan pastikan belum pernah di-retry
-//     if ((status === 401 || status === 403) && !originalConfig?._retry) {
-//       // Hindari refresh utk endpoint tertentu jika perlu
-//       // if (originalConfig.url?.includes('/auth/logout')) return Promise.reject(error);
-
-//       // Paksa refresh SEKALI (single-flight)
-//       const fresh = await getIdTokenHardOnce();
-
-//       // Kalau sukses dapat token dan masih ada user → retry sekali
-//       if (fresh && auth.currentUser) {
-//         originalConfig._retry = true;
-//         originalConfig.headers = originalConfig.headers ?? {};
-//         originalConfig.headers.Authorization = `Bearer ${fresh}`;
-//         return api.request(originalConfig);
-//       }
-
-//       // Gagal refresh atau user sudah hilang → logout
-//       await authStore.logout();
-//       router.push('/login');
-//       alertStore.showAlert('Sesi berakhir. Silakan login kembali.', 'error');
-//       return Promise.reject(error);
-//     }
-
-//     // Bukan 401/403 → teruskan error normal
-//     alertStore.showAlert(error.response.data?.message || 'Terjadi kesalahan.', 'error');
-//     return Promise.reject(error);
-//   }
-// );
-
+// Response Interceptor: Menangani Error & Auto-Refresh Token
+// Saat 401/403: paksa refresh token SEKALI (single-flight) lalu retry.
+// Logout hanya terjadi jika refresh gagal atau user sudah tidak ada.
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const status = error?.response?.status;
-    if (status === 401 || status === 403) {
-      await useAuthStore().logout();
-      router.push('/login');
-      useAlertStore().showAlert(error.response.data?.message || 'Sesi kadaluarsa. Silakan login kembali.', 'error');
-    } else {
-      useAlertStore().showAlert(
-        error.response?.data?.message || 'Terjadi kesalahan.',
-        'error'
-      );
+    const authStore = useAuthStore();
+    const alertStore = useAlertStore();
+
+    const originalConfig = error.config as typeof error.config & { _retry?: boolean };
+
+    // Tidak ada response (timeout / jaringan putus)
+    if (!error.response) {
+      alertStore.showAlert('Gagal terhubung ke server.', 'error');
+      return Promise.reject(error);
     }
+
+    const status = error.response.status;
+
+    // Hanya handle 401/403 dan pastikan belum pernah di-retry
+    if ((status === 401 || status === 403) && !originalConfig?._retry) {
+      // Paksa refresh SEKALI (single-flight — anti-duplicate)
+      const fresh = await getIdTokenHardOnce();
+
+      // Kalau sukses dapat token baru dan user masih ada → retry request sekali
+      if (fresh && auth.currentUser) {
+        originalConfig._retry = true;
+        originalConfig.headers = originalConfig.headers ?? ({} as any);
+        originalConfig.headers.Authorization = `Bearer ${fresh}`;
+        return api.request(originalConfig);
+      }
+
+      // Gagal refresh atau user sudah hilang → logout
+      await authStore.logout();
+      router.push('/login');
+      alertStore.showAlert('Sesi berakhir. Silakan login kembali.', 'error');
+      return Promise.reject(error);
+    }
+
+    // Bukan 401/403 → tampilkan pesan error dari backend lalu teruskan
+    alertStore.showAlert(
+      error.response?.data?.message || 'Terjadi kesalahan.',
+      'error'
+    );
     return Promise.reject(error);
   }
 );
